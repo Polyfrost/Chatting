@@ -12,7 +12,6 @@ import gg.essential.universal.UDesktop
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiChat
-import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraftforge.client.event.MouseEvent
@@ -27,7 +26,6 @@ import org.lwjgl.input.Keyboard
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -112,20 +110,13 @@ object Stratus {
             w = fr.getStringWidth(chatLines.stream().max(Comparator.comparingInt { obj: String -> obj.length }).get())
         }
         val fb: Framebuffer = RenderHelper.createBindFramebuffer(w, h)
-        GlStateManager.translate(-2f, (160 - (180 - h)).toFloat(), 0f)
-        chat.drawChat(hud.updateCounter)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
         RenderHelper.screenshotFramebuffer(fb, file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
         EssentialAPI.getNotifications()
             .push("Stratus", "Chat screenshotted successfully.\nClick to open.") {
-                try {
-                    UDesktop.browse(file.toURI())
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                } catch (e: UnsupportedOperationException) {
-                    e.printStackTrace()
+                if (!UDesktop.browse(file.toURI())) {
                     EssentialAPI.getNotifications().push("Stratus", "Could not browse!")
                 }
             }

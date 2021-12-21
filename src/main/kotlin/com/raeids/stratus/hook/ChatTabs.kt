@@ -17,7 +17,6 @@ object ChatTabs {
                 if (Minecraft.getMinecraft().theWorld != null) {
                     Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
                 }
-                println("current tab: ${value.name}")
             }
         }
 
