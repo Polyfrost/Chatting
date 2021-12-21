@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "${id}",
+    "name": "${name}",
+    "description": "A chat mod.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "W-OVERFLOW (raeids)"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
