@@ -6,6 +6,7 @@
   "mixins": [
     "GuiChatMixin",
     "GuiNewChatAccessor",
+    "GuiUtilRenderComponentsMixin",
     "GuiNewChatMixin"
   ],
   "verbose": true

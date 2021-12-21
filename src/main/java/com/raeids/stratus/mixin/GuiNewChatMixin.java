@@ -1,10 +1,12 @@
 package com.raeids.stratus.mixin;
 
 import com.raeids.stratus.Stratus;
-import com.raeids.stratus.hook.ChatHookKt;
+import com.raeids.stratus.hook.ChatSearchingKt;
+import com.raeids.stratus.hook.ChatTabs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.util.IChatComponent;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,6 +22,11 @@ import java.util.List;
 @Mixin(GuiNewChat.class)
 public class GuiNewChatMixin {
     @Shadow @Final private Minecraft mc;
+
+    @Inject(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", shift = At.Shift.AFTER))
+    private void setDoing(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        ChatTabs.INSTANCE.setDoing(true);
+    }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
@@ -44,6 +51,6 @@ public class GuiNewChatMixin {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        return ChatHookKt.filterMessages(drawnChatLines);
+        return ChatSearchingKt.filterMessages(drawnChatLines);
     }
 }

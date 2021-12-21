@@ -2,6 +2,7 @@ package com.raeids.stratus
 
 import com.raeids.stratus.command.StratusCommand
 import com.raeids.stratus.config.StratusConfig
+import com.raeids.stratus.hook.ChatTabs
 import com.raeids.stratus.mixin.GuiNewChatAccessor
 import com.raeids.stratus.updater.Updater
 import com.raeids.stratus.utils.RenderHelper
@@ -43,6 +44,8 @@ object Stratus {
     lateinit var jarFile: File
         private set
 
+    private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
+
     val modDir = File(File(Minecraft.getMinecraft().mcDataDir, "W-OVERFLOW"), NAME)
 
     @Mod.EventHandler
@@ -51,7 +54,25 @@ object Stratus {
         jarFile = event.sourceFile
     }
 
-    private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
+    @Mod.EventHandler
+    fun onInitialization(event: FMLInitializationEvent) {
+        StratusConfig.preload()
+        StratusCommand.register()
+        ClientRegistry.registerKeyBinding(keybind)
+        EVENT_BUS.register(this)
+        ChatTabs.initialize()
+        Updater.update()
+    }
+
+    @SubscribeEvent
+    fun onTickEvent(event: TickEvent.ClientTickEvent) {
+        if (event.phase == TickEvent.Phase.START && Minecraft.getMinecraft().theWorld != null && Minecraft.getMinecraft().thePlayer != null && (Minecraft.getMinecraft().currentScreen == null || Minecraft.getMinecraft().currentScreen is GuiChat)) {
+            if (doTheThing) {
+                screenshot()
+                doTheThing = false
+            }
+        }
+    }
 
     private fun screenshot() {
         val hud = Minecraft.getMinecraft().ingameGUI
@@ -92,24 +113,5 @@ object Stratus {
                     EssentialAPI.getNotifications().push("Stratus", "Could not browse!")
                 }
             }
-    }
-
-    @Mod.EventHandler
-    fun onInitialization(event: FMLInitializationEvent) {
-        StratusConfig.preload()
-        StratusCommand.register()
-        ClientRegistry.registerKeyBinding(keybind)
-        EVENT_BUS.register(this)
-        Updater.update()
-    }
-
-    @SubscribeEvent
-    fun onTickEvent(event: TickEvent.ClientTickEvent) {
-        if (event.phase == TickEvent.Phase.START && Minecraft.getMinecraft().theWorld != null && Minecraft.getMinecraft().thePlayer != null && (Minecraft.getMinecraft().currentScreen == null || Minecraft.getMinecraft().currentScreen is GuiChat)) {
-            if (doTheThing) {
-                screenshot()
-                doTheThing = false
-            }
-        }
     }
 }

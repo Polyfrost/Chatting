@@ -1,7 +1,9 @@
 package com.raeids.stratus.mixin;
 
 import com.raeids.stratus.config.StratusConfig;
-import com.raeids.stratus.hook.ChatHookKt;
+import com.raeids.stratus.hook.ChatSearchingKt;
+import com.raeids.stratus.hook.ChatTab;
+import com.raeids.stratus.hook.ChatTabs;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,46 +17,49 @@ public abstract class GuiChatMixin extends GuiScreen {
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         if (StratusConfig.INSTANCE.getChatSearch()) {
-            ChatHookKt.initGui();
+            ChatSearchingKt.initGui();
+        }
+        for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
+            buttonList.add(chatTab.getButton());
         }
     }
 
     @Inject(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiTextField;drawTextBox()V", shift = At.Shift.AFTER))
     private void yeah(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
-        if (ChatHookKt.getInputField() != null) {
-            ChatHookKt.getInputField().drawTextBox();
+        if (ChatSearchingKt.getInputField() != null) {
+            ChatSearchingKt.getInputField().drawTextBox();
         }
     }
 
     @Inject(method = "onGuiClosed", at = @At("TAIL"))
     private void onGuiClosed(CallbackInfo ci) {
-        ChatHookKt.setInputField(null);
-        ChatHookKt.setPrevText("");
+        ChatSearchingKt.setInputField(null);
+        ChatSearchingKt.setPrevText("");
     }
 
     @Inject(method = "updateScreen", at = @At("HEAD"))
     private void updateScreen(CallbackInfo ci) {
-        ChatHookKt.updateScreen();
+        ChatSearchingKt.updateScreen();
     }
 
     @Inject(method = "keyTyped", at = @At("HEAD"), cancellable = true)
     private void keyTyped(char typedChar, int keyCode, CallbackInfo ci) {
-        if (ChatHookKt.getInputField() != null) {
-            if (ChatHookKt.getInputField().isFocused()) {
+        if (ChatSearchingKt.getInputField() != null) {
+            if (ChatSearchingKt.getInputField().isFocused()) {
                 ci.cancel();
-                if (keyCode == 1 && ChatHookKt.getInputField().isFocused()) {
-                    ChatHookKt.getInputField().setFocused(false);
+                if (keyCode == 1 && ChatSearchingKt.getInputField().isFocused()) {
+                    ChatSearchingKt.getInputField().setFocused(false);
                     return;
                 }
-                ChatHookKt.getInputField().textboxKeyTyped(typedChar, keyCode);
+                ChatSearchingKt.getInputField().textboxKeyTyped(typedChar, keyCode);
             }
         }
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void mouseClicked(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
-        if (ChatHookKt.getInputField() != null) {
-            ChatHookKt.getInputField().mouseClicked(mouseX, mouseY, mouseButton);
+        if (ChatSearchingKt.getInputField() != null) {
+            ChatSearchingKt.getInputField().mouseClicked(mouseX, mouseY, mouseButton);
         }
     }
 }
