@@ -3,6 +3,7 @@ package com.raeids.stratus.hook
 import com.google.gson.*
 import com.raeids.stratus.Stratus
 import net.minecraft.client.Minecraft
+import net.minecraft.util.IChatComponent
 import java.io.File
 
 object ChatTabs {
@@ -43,7 +44,7 @@ object ChatTabs {
         currentTab = tabs[0]
     }
 
-    fun shouldRender(message: String): Boolean {
+    fun shouldRender(message: IChatComponent): Boolean {
         return currentTab?.shouldRender(message) ?: true
     }
 
@@ -57,9 +58,10 @@ object ChatTabs {
     }
 
     private fun generateDefaultTabs(): JsonArray {
-        val all = ChatTab("ALL", null, null, null, null, null, "")
+        val all = ChatTab("ALL", false, null, null, null, null, null, "/ac ")
         val party = ChatTab(
             "PARTY",
+            false,
             listOf("§r§9Party §8> ", "§r§9P §8> ", "§eThe party was transferred to §r", "§eKicked §r"),
             null,
             listOf(
@@ -78,7 +80,8 @@ object ChatTabs {
         )
         val guild = ChatTab(
             "GUILD",
-            listOf("§r§2Guild > ", "§r§2G > "),
+            true,
+            listOf("Guild >", "G >"),
             null,
             null,
             null,
@@ -87,7 +90,8 @@ object ChatTabs {
         )
         val pm = ChatTab(
             "PM",
-            listOf("§dTo ", "§dFrom "),
+            true,
+            listOf("To ", "From "),
             null,
             null,
             null,

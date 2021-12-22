@@ -3,39 +3,38 @@ package com.raeids.stratus.hook
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.runBlocking
 import net.minecraft.client.Minecraft
+import net.minecraft.util.EnumChatFormatting
+import net.minecraft.util.IChatComponent
 
 data class ChatTab(
-    @SerializedName("name") val name: String,
+    val name: String,
+    val unformatted: Boolean,
     @SerializedName("starts") val startsWith: List<String>?,
-    @SerializedName("contains") val contains: List<String>?,
+    val contains: List<String>?,
     @SerializedName("ends") val endsWith: List<String>?,
-    @SerializedName("equals") val equals: List<String>?,
+    val equals: List<String>?,
     @SerializedName("regex") val uncompiledRegex: List<String>?,
-    @SerializedName("prefix") val prefix: String
+    val prefix: String
 ) {
     lateinit var button: CleanButton
-    var compiledRegex: MutableList<Regex> = arrayListOf()
+    lateinit var compiledRegex: ChatRegexes
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {
-        compiledRegex = arrayListOf()
+        compiledRegex = ChatRegexes(uncompiledRegex)
         val width = Minecraft.getMinecraft().fontRendererObj.getStringWidth(name)
         button = CleanButton(653452, runBlocking {
             val returnValue = x - 2
             x += 6 + width
             return@runBlocking returnValue
         }, 0, width + 4, 12, this)
-        if (uncompiledRegex != null && uncompiledRegex.isNotEmpty()) {
-            uncompiledRegex.forEach {
-                compiledRegex.add(Regex(it))
-            }
-        }
     }
 
-    fun shouldRender(message: String): Boolean {
+    fun shouldRender(chatComponent: IChatComponent): Boolean {
         if (startsWith == null && equals == null && endsWith == null && contains == null && uncompiledRegex == null) {
             return true
         }
+        val message = if (unformatted) EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.unformattedText) else chatComponent.formattedText
         equals?.forEach {
             if (message == it) {
                 return true
@@ -56,15 +55,9 @@ data class ChatTab(
                 return true
             }
         }
-        if ((uncompiledRegex != null) && uncompiledRegex.isNotEmpty()) {
-            try {
-                compiledRegex.forEach {
-                    if (it.matches(message)) {
-                        return true
-                    }
-                }
-            } catch (_: Throwable) {
-
+        compiledRegex.compiledRegexList.forEach {
+            if (it.matches(message)) {
+                return true
             }
         }
         return false

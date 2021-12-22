@@ -3,7 +3,6 @@ package com.raeids.stratus
 import com.raeids.stratus.command.StratusCommand
 import com.raeids.stratus.config.StratusConfig
 import com.raeids.stratus.hook.ChatTabs
-import com.raeids.stratus.hook.GuiNewChatHook
 import com.raeids.stratus.mixin.GuiNewChatAccessor
 import com.raeids.stratus.updater.Updater
 import com.raeids.stratus.utils.RenderHelper
@@ -14,7 +13,6 @@ import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
-import net.minecraftforge.client.event.MouseEvent
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
@@ -23,8 +21,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -64,18 +60,6 @@ object Stratus {
         EVENT_BUS.register(this)
         ChatTabs.initialize()
         Updater.update()
-    }
-
-    @SubscribeEvent
-    fun onMouseClick(event: MouseEvent) {
-        val hook = Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook
-        if (hook.shouldCopy()) {
-            try {
-                Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(hook.copyString()), null)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
     }
 
     @SubscribeEvent

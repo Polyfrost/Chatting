@@ -1,8 +1,7 @@
 package com.raeids.stratus.hook;
 
 public interface GuiNewChatHook {
-    int getX();
-    int getY();
+    int getRight();
     boolean shouldCopy();
-    String copyString();
+    String getStratusChatComponent(int mouseY);
 }

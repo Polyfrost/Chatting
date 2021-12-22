@@ -4,12 +4,18 @@ import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.ChatSearchingKt;
 import com.raeids.stratus.hook.ChatTab;
 import com.raeids.stratus.hook.ChatTabs;
+import com.raeids.stratus.hook.GuiNewChatHook;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
+import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin extends GuiScreen {
@@ -19,8 +25,10 @@ public abstract class GuiChatMixin extends GuiScreen {
         if (StratusConfig.INSTANCE.getChatSearch()) {
             ChatSearchingKt.initGui();
         }
-        for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
-            buttonList.add(chatTab.getButton());
+        if (StratusConfig.INSTANCE.getChatTabs()) {
+            for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
+                buttonList.add(chatTab.getButton());
+            }
         }
     }
 
@@ -60,6 +68,14 @@ public abstract class GuiChatMixin extends GuiScreen {
     private void mouseClicked(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
         if (ChatSearchingKt.getInputField() != null) {
             ChatSearchingKt.getInputField().mouseClicked(mouseX, mouseY, mouseButton);
+        }
+        GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
+        if (hook.shouldCopy() && hook.getRight() <= mouseX && hook.getRight() + 9 > mouseX) {
+            try {
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(hook.getStratusChatComponent(Mouse.getY())), null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

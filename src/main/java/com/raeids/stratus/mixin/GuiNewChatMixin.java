@@ -1,17 +1,17 @@
 package com.raeids.stratus.mixin;
 
 import com.raeids.stratus.Stratus;
+import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.ChatSearchingKt;
 import com.raeids.stratus.hook.ChatTabs;
 import com.raeids.stratus.hook.GuiIngameForgeHook;
 import com.raeids.stratus.hook.GuiNewChatHook;
 import gg.essential.universal.UResolution;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ChatLine;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.lib.Opcodes;
@@ -25,18 +25,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(GuiNewChat.class)
-public class GuiNewChatMixin extends Gui implements GuiNewChatHook {
-    @Unique private int stratus$x = 0;
-    @Unique private int stratus$y = 0;
+public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
+    @Unique private int stratus$right = 0;
     @Unique private boolean stratus$shouldCopy;
-    @Unique private ChatLine stratus$chatLine;
+    @Unique private boolean stratus$chatCheck;
     @Shadow @Final private Minecraft mc;
     @Shadow @Final private List<ChatLine> drawnChatLines;
+
+    @Shadow public abstract boolean getChatOpen();
+
+    @Shadow public abstract float getChatScale();
+
+    @Shadow public abstract int getLineCount();
+
+    @Shadow private int scrollPos;
     @Unique private static final ResourceLocation COPY = new ResourceLocation("stratus:copy.png");
 
     @Inject(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", shift = At.Shift.AFTER))
     private void setDoing(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
-        ChatTabs.INSTANCE.setDoing(true);
+        if (StratusConfig.INSTANCE.getChatTabs()) {
+            ChatTabs.INSTANCE.setDoing(true);
+        }
     }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
@@ -44,6 +53,7 @@ public class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (Stratus.INSTANCE.getKeybind().isPressed()) {
             Stratus.INSTANCE.setDoTheThing(true);
         }
+        stratus$chatCheck = false;
     }
 
     @ModifyVariable(method = "drawChat", at = @At("HEAD"), argsOnly = true)
@@ -58,42 +68,19 @@ public class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 : linesToDraw;
     }
 
-    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;"))
-    private Object captureChatLine(List<ChatLine> instance, int i) {
-        stratus$chatLine = instance.get(i);
-        return stratus$chatLine;
-    }
-
+    //TODO: fix with patcher
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
     private void captureDrawRect(int left, int top, int right, int bottom, int color) {
         drawRect(left, top, right, bottom, color);
-        final int k1 = Mouse.getX() * UResolution.getScaledWidth() / this.mc.displayWidth;
-        final int l1 = UResolution.getScaledHeight() - Mouse.getY() * UResolution.getScaledHeight() / this.mc.displayHeight - 1;
-        int mouseX = k1 - ((GuiIngameForgeHook) mc.ingameGUI).getX() - 2;
-        int mouseY = l1 - ((GuiIngameForgeHook) mc.ingameGUI).getY() - 20;
-        if (mouseX >= left && mouseY <= bottom && mouseX - 9 <= right && mouseY >= top) {
-            stratus$shouldCopy = true;
-            GlStateManager.enableRescaleNormal();
-            GlStateManager.enableBlend();
-            GlStateManager.enableDepth();
-            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-            GlStateManager.pushMatrix();
-            mc.getTextureManager().bindTexture(COPY);
-            GlStateManager.enableRescaleNormal();
-            GlStateManager.enableAlpha();
-            GlStateManager.alphaFunc(516, 0.1f);
-            GlStateManager.enableBlend();
-            GlStateManager.blendFunc(770, 771);
-            GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-            stratus$x = right;
-            stratus$y = top;
-            Gui.drawModalRectWithCustomSizedTexture(right, top, 0f, 0f, 9, 9, 9, 9);
-            GlStateManager.disableAlpha();
-            GlStateManager.disableRescaleNormal();
-            GlStateManager.disableLighting();
-            GlStateManager.popMatrix();
-        } else if (stratus$shouldCopy) {
-            stratus$shouldCopy = false;
+        if (mc.currentScreen instanceof GuiChat) {
+            final int k1 = Mouse.getX() * UResolution.getScaledWidth() / this.mc.displayWidth;
+            final int l1 = UResolution.getScaledHeight() - Mouse.getY() * UResolution.getScaledHeight() / this.mc.displayHeight - 1;
+            int mouseX = k1 - ((GuiIngameForgeHook) mc.ingameGUI).getX() - 2;
+            int mouseY = l1 - ((GuiIngameForgeHook) mc.ingameGUI).getY() - 20;
+            if (mouseX >= left && mouseY < bottom && mouseX < right + 9 && mouseY >= top) {
+                stratus$shouldCopy = true;
+                drawCopyChatBox(right, top);
+            }
         }
     }
 
@@ -102,14 +89,16 @@ public class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         return ChatSearchingKt.filterMessages(drawnChatLines);
     }
 
-    @Override
-    public int getX() {
-        return stratus$x;
+    @Inject(method = "drawChat", at = @At("RETURN"))
+    private void checkStuff(int j2, CallbackInfo ci) {
+        if (!stratus$chatCheck && stratus$shouldCopy) {
+            stratus$shouldCopy = false;
+        }
     }
 
     @Override
-    public int getY() {
-        return stratus$y;
+    public int getRight() {
+        return stratus$right;
     }
 
     @Override
@@ -117,8 +106,50 @@ public class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         return stratus$shouldCopy;
     }
 
+    private void drawCopyChatBox(int right, int top) {
+        stratus$chatCheck = true;
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.enableBlend();
+        GlStateManager.enableDepth();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.pushMatrix();
+        mc.getTextureManager().bindTexture(COPY);
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(516, 0.1f);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(770, 771);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        stratus$right = right;
+        Gui.drawModalRectWithCustomSizedTexture(right, top, 0f, 0f, 9, 9, 9, 9);
+        GlStateManager.disableAlpha();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.disableLighting();
+        GlStateManager.popMatrix();
+    }
+
     @Override
-    public String copyString() {
-        return stratus$chatLine.getChatComponent().getFormattedText();
+    public String getStratusChatComponent(int mouseY) {
+        if (this.getChatOpen()) {
+            ScaledResolution scaledresolution = new ScaledResolution(this.mc);
+            int i = scaledresolution.getScaleFactor();
+            float f = this.getChatScale();
+            int k = mouseY / i - 27;
+            k = MathHelper.floor_float((float) k / f);
+
+            if (k >= 0) {
+                int l = Math.min(this.getLineCount(), this.drawnChatLines.size());
+
+                if (k < this.mc.fontRendererObj.FONT_HEIGHT * l + l) {
+                    int i1 = k / this.mc.fontRendererObj.FONT_HEIGHT + this.scrollPos;
+
+                    if (i1 >= 0 && i1 < this.drawnChatLines.size()) {
+                        return this.drawnChatLines.get(i1).getChatComponent().getFormattedText();
+                    }
+
+                }
+            }
+        }
+        return null;
     }
 }

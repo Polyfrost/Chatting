@@ -8,6 +8,7 @@
     "GuiNewChatAccessor",
     "GuiUtilRenderComponentsMixin",
     "GuiIngameForgeMixin",
+    "EntityPlayerSPMixin",
     "GuiNewChatMixin"
   ],
   "verbose": true
