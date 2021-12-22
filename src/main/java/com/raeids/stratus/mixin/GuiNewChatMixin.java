@@ -1,12 +1,11 @@
 package com.raeids.stratus.mixin;
 
-import club.sk1er.patcher.config.PatcherConfig;
-import com.llamalad7.betterchat.BetterChat;
 import com.raeids.stratus.Stratus;
 import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.ChatSearchingKt;
 import com.raeids.stratus.hook.ChatTabs;
 import com.raeids.stratus.hook.GuiNewChatHook;
+import com.raeids.stratus.hook.ModCompatHooks;
 import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -25,13 +24,15 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
 
-@Mixin(GuiNewChat.class)
+@Mixin(value = GuiNewChat.class, priority = Integer.MIN_VALUE)
 public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique private int stratus$right = 0;
     @Unique private boolean stratus$shouldCopy;
     @Unique private boolean stratus$chatCheck;
     @Shadow @Final private Minecraft mc;
     @Shadow @Final private List<ChatLine> drawnChatLines;
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    private float percentComplete;
 
     @Shadow public abstract boolean getChatOpen();
 
@@ -40,13 +41,20 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow public abstract int getLineCount();
 
     @Shadow private int scrollPos;
+    @Shadow @Final private List<ChatLine> chatLines;
+
+    @Shadow public abstract void deleteChatLine(int id);
+
     @Unique private static final ResourceLocation COPY = new ResourceLocation("stratus:copy.png");
 
-    @Inject(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", shift = At.Shift.AFTER))
-    private void setDoing(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
-        if (StratusConfig.INSTANCE.getChatTabs()) {
-            ChatTabs.INSTANCE.setDoing(true);
-        }
+    @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"), cancellable = true)
+    private void handlePrintChatMessage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
+        handleChatTabMessage(chatComponent, chatLineId, mc.ingameGUI.getUpdateCounter(), false, ci);
+    }
+
+    @Inject(method = "setChatLine", at = @At("HEAD"), cancellable = true)
+    private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
@@ -78,11 +86,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int bottom = args.get(3);
         if (mc.currentScreen instanceof GuiChat) {
             float f = this.getChatScale();
-            int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - (3 + (Stratus.INSTANCE.isBetterChat() ? BetterChat.getSettings().xOffset : 0));
-            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - (27 + (Stratus.INSTANCE.isBetterChat() ? BetterChat.getSettings().yOffset : 0) + (Stratus.INSTANCE.isPatcher() && PatcherConfig.chatPosition ? 12 : 0));
+            int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - 3;
+            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0) + (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0);
             mouseX = MathHelper.floor_float((float)mouseX / f);
             mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
-            if (mouseX >= left && mouseY < bottom && mouseX < right + 9 && mouseY >= top) {
+            if (mouseX >= (left + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY < bottom && mouseX < (right + 9 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY >= top) {
                 stratus$shouldCopy = true;
                 drawCopyChatBox(right, top);
             }
@@ -109,6 +117,25 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Override
     public boolean shouldCopy() {
         return stratus$shouldCopy;
+    }
+
+    private void handleChatTabMessage(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        if (StratusConfig.INSTANCE.getChatTabs()) {
+            if (!ChatTabs.INSTANCE.shouldRender(chatComponent)) {
+                percentComplete = 1.0F;
+                if (chatLineId != 0) {
+                    deleteChatLine(chatLineId);
+                }
+                if (!displayOnly) {
+                    chatLines.add(0, new ChatLine(updateCounter, chatComponent, chatLineId));
+                    while (this.chatLines.size() > (Stratus.INSTANCE.isPatcher() ? 32767 : 100))
+                    {
+                        this.chatLines.remove(this.chatLines.size() - 1);
+                    }
+                }
+                ci.cancel();
+            }
+        }
     }
 
     private void drawCopyChatBox(int right, int top) {
@@ -139,7 +166,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
             float f = this.getChatScale();
-            int k = mouseY / i - (27 + (Stratus.INSTANCE.isBetterChat() ? BetterChat.getSettings().yOffset : 0) + (Stratus.INSTANCE.isPatcher() && PatcherConfig.chatPosition ? 12 : 0));
+            int k = mouseY / i - (27 + (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0)) + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0);
             k = MathHelper.floor_float((float) k / f);
 
             if (k >= 0) {

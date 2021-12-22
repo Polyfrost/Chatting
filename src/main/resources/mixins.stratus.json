@@ -6,8 +6,6 @@
   "mixins": [
     "GuiChatMixin",
     "GuiNewChatAccessor",
-    "GuiUtilRenderComponentsMixin",
-    "GuiIngameForgeMixin",
     "EntityPlayerSPMixin",
     "GuiNewChatMixin"
   ],

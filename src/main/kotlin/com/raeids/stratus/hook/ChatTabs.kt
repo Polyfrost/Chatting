@@ -10,7 +10,6 @@ object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
     private val PARSER = JsonParser()
     val tabs = arrayListOf<ChatTab>()
-    var isDoing = false
     var currentTab: ChatTab? = null
         set(value) {
             if (value != null) {
@@ -58,7 +57,7 @@ object ChatTabs {
     }
 
     private fun generateDefaultTabs(): JsonArray {
-        val all = ChatTab("ALL", false, null, null, null, null, null, "/ac ")
+        val all = ChatTab("ALL", false, null, null, null, null, null, "")
         val party = ChatTab(
             "PARTY",
             false,
