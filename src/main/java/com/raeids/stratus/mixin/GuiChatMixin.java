@@ -12,6 +12,7 @@ import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.awt.*;
@@ -77,5 +78,14 @@ public abstract class GuiChatMixin extends GuiScreen {
                 e.printStackTrace();
             }
         }
+    }
+    @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)
+    private String modifySentMessage(String original){
+        if(original.equalsIgnoreCase ("/pw")){
+            return "/p warp";
+
+        }
+        return original;
+
     }
 }
