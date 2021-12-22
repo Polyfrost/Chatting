@@ -121,7 +121,9 @@ reobf {
 
 tasks.reobfJar.dependsOn tasks.shadowJar
 sourceSets {
+    dummy
     main {
+        compileClasspath += dummy.output
         ext.refMap = "mixins.${mod_id}.refmap.json"
     }
 }

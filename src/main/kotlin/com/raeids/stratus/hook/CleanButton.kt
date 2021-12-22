@@ -1,5 +1,7 @@
 package com.raeids.stratus.hook
 
+import club.sk1er.patcher.config.PatcherConfig
+import com.raeids.stratus.Stratus
 import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
@@ -31,13 +33,15 @@ class CleanButton(buttonId: Int, x: Int, y: Int, widthIn: Int, heightIn: Int, pr
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
             hovered =
                 mouseX >= xPosition && mouseY >= yPosition && mouseX < xPosition + width && mouseY < yPosition + height
-            drawRect(
-                xPosition,
-                yPosition,
-                xPosition + width,
-                yPosition + height,
-                if (hovered) hoveredColor else color
-            )
+            if (!Stratus.isPatcher || !PatcherConfig.transparentChatInputField) {
+                drawRect(
+                    xPosition,
+                    yPosition,
+                    xPosition + width,
+                    yPosition + height,
+                    if (hovered) hoveredColor else color
+                )
+            }
             mouseDragged(mc, mouseX, mouseY)
             var j = 14737632
             if (packedFGColour != 0) {

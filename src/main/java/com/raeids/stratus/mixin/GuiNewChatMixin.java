@@ -1,19 +1,19 @@
 package com.raeids.stratus.mixin;
 
+import club.sk1er.patcher.config.PatcherConfig;
+import com.llamalad7.betterchat.BetterChat;
 import com.raeids.stratus.Stratus;
 import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.ChatSearchingKt;
 import com.raeids.stratus.hook.ChatTabs;
-import com.raeids.stratus.hook.GuiIngameForgeHook;
 import com.raeids.stratus.hook.GuiNewChatHook;
-import gg.essential.universal.UResolution;
+import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -69,6 +69,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 : linesToDraw;
     }
 
+    //TODO: fix with betterchat
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
     private void captureDrawRect(Args args) {
         int left = args.get(0);
@@ -76,10 +77,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int right = args.get(2);
         int bottom = args.get(3);
         if (mc.currentScreen instanceof GuiChat) {
-            final int k1 = Mouse.getX() * UResolution.getScaledWidth() / this.mc.displayWidth;
-            final int l1 = UResolution.getScaledHeight() - Mouse.getY() * UResolution.getScaledHeight() / this.mc.displayHeight - 1;
-            int mouseX = k1 - ((GuiIngameForgeHook) mc.ingameGUI).getX() - 2;
-            int mouseY = l1 - ((GuiIngameForgeHook) mc.ingameGUI).getY() - 20;
+            float f = this.getChatScale();
+            int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - (3 + (Stratus.INSTANCE.isBetterChat() ? BetterChat.getSettings().xOffset : 0));
+            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - (27 + (Stratus.INSTANCE.isBetterChat() ? BetterChat.getSettings().yOffset : 0) + (Stratus.INSTANCE.isPatcher() && PatcherConfig.chatPosition ? 12 : 0));
+            mouseX = MathHelper.floor_float((float)mouseX / f);
+            mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
             if (mouseX >= left && mouseY < bottom && mouseX < right + 9 && mouseY >= top) {
                 stratus$shouldCopy = true;
                 drawCopyChatBox(right, top);
@@ -137,7 +139,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
             float f = this.getChatScale();
-            int k = mouseY / i - 27;
+            int k = mouseY / i - (27 + (Stratus.INSTANCE.isBetterChat() ? BetterChat.getSettings().yOffset : 0) + (Stratus.INSTANCE.isPatcher() && PatcherConfig.chatPosition ? 12 : 0));
             k = MathHelper.floor_float((float) k / f);
 
             if (k >= 0) {

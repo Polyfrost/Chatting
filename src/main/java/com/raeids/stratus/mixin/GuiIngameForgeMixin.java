@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-@Mixin(value = GuiIngameForge.class, remap = false)
+@Mixin(value = GuiIngameForge.class, remap = false, priority = Integer.MIN_VALUE)
 public class GuiIngameForgeMixin implements GuiIngameForgeHook {
     private int stratus$x = 0;
     private int stratus$y = 0;

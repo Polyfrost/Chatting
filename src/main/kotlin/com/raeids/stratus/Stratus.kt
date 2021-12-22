@@ -15,8 +15,10 @@ import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
+import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -41,6 +43,10 @@ object Stratus {
     var doTheThing = false
     lateinit var jarFile: File
         private set
+    var isPatcher = false
+    private set
+    var isBetterChat = false
+    private set
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -60,6 +66,12 @@ object Stratus {
         EVENT_BUS.register(this)
         ChatTabs.initialize()
         Updater.update()
+    }
+
+    @Mod.EventHandler
+    fun onPostInitialization(event: FMLPostInitializationEvent) {
+        isPatcher = Loader.isModLoaded("patcher")
+        isBetterChat = Loader.isModLoaded("betterchat")
     }
 
     @SubscribeEvent
