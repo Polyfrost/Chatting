@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
 
@@ -68,10 +69,12 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 : linesToDraw;
     }
 
-    //TODO: fix with patcher
-    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
-    private void captureDrawRect(int left, int top, int right, int bottom, int color) {
-        drawRect(left, top, right, bottom, color);
+    @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
+    private void captureDrawRect(Args args) {
+        int left = args.get(0);
+        int top = args.get(1);
+        int right = args.get(2);
+        int bottom = args.get(3);
         if (mc.currentScreen instanceof GuiChat) {
             final int k1 = Mouse.getX() * UResolution.getScaledWidth() / this.mc.displayWidth;
             final int l1 = UResolution.getScaledHeight() - Mouse.getY() * UResolution.getScaledHeight() / this.mc.displayHeight - 1;
