@@ -16,7 +16,7 @@ import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import gg.essential.vigilance.gui.settings.SettingComponent
 
-class ChatShortcutViewGui : WindowScreen(true) {
+class ChatShortcutViewGui : WindowScreen() {
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
         for ((yes, shortcut) in ChatShortcuts.shortcuts.withIndex()) {

@@ -15,7 +15,7 @@ import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import gg.essential.vigilance.gui.settings.TextComponent
 
-class ChatShortcutEditGui(private var alias: String, private var command: String, private val editing: Boolean): WindowScreen() {
+class ChatShortcutEditGui(private var alias: String, private var command: String, private val editing: Boolean): WindowScreen(restoreCurrentGuiOnClose = true) {
 
     private val initialAlias = alias
     private val initialCommand = command
