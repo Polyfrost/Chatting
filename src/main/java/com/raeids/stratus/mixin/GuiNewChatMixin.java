@@ -87,7 +87,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (mc.currentScreen instanceof GuiChat) {
             float f = this.getChatScale();
             int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - 3;
-            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0) + (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0);
+            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0) - (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0);
             mouseX = MathHelper.floor_float((float)mouseX / f);
             mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
             if (mouseX >= (left + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY < bottom && mouseX < (right + 9 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY >= top) {
@@ -166,7 +166,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
             float f = this.getChatScale();
-            int k = mouseY / i - (27 + (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0)) + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0);
+            int k = mouseY / i - 27 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0) - (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0);
             k = MathHelper.floor_float((float) k / f);
 
             if (k >= 0) {
