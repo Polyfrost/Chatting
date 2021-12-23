@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.MathHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -80,13 +81,14 @@ public abstract class GuiChatMixin extends GuiScreen {
             }
         }
     }
-    @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)
-    private String modifySentMessage(String original){
-        if(original.equalsIgnoreCase ("/pw")){
-            return "/p warp";
 
+    @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)
+    private String modifySentMessage(String original) {
+        if (StratusConfig.INSTANCE.getChatShortcuts()) {
+            if (original.startsWith("/")) {
+                return "/" + ChatShortcuts.INSTANCE.handleSentCommand(StringUtils.substringAfter(original, "/"));
+            }
         }
         return original;
-
     }
 }

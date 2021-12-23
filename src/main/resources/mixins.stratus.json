@@ -4,9 +4,10 @@
   "package": "com.raeids.stratus.mixin",
   "refmap": "mixins.${id}.refmap.json",
   "mixins": [
+    "ClientCommandHandlerMixin",
+    "EntityPlayerSPMixin",
     "GuiChatMixin",
     "GuiNewChatAccessor",
-    "EntityPlayerSPMixin",
     "GuiNewChatMixin"
   ],
   "verbose": true

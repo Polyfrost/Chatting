@@ -2,6 +2,7 @@ package com.raeids.stratus
 
 import com.raeids.stratus.command.StratusCommand
 import com.raeids.stratus.config.StratusConfig
+import com.raeids.stratus.hook.ChatShortcuts
 import com.raeids.stratus.hook.ChatTabs
 import com.raeids.stratus.mixin.GuiNewChatAccessor
 import com.raeids.stratus.updater.Updater
@@ -65,6 +66,7 @@ object Stratus {
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
         ChatTabs.initialize()
+        ChatShortcuts.initialize()
         Updater.update()
     }
 
