@@ -1,5 +1,6 @@
 package com.raeids.stratus.mixin;
 
+import com.google.common.collect.Lists;
 import com.raeids.stratus.Stratus;
 import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.ChatSearchingKt;
@@ -10,9 +11,11 @@ import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.config.GuiUtils;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -46,6 +49,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow public abstract void deleteChatLine(int id);
 
     @Unique private static final ResourceLocation COPY = new ResourceLocation("stratus:copy.png");
+
+    @Unique private static final List<String> COPY_TOOLTIP = Lists.newArrayList(
+            "\u00A73\u00A7l\u00A7nCopy To Clipboard",
+            "\u00A7lNORMAL CLICK\u00A7r - Full Message",
+            "\u00A7lCTRL CLICK\u00A7r - Single Line",
+            "",
+            "\u00A73\u00A7l\u00A7nModifiers",
+            "\u00A7lALT\u00A7r - Formatting Codes");
 
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"), cancellable = true)
     private void handlePrintChatMessage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
@@ -92,7 +103,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
             if (mouseX >= (left + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY < bottom && mouseX < (right + 9 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY >= top) {
                 stratus$shouldCopy = true;
-                drawCopyChatBox(right, top);
+                drawCopyChatBox(right, top, mouseX, mouseY);
             }
         }
     }
@@ -138,7 +149,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         }
     }
 
-    private void drawCopyChatBox(int right, int top) {
+    private void drawCopyChatBox(int right, int top, int mouseX, int mouseY) {
         stratus$chatCheck = true;
         GlStateManager.enableRescaleNormal();
         GlStateManager.enableBlend();
@@ -154,6 +165,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         stratus$right = right;
         Gui.drawModalRectWithCustomSizedTexture(right, top, 0f, 0f, 9, 9, 9, 9);
+        if (mouseX >= right) GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, mc.currentScreen.width, mc.currentScreen.height, 300, mc.fontRendererObj);
         GlStateManager.disableAlpha();
         GlStateManager.disableRescaleNormal();
         GlStateManager.disableLighting();
@@ -176,7 +188,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                     int i1 = k / this.mc.fontRendererObj.FONT_HEIGHT + this.scrollPos;
 
                     if (i1 >= 0 && i1 < this.drawnChatLines.size()) {
-                        return this.drawnChatLines.get(i1).getChatComponent().getFormattedText();
+                        ChatLine subLine = this.drawnChatLines.get(i1);
+                        ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : this.getFullMessage(subLine);
+                        String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
+                        return GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message);
                     }
 
                 }
