@@ -24,6 +24,19 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
     var chatSearch = true
 
     @Property(
+        type = PropertyType.SELECTOR,
+        name = "Screenshot Mode",
+        description = "The mode in which screenshotting will work.",
+        category = "Screenshotting",
+        options = [
+            "Save To System",
+            "Add To Clipboard",
+            "Both"
+        ]
+    )
+    var copyMode = 0
+
+    @Property(
         type = PropertyType.SWITCH,
         name = "Chat Tabs",
         description = "Add chat tabs.",

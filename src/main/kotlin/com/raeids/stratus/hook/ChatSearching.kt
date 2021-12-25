@@ -22,14 +22,14 @@ private var POOL: ThreadPoolExecutor = ThreadPoolExecutor(
     )
 }
 
-val cache: Cache<String, List<ChatLine?>> = Caffeine.newBuilder().executor(POOL).maximumSize(5000).build()
+val cache: Cache<String, List<ChatLine>> = Caffeine.newBuilder().executor(POOL).maximumSize(5000).build()
 
-fun filterMessages(text: String, list: List<ChatLine?>?): List<ChatLine?>? {
-    if (list.isNullOrEmpty() || text.isBlank()) return list
+fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? {
+    if (text.isBlank()) return list
     val cached = cache.getIfPresent(text)
     return cached ?: run {
         cache.put(text, list.filter {
-            it != null && UTextComponent.stripFormatting(it.chatComponent.unformattedText).lowercase()
+            UTextComponent.stripFormatting(it.chatComponent.unformattedText).lowercase()
                 .contains(text.lowercase())
         })
         cache.getIfPresent(text)
