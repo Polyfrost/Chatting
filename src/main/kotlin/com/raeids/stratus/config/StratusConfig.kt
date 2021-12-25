@@ -2,6 +2,7 @@ package com.raeids.stratus.config
 
 import com.raeids.stratus.Stratus
 import com.raeids.stratus.gui.ChatShortcutViewGui
+import com.raeids.stratus.hook.ChatShortcuts
 import com.raeids.stratus.hook.ChatTab
 import com.raeids.stratus.hook.ChatTabs
 import com.raeids.stratus.updater.DownloadGui
@@ -107,7 +108,18 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
         initialize()
         registerListener("chatTabs") { funny: Boolean ->
             chatTabs = funny
-            ChatTabs.currentTab = ChatTab("ALL", false, null, null, null, null, null, "")
+            ChatTabs.initialize()
+            if (!funny) {
+                val dummy = ChatTab("ALL", false, null, null, null, null, null, "")
+                dummy.initialize()
+                ChatTabs.currentTab = dummy
+            } else {
+                ChatTabs.currentTab = ChatTabs.tabs[0]
+            }
+        }
+        registerListener("chatShortcuts") { funny: Boolean ->
+            chatShortcuts = funny
+            ChatShortcuts.initialize()
         }
     }
 }

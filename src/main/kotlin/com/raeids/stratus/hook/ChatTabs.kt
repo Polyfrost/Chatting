@@ -19,10 +19,16 @@ object ChatTabs {
                 }
             }
         }
+    private var initialized = false
 
     private val tabFile = File(Stratus.modDir, "chattabs.json")
 
     fun initialize() {
+        if (initialized) {
+            return
+        } else {
+            initialized = true
+        }
         if (!tabFile.exists()) {
             generateNewFile()
         } else {

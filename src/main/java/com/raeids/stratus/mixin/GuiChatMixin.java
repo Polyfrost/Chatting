@@ -21,10 +21,13 @@ import java.awt.datatransfer.StringSelection;
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin extends GuiScreen {
 
+    private CleanSearchButton searchButton;
+
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         if (StratusConfig.INSTANCE.getChatSearch()) {
-            ChatSearchingKt.initGui();
+            searchButton = new CleanSearchButton();
+            buttonList.add(searchButton);
         }
         if (StratusConfig.INSTANCE.getChatTabs()) {
             for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
@@ -33,43 +36,28 @@ public abstract class GuiChatMixin extends GuiScreen {
         }
     }
 
-    @Inject(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiTextField;drawTextBox()V", shift = At.Shift.AFTER))
-    private void yeah(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
-        if (ChatSearchingKt.getInputField() != null) {
-            ChatSearchingKt.getInputField().drawTextBox();
-        }
-    }
-
-    @Inject(method = "onGuiClosed", at = @At("TAIL"))
-    private void onGuiClosed(CallbackInfo ci) {
-        ChatSearchingKt.setInputField(null);
-        ChatSearchingKt.setPrevText("");
-    }
-
     @Inject(method = "updateScreen", at = @At("HEAD"))
     private void updateScreen(CallbackInfo ci) {
-        ChatSearchingKt.updateScreen();
+        if (StratusConfig.INSTANCE.getChatSearch() && searchButton.isEnabled()) {
+            searchButton.getInputField().updateCursorCounter();
+        }
     }
 
     @Inject(method = "keyTyped", at = @At("HEAD"), cancellable = true)
     private void keyTyped(char typedChar, int keyCode, CallbackInfo ci) {
-        if (ChatSearchingKt.getInputField() != null) {
-            if (ChatSearchingKt.getInputField().isFocused()) {
-                ci.cancel();
-                if (keyCode == 1 && ChatSearchingKt.getInputField().isFocused()) {
-                    ChatSearchingKt.getInputField().setFocused(false);
-                    return;
-                }
-                ChatSearchingKt.getInputField().textboxKeyTyped(typedChar, keyCode);
+        if (StratusConfig.INSTANCE.getChatSearch() && searchButton.isEnabled()) {
+            ci.cancel();
+            if (keyCode == 1) {
+                searchButton.onMousePress();
+                return;
             }
+            searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
+            ChatSearchingKt.setPrevText(searchButton.getInputField().getText());
         }
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void mouseClicked(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
-        if (ChatSearchingKt.getInputField() != null) {
-            ChatSearchingKt.getInputField().mouseClicked(mouseX, mouseY, mouseButton);
-        }
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);

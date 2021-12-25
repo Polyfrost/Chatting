@@ -2,7 +2,6 @@ package com.raeids.stratus.hook
 
 import club.sk1er.patcher.config.PatcherConfig
 import com.raeids.stratus.Stratus
-import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
@@ -13,21 +12,30 @@ import java.awt.Color
  * https://github.com/P0keDev/ChatShortcuts/blob/master/LICENSE
  * @author P0keDev
  */
-class CleanButton(buttonId: Int, x: Int, y: Int, widthIn: Int, heightIn: Int, private val chatTab: ChatTab) :
-    GuiButton(buttonId, x, y, widthIn, heightIn, chatTab.name) {
+open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: () -> Int, widthIn: Int, heightIn: Int, name: String) :
+    GuiButton(buttonId, x.invoke(), 0, widthIn, heightIn, name) {
+
+    open fun isEnabled(): Boolean {
+        return false
+    }
+
+    open fun onMousePress() {
+
+    }
 
     override fun mousePressed(mc: Minecraft, mouseX: Int, mouseY: Int): Boolean {
         val isPressed =
-            enabled && visible && mouseX >= xPosition && mouseY >= yPosition && mouseX < xPosition + width && mouseY < yPosition + height
+            visible && mouseX >= xPosition && mouseY >= yPosition && mouseX < xPosition + width && mouseY < yPosition + height
         if (isPressed) {
-            ChatTabs.currentTab = chatTab
+            onMousePress()
         }
         return isPressed
     }
 
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
-        enabled = chatTab != ChatTabs.currentTab
-        yPosition = UResolution.scaledHeight - 26
+        enabled = isEnabled()
+        xPosition = x.invoke()
+        yPosition = y.invoke()
         if (visible) {
             val fontrenderer = mc.fontRendererObj
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)

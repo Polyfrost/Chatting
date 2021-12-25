@@ -9,10 +9,17 @@ object ChatShortcuts {
     private val shortcutsFile = File(Stratus.modDir, "chatshortcuts.json")
     private val PARSER = JsonParser()
 
+    private var initialized = false
+
     val shortcuts = mutableSetOf<Pair<String, String>>()
 
 
     fun initialize() {
+        if (initialized) {
+            return
+        } else {
+            initialized = true
+        }
         if (!shortcutsFile.exists()) {
             shortcutsFile.createNewFile()
             shortcutsFile.writeText(

@@ -1,41 +1,41 @@
 package com.raeids.stratus.hook
 
+import gg.essential.lib.caffeine.cache.Cache
+import gg.essential.lib.caffeine.cache.Caffeine
 import gg.essential.universal.wrappers.message.UTextComponent
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
-import net.minecraft.client.gui.GuiTextField
-import net.minecraft.client.gui.ScaledResolution
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
-var inputField: GuiTextField? = null
-var sr: ScaledResolution? = null
-var prevText = ""
-
-fun initGui() {
-    sr = ScaledResolution(Minecraft.getMinecraft())
-    inputField = GuiTextField(
-        694209000,
-        Minecraft.getMinecraft().fontRendererObj,
-        sr!!.scaledWidth * 4 / 5 - 1,
-        sr!!.scaledHeight - 13,
-        sr!!.scaledWidth / 5,
-        12
+private var counter: AtomicInteger = AtomicInteger(0)
+private var POOL: ThreadPoolExecutor = ThreadPoolExecutor(
+    50, 50,
+    0L, TimeUnit.SECONDS,
+    LinkedBlockingQueue()
+) { r ->
+    Thread(
+        r,
+        "Chat Filter Cache Thread ${counter.incrementAndGet()}"
     )
-    inputField!!.maxStringLength = 100
-    inputField!!.enableBackgroundDrawing = true
-    inputField!!.isFocused = false
-    inputField!!.text = ""
-    inputField!!.setCanLoseFocus(true)
-    prevText = ""
 }
 
-fun updateScreen() {
-    inputField?.updateCursorCounter()
-}
+val cache: Cache<String, List<ChatLine?>> = Caffeine.newBuilder().executor(POOL).maximumSize(5000).build()
 
-fun filterMessages(list: List<ChatLine?>?): List<ChatLine?>? {
-    if (inputField == null || list == null || inputField?.text.isNullOrBlank()) return list
-    return list.filter {
-        it != null && UTextComponent.stripFormatting(it.chatComponent.unformattedText).lowercase()
-            .contains(inputField!!.text!!.lowercase())
+fun filterMessages(text: String, list: List<ChatLine?>?): List<ChatLine?>? {
+    if (list.isNullOrEmpty() || text.isBlank()) return list
+    val cached = cache.getIfPresent(text)
+    return cached ?: run {
+        cache.put(text, list.filter {
+            it != null && UTextComponent.stripFormatting(it.chatComponent.unformattedText).lowercase()
+                .contains(text.lowercase())
+        })
+        cache.getIfPresent(text)
     }
+}
+
+fun setPrevText(text: String) {
+    (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).prevText = text
 }

@@ -49,6 +49,8 @@ class ChatShortcutEditGui(private var alias: String, private var command: String
             } childOf window
         }
         ButtonComponent("Save") {
+            alias = alias.substringAfter("/")
+            command = alias.substringAfter("/")
             if (editing) {
                 ChatShortcuts.removeShortcut(initialAlias)
             }
@@ -67,7 +69,7 @@ class ChatShortcutEditGui(private var alias: String, private var command: String
         } childOf window
     }
 
-    inner class ChatShortcutConfirmGui(var alias: String, var command: String): WindowScreen(restoreCurrentGuiOnClose = true) {
+    inner class ChatShortcutConfirmGui(private var alias: String, private var command: String): WindowScreen(restoreCurrentGuiOnClose = true) {
         override fun initScreen(width: Int, height: Int) {
             super.initScreen(width, height)
             EssentialAPI.getEssentialComponentFactory().buildConfirmationModal {

@@ -12,6 +12,7 @@ import gg.essential.universal.UDesktop
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiChat
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
@@ -108,6 +109,8 @@ object Stratus {
             w = fr.getStringWidth(chatLines.stream().max(Comparator.comparingInt { obj: String -> obj.length }).get())
         }
         val fb: Framebuffer = RenderHelper.createBindFramebuffer(w, h)
+        GlStateManager.translate(-2f, (160 - (180 - h)).toFloat(), 0f)
+        chat.drawChat(hud.updateCounter)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
         RenderHelper.screenshotFramebuffer(fb, file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()

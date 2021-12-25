@@ -36,6 +36,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow @Final private List<ChatLine> drawnChatLines;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private float percentComplete;
+    private String stratus$previousText = "";
 
     @Shadow public abstract boolean getChatOpen();
 
@@ -65,6 +66,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Inject(method = "setChatLine", at = @At("HEAD"), cancellable = true)
     private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        ChatSearchingKt.getCache().invalidateAll();
         handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
@@ -88,7 +90,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 : linesToDraw;
     }
 
-    //TODO: fix with betterchat
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
     private void captureDrawRect(Args args) {
         int left = args.get(0);
@@ -110,7 +111,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        return ChatSearchingKt.filterMessages(drawnChatLines);
+        return ChatSearchingKt.filterMessages(stratus$previousText, drawnChatLines);
     }
 
     @Inject(method = "drawChat", at = @At("RETURN"))
@@ -198,5 +199,15 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             }
         }
         return null;
+    }
+
+    @Override
+    public String getPrevText() {
+        return stratus$previousText;
+    }
+
+    @Override
+    public void setPrevText(String prevText) {
+        stratus$previousText = prevText;
     }
 }
