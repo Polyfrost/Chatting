@@ -10,5 +10,8 @@
     "GuiNewChatAccessor",
     "GuiNewChatMixin"
   ],
-  "verbose": true
+  "verbose": true,
+  "client": [
+    "GuiNewChatMapMixin"
+  ]
 }
