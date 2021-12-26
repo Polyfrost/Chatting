@@ -34,8 +34,19 @@ object ChatTabs {
         } else {
             try {
                 val chatTabJson = GSON.fromJson(tabFile.readText(), ChatTabsJson::class.java)
+                if (chatTabJson.version == 1) {
+                    // ver 2 adds `enabled`
+                    chatTabJson.tabs.forEach {
+                        it.asJsonObject.addProperty("enabled", true)
+                    }
+                    chatTabJson.version = 2
+                    tabFile.writeText(chatTabJson.toString())
+                }
                 chatTabJson.tabs.forEach {
-                    tabs.add(GSON.fromJson(it.toString(), ChatTab::class.java))
+                    val chatTab = GSON.fromJson(it.toString(), ChatTab::class.java)
+                    if (chatTab.enabled) {
+                        tabs.add(chatTab)
+                    }
                 }
             } catch (e: Throwable) {
                 e.printStackTrace()
@@ -63,8 +74,9 @@ object ChatTabs {
     }
 
     private fun generateDefaultTabs(): JsonArray {
-        val all = ChatTab("ALL", false, null, null, null, null, null, "")
+        val all = ChatTab(true, "ALL", false, null, null, null, null, null, "")
         val party = ChatTab(
+            true,
             "PARTY",
             false,
             listOf("§r§9Party §8> ", "§r§9P §8> ", "§eThe party was transferred to §r", "§eKicked §r"),
@@ -124,6 +136,7 @@ object ChatTabs {
             "/pc "
         )
         val guild = ChatTab(
+            true,
             "GUILD",
             true,
             listOf("Guild >", "G >"),
@@ -134,6 +147,7 @@ object ChatTabs {
             "/gc "
         )
         val pm = ChatTab(
+            true,
             "PM",
             true,
             listOf("To ", "From "),

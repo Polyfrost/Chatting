@@ -7,6 +7,7 @@ import net.minecraft.util.EnumChatFormatting
 import net.minecraft.util.IChatComponent
 
 data class ChatTab(
+    val enabled: Boolean,
     val name: String,
     val unformatted: Boolean,
     @SerializedName("starts") val startsWith: List<String>?,

@@ -123,7 +123,7 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
             chatTabs = funny
             ChatTabs.initialize()
             if (!funny) {
-                val dummy = ChatTab("ALL", false, null, null, null, null, null, "")
+                val dummy = ChatTab(true, "ALL", false, null, null, null, null, null, "")
                 dummy.initialize()
                 ChatTabs.currentTab = dummy
             } else {
