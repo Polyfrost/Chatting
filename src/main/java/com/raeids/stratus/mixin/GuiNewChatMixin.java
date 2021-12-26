@@ -1,12 +1,12 @@
 package com.raeids.stratus.mixin;
 
-import com.google.common.collect.Lists;
 import com.raeids.stratus.Stratus;
 import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.ChatSearchingKt;
 import com.raeids.stratus.hook.ChatTabs;
 import com.raeids.stratus.hook.GuiNewChatHook;
 import com.raeids.stratus.hook.ModCompatHooks;
+import com.raeids.stratus.utils.RenderHelper;
 import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -15,7 +15,6 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.client.config.GuiUtils;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,6 +24,9 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 @Mixin(value = GuiNewChat.class, priority = Integer.MIN_VALUE)
@@ -50,14 +52,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow public abstract void deleteChatLine(int id);
 
     @Unique private static final ResourceLocation COPY = new ResourceLocation("stratus:copy.png");
-
-    @Unique private static final List<String> COPY_TOOLTIP = Lists.newArrayList(
-            "\u00A73\u00A7l\u00A7nCopy To Clipboard",
-            "\u00A7lNORMAL CLICK\u00A7r - Full Message",
-            "\u00A7lCTRL CLICK\u00A7r - Single Line",
-            "",
-            "\u00A73\u00A7l\u00A7nModifiers",
-            "\u00A7lALT\u00A7r - Formatting Codes");
 
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"), cancellable = true)
     private void handlePrintChatMessage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
@@ -104,7 +98,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
             if (mouseX >= (left + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY < bottom && mouseX < (right + 9 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY >= top) {
                 stratus$shouldCopy = true;
-                drawCopyChatBox(right, top, mouseX, mouseY);
+                drawCopyChatBox(right, top);
             }
         }
     }
@@ -150,7 +144,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         }
     }
 
-    private void drawCopyChatBox(int right, int top, int mouseX, int mouseY) {
+    private void drawCopyChatBox(int right, int top) {
         stratus$chatCheck = true;
         GlStateManager.enableRescaleNormal();
         GlStateManager.enableBlend();
@@ -166,7 +160,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         stratus$right = right;
         Gui.drawModalRectWithCustomSizedTexture(right, top, 0f, 0f, 9, 9, 9, 9);
-        if (mouseX >= right) GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, mc.currentScreen.width, mc.currentScreen.height, 300, mc.fontRendererObj);
         GlStateManager.disableAlpha();
         GlStateManager.disableRescaleNormal();
         GlStateManager.disableLighting();
@@ -174,7 +167,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @Override
-    public String getStratusChatComponent(int mouseY) {
+    public Transferable getStratusChatComponent(int mouseY) {
         if (this.getChatOpen()) {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
@@ -190,9 +183,17 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
                     if (i1 >= 0 && i1 < this.drawnChatLines.size()) {
                         ChatLine subLine = this.drawnChatLines.get(i1);
-                        ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : this.getFullMessage(subLine);
+                        ChatLine fullLine = this.getFullMessage(subLine);
+                        if (GuiScreen.isShiftKeyDown()) {
+                            if (fullLine != null) {
+                                BufferedImage image = Stratus.INSTANCE.screenshotLine(fullLine);
+                                if (image != null) RenderHelper.INSTANCE.copyBufferedImageToClipboard(image);
+                            }
+                            return null;
+                        }
+                        ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : fullLine;
                         String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
-                        return GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message);
+                        return new StringSelection(GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message));
                     }
 
                 }
