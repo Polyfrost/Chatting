@@ -8,11 +8,14 @@ import com.raeids.stratus.config.StratusConfig
 import com.raeids.stratus.hook.GuiNewChatHook
 import com.raeids.stratus.mixin.GuiNewChatAccessor
 import com.raeids.stratus.updater.Updater
+import com.raeids.stratus.utils.ModCompatHooks
 import com.raeids.stratus.utils.RenderHelper
 import gg.essential.api.EssentialAPI
 import gg.essential.universal.UDesktop
+import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraft.util.MathHelper
@@ -89,19 +92,21 @@ object Stratus {
         }
     }
 
+    fun getChatHeight(opened: Boolean): Int {
+        var height = if (opened) StratusConfig.focusedHeight else StratusConfig.unfocusedHeight
+        height = (height * Minecraft.getMinecraft().gameSettings.chatScale).toInt()
+        val chatY = ModCompatHooks.yOffset + ModCompatHooks.chatPosition
+        if (height + chatY + 27 > (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale).toInt() - 27 - chatY) {
+            height = (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale).toInt() - 27 - chatY
+        }
+        return height
+    }
+
     fun screenshotLine(line: ChatLine): BufferedImage? {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
-        return screenshot(
-            GuiUtilRenderComponents.splitText(
-                line.chatComponent,
-                i,
-                Minecraft.getMinecraft().fontRendererObj,
-                false,
-                false
-            ).map { it.formattedText }.reversed(), chat.chatWidth
-        )
+        return screenshot(GuiUtilRenderComponents.splitText(line.chatComponent, i, Minecraft.getMinecraft().fontRendererObj, false, false).map { it.formattedText }.reversed(), chat.chatWidth)
     }
 
     private fun screenshotChat() {
@@ -112,15 +117,9 @@ object Stratus {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val chatLines = ArrayList<String>()
-        ChatSearchingManager.filterMessages(
-            (chat as GuiNewChatHook).prevText,
-            (chat as GuiNewChatAccessor).drawnChatLines
-        )?.let { drawnLines ->
-            for (i in scrollPos until drawnLines.size.coerceAtMost(
-                scrollPos + GuiNewChat.calculateChatboxHeight(
-                    Minecraft.getMinecraft().gameSettings.chatHeightFocused
-                ) / 9
-            )) {
+        ChatSearchingManager.filterMessages((chat as GuiNewChatHook).prevText, (chat as GuiNewChatAccessor).drawnChatLines)?.let { drawnLines ->
+            val chatHeight = if (StratusConfig.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9)
+            for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
                 chatLines.add(drawnLines[i].chatComponent.formattedText)
             }
 
@@ -136,11 +135,16 @@ object Stratus {
             return null
         }
 
-        val fr: FontRenderer = Minecraft.getMinecraft().fontRendererObj
-        val fb: Framebuffer = RenderHelper.createBindFramebuffer(width, messages.size * 9)
+        val fr: FontRenderer = ModCompatHooks.fontRenderer
+        val fb: Framebuffer = RenderHelper.createBindFramebuffer(width * 3, (messages.size * 9) * 3)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
-        for (i in messages.indices) fr.drawStringWithShadow(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
+        GlStateManager.scale(3f, 3f, 1f)
+        val scale = Minecraft.getMinecraft().gameSettings.chatScale
+        GlStateManager.scale(scale, scale, 1f)
+        for (i in messages.indices) {
+            fr.drawStringWithShadow(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
+        }
 
         val image = RenderHelper.screenshotFramebuffer(fb, file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()

@@ -4,6 +4,8 @@ import club.sk1er.patcher.config.PatcherConfig
 import com.llamalad7.betterchat.BetterChat
 import com.raeids.stratus.Stratus.isBetterChat
 import com.raeids.stratus.Stratus.isPatcher
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.FontRenderer
 
 // This exists because mixin doesn't like dummy classes
 object ModCompatHooks {
@@ -23,4 +25,7 @@ object ModCompatHooks {
     val extendedChatLength
         get() = if (isPatcher) 32667 else 0
 
+    @JvmStatic
+    val fontRenderer: FontRenderer
+        get() = Minecraft.getMinecraft().fontRendererObj
 }
