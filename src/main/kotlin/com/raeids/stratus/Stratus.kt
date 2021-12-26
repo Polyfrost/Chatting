@@ -1,11 +1,11 @@
 package com.raeids.stratus
 
+import com.raeids.stratus.chat.ChatSearchingManager
+import com.raeids.stratus.chat.ChatShortcuts
+import com.raeids.stratus.chat.ChatTabs
 import com.raeids.stratus.command.StratusCommand
 import com.raeids.stratus.config.StratusConfig
-import com.raeids.stratus.hook.ChatShortcuts
-import com.raeids.stratus.hook.ChatTabs
 import com.raeids.stratus.hook.GuiNewChatHook
-import com.raeids.stratus.hook.filterMessages
 import com.raeids.stratus.mixin.GuiNewChatAccessor
 import com.raeids.stratus.updater.Updater
 import com.raeids.stratus.utils.RenderHelper
@@ -48,9 +48,9 @@ object Stratus {
     lateinit var jarFile: File
         private set
     var isPatcher = false
-    private set
+        private set
     var isBetterChat = false
-    private set
+        private set
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -92,8 +92,16 @@ object Stratus {
     fun screenshotLine(line: ChatLine): BufferedImage? {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
-        val i = MathHelper.floor_float(chat.chatWidth/chat.chatScale)
-        return screenshot(GuiUtilRenderComponents.splitText(line.chatComponent, i, Minecraft.getMinecraft().fontRendererObj, false, false).map { it.formattedText }.reversed(), chat.chatWidth)
+        val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
+        return screenshot(
+            GuiUtilRenderComponents.splitText(
+                line.chatComponent,
+                i,
+                Minecraft.getMinecraft().fontRendererObj,
+                false,
+                false
+            ).map { it.formattedText }.reversed(), chat.chatWidth
+        )
     }
 
     private fun screenshotChat() {
@@ -104,8 +112,15 @@ object Stratus {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val chatLines = ArrayList<String>()
-        filterMessages((chat as GuiNewChatHook).prevText, (chat as GuiNewChatAccessor).drawnChatLines)?.let { drawnLines ->
-            for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos+GuiNewChat.calculateChatboxHeight(Minecraft.getMinecraft().gameSettings.chatHeightFocused)/9)){
+        ChatSearchingManager.filterMessages(
+            (chat as GuiNewChatHook).prevText,
+            (chat as GuiNewChatAccessor).drawnChatLines
+        )?.let { drawnLines ->
+            for (i in scrollPos until drawnLines.size.coerceAtMost(
+                scrollPos + GuiNewChat.calculateChatboxHeight(
+                    Minecraft.getMinecraft().gameSettings.chatHeightFocused
+                ) / 9
+            )) {
                 chatLines.add(drawnLines[i].chatComponent.formattedText)
             }
 
@@ -122,10 +137,10 @@ object Stratus {
         }
 
         val fr: FontRenderer = Minecraft.getMinecraft().fontRendererObj
-        val fb: Framebuffer = RenderHelper.createBindFramebuffer(width, messages.size*9)
+        val fb: Framebuffer = RenderHelper.createBindFramebuffer(width, messages.size * 9)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
-        for (i in messages.indices) fr.drawStringWithShadow(messages[i], 0f, (messages.size-1-i)*9f, 0xffffff)
+        for (i in messages.indices) fr.drawStringWithShadow(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
 
         val image = RenderHelper.screenshotFramebuffer(fb, file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()

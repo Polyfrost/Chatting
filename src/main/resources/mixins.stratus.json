@@ -8,10 +8,8 @@
     "EntityPlayerSPMixin",
     "GuiChatMixin",
     "GuiNewChatAccessor",
+    "GuiNewChatMapMixin",
     "GuiNewChatMixin"
   ],
-  "verbose": true,
-  "client": [
-    "GuiNewChatMapMixin"
-  ]
+  "verbose": true
 }

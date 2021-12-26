@@ -1,11 +1,11 @@
 package com.raeids.stratus.mixin;
 
 import com.raeids.stratus.Stratus;
+import com.raeids.stratus.chat.ChatSearchingManager;
+import com.raeids.stratus.chat.ChatTabs;
+import com.raeids.stratus.utils.ModCompatHooks;
 import com.raeids.stratus.config.StratusConfig;
-import com.raeids.stratus.hook.ChatSearchingKt;
-import com.raeids.stratus.hook.ChatTabs;
 import com.raeids.stratus.hook.GuiNewChatHook;
-import com.raeids.stratus.hook.ModCompatHooks;
 import com.raeids.stratus.utils.RenderHelper;
 import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
@@ -28,6 +28,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Locale;
 
 @Mixin(value = GuiNewChat.class, priority = Integer.MIN_VALUE)
 public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
@@ -56,11 +57,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"), cancellable = true)
     private void handlePrintChatMessage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
         handleChatTabMessage(chatComponent, chatLineId, mc.ingameGUI.getUpdateCounter(), false, ci);
+        if (!EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.getUnformattedText()).toLowerCase(Locale.ENGLISH).contains(stratus$previousText.toLowerCase(Locale.ENGLISH))) {
+            percentComplete = 1.0F;
+        }
     }
 
     @Inject(method = "setChatLine", at = @At("HEAD"), cancellable = true)
     private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
-        ChatSearchingKt.getCache().invalidateAll();
+        ChatSearchingManager.getCache().invalidateAll();
         handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
@@ -93,10 +97,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (mc.currentScreen instanceof GuiChat) {
             float f = this.getChatScale();
             int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - 3;
-            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0) - (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0);
+            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + ModCompatHooks.getYOffset() - ModCompatHooks.getChatPosition();
             mouseX = MathHelper.floor_float((float)mouseX / f);
             mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
-            if (mouseX >= (left + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY < bottom && mouseX < (right + 9 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) && mouseY >= top) {
+            if (mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 9 + ModCompatHooks.getXOffset()) && mouseY >= top) {
                 stratus$shouldCopy = true;
                 drawCopyChatBox(right, top);
             }
@@ -105,7 +109,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        return ChatSearchingKt.filterMessages(stratus$previousText, drawnChatLines);
+        return ChatSearchingManager.filterMessages(stratus$previousText, drawnChatLines);
     }
 
     @Inject(method = "drawChat", at = @At("RETURN"))
@@ -134,7 +138,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 }
                 if (!displayOnly) {
                     chatLines.add(0, new ChatLine(updateCounter, chatComponent, chatLineId));
-                    while (this.chatLines.size() > (Stratus.INSTANCE.isPatcher() ? 32767 : 100))
+                    while (this.chatLines.size() > (100 + ModCompatHooks.getExtendedChatLength()))
                     {
                         this.chatLines.remove(this.chatLines.size() - 1);
                     }
@@ -172,7 +176,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
             float f = this.getChatScale();
-            int k = mouseY / i - 27 + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getYOffset() : 0) - (Stratus.INSTANCE.isPatcher() && ModCompatHooks.getChatPosition() ? 12 : 0);
+            int k = mouseY / i - 27 + ModCompatHooks.getYOffset() - ModCompatHooks.getChatPosition();
             k = MathHelper.floor_float((float) k / f);
 
             if (k >= 0) {

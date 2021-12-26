@@ -1,4 +1,4 @@
-package com.raeids.stratus.hook
+package com.raeids.stratus.gui.components
 
 import club.sk1er.patcher.config.PatcherConfig
 import com.raeids.stratus.Stratus

@@ -27,7 +27,9 @@ object Updater {
                     DefaultArtifactVersion(Stratus.VER.substringBefore("-"))
                 val latestVersion = DefaultArtifactVersion(latestTag!!.substringAfter("v").substringBefore("-"))
                 if (currentVersion >= latestVersion) {
-                    return@runAsync
+                    if (!Stratus.VER.contains("-")) {
+                        return@runAsync
+                    }
                 }
                 updateUrl =
                     latestRelease["assets"].asJsonArray[0].asJsonObject["browser_download_url"]

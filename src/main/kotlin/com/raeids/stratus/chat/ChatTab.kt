@@ -1,6 +1,7 @@
-package com.raeids.stratus.hook
+package com.raeids.stratus.chat
 
 import com.google.gson.annotations.SerializedName
+import com.raeids.stratus.gui.components.TabButton
 import kotlinx.coroutines.runBlocking
 import net.minecraft.client.Minecraft
 import net.minecraft.util.EnumChatFormatting
@@ -17,14 +18,14 @@ data class ChatTab(
     @SerializedName("regex") val uncompiledRegex: List<String>?,
     val prefix: String
 ) {
-    lateinit var button: CleanTabButton
+    lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {
         compiledRegex = ChatRegexes(uncompiledRegex)
         val width = Minecraft.getMinecraft().fontRendererObj.getStringWidth(name)
-        button = CleanTabButton(653452, runBlocking {
+        button = TabButton(653452, runBlocking {
             val returnValue = x - 2
             x += 6 + width
             return@runBlocking returnValue
@@ -35,7 +36,8 @@ data class ChatTab(
         if (startsWith == null && equals == null && endsWith == null && contains == null && uncompiledRegex == null) {
             return true
         }
-        val message = if (unformatted) EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.unformattedText) else chatComponent.formattedText
+        val message =
+            if (unformatted) EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.unformattedText) else chatComponent.formattedText
         equals?.forEach {
             if (message == it) {
                 return true

@@ -1,4 +1,4 @@
-package com.raeids.stratus.hook
+package com.raeids.stratus.chat
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -49,7 +49,9 @@ object ChatShortcuts {
 
     fun handleSentCommand(command: String): String {
         shortcuts.forEach {
-            if (command == it.first || (command.startsWith(it.first) && command.substringAfter(it.first).startsWith(" "))) {
+            if (command == it.first || (command.startsWith(it.first) && command.substringAfter(it.first)
+                    .startsWith(" "))
+            ) {
                 return command.replaceFirst(it.first, it.second)
             }
         }

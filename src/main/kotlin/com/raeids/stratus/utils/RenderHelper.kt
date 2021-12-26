@@ -144,7 +144,8 @@ object RenderHelper {
                 e.printStackTrace()
             }
         }
-        val pixels: IntArray = bufferedImage.getRGB(0, 0, bufferedImage.width, bufferedImage.height, null, 0, bufferedImage.width)
+        val pixels: IntArray =
+            bufferedImage.getRGB(0, 0, bufferedImage.width, bufferedImage.height, null, 0, bufferedImage.width)
         val newImage = BufferedImage(bufferedImage.width, bufferedImage.height, BufferedImage.TYPE_INT_RGB)
         newImage.setRGB(0, 0, newImage.width, newImage.height, pixels, 0, newImage.width)
 

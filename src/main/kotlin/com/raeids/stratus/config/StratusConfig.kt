@@ -1,10 +1,10 @@
 package com.raeids.stratus.config
 
 import com.raeids.stratus.Stratus
+import com.raeids.stratus.chat.ChatShortcuts
+import com.raeids.stratus.chat.ChatTab
+import com.raeids.stratus.chat.ChatTabs
 import com.raeids.stratus.gui.ChatShortcutViewGui
-import com.raeids.stratus.hook.ChatShortcuts
-import com.raeids.stratus.hook.ChatTab
-import com.raeids.stratus.hook.ChatTabs
 import com.raeids.stratus.updater.DownloadGui
 import com.raeids.stratus.updater.Updater
 import gg.essential.api.EssentialAPI
@@ -43,14 +43,14 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
         category = "Tabs"
     )
     var chatTabs = true
-    get() {
-        if (!field) return false
-        return if (hypixelOnlyChatTabs) {
-            EssentialAPI.getMinecraftUtil().isHypixel()
-        } else {
-            true
+        get() {
+            if (!field) return false
+            return if (hypixelOnlyChatTabs) {
+                EssentialAPI.getMinecraftUtil().isHypixel()
+            } else {
+                true
+            }
         }
-    }
 
     @Property(
         type = PropertyType.SWITCH,

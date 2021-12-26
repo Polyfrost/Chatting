@@ -1,7 +1,7 @@
 package com.raeids.stratus.mixin;
 
 import com.raeids.stratus.config.StratusConfig;
-import com.raeids.stratus.hook.ChatShortcuts;
+import com.raeids.stratus.chat.ChatShortcuts;
 import kotlin.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandHandler;

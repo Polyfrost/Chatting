@@ -1,6 +1,6 @@
 package com.raeids.stratus.gui
 
-import com.raeids.stratus.hook.ChatShortcuts
+import com.raeids.stratus.chat.ChatShortcuts
 import gg.essential.api.EssentialAPI
 import gg.essential.api.gui.buildConfirmationModal
 import gg.essential.elementa.WindowScreen
@@ -15,7 +15,8 @@ import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import gg.essential.vigilance.gui.settings.TextComponent
 
-class ChatShortcutEditGui(private var alias: String, private var command: String, private val editing: Boolean): WindowScreen(restoreCurrentGuiOnClose = true) {
+class ChatShortcutEditGui(private var alias: String, private var command: String, private val editing: Boolean) :
+    WindowScreen(restoreCurrentGuiOnClose = true) {
 
     private val initialAlias = alias
     private val initialCommand = command
@@ -69,7 +70,8 @@ class ChatShortcutEditGui(private var alias: String, private var command: String
         } childOf window
     }
 
-    inner class ChatShortcutConfirmGui(private var alias: String, private var command: String): WindowScreen(restoreCurrentGuiOnClose = true) {
+    inner class ChatShortcutConfirmGui(private var alias: String, private var command: String) :
+        WindowScreen(restoreCurrentGuiOnClose = true) {
         override fun initScreen(width: Int, height: Int) {
             super.initScreen(width, height)
             EssentialAPI.getEssentialComponentFactory().buildConfirmationModal {

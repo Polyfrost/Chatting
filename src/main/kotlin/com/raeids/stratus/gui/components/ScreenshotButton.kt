@@ -1,4 +1,4 @@
-package com.raeids.stratus.hook
+package com.raeids.stratus.gui.components
 
 import com.raeids.stratus.Stratus
 import com.raeids.stratus.mixin.GuiNewChatAccessor
@@ -10,7 +10,8 @@ import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
 
-class ScreenshotButton: CleanButton(448318, { UResolution.scaledWidth - 28}, { UResolution.scaledHeight - 27}, 12, 12, "") {
+class ScreenshotButton :
+    CleanButton(448318, { UResolution.scaledWidth - 28 }, { UResolution.scaledHeight - 27 }, 12, 12, "") {
 
     override fun onMousePress() {
         val chat = Minecraft.getMinecraft().ingameGUI.chatGUI

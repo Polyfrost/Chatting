@@ -1,20 +1,16 @@
 package com.raeids.stratus.gui
 
-import com.raeids.stratus.hook.ChatShortcuts
+import com.raeids.stratus.chat.ChatShortcuts
+import com.raeids.stratus.gui.components.TextBlock
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIBlock
-import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.CenterConstraint
-import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.RelativeWindowConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
-import gg.essential.elementa.effects.OutlineEffect
-import gg.essential.elementa.state.BasicState
 import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
-import gg.essential.vigilance.gui.settings.SettingComponent
 
 class ChatShortcutViewGui : WindowScreen() {
     override fun initScreen(width: Int, height: Int) {
@@ -56,32 +52,5 @@ class ChatShortcutViewGui : WindowScreen() {
             x = CenterConstraint()
             y = 80.percent()
         } childOf window
-    }
-}
-
-class TextBlock(
-    text: String
-) : SettingComponent() {
-    private val textHolder = UIBlock().constrain {
-        width = ChildBasedSizeConstraint() + 6.pixels()
-        height = ChildBasedSizeConstraint() + 6.pixels()
-        color = VigilancePalette.getDarkHighlight().toConstraint()
-    } childOf this effect OutlineEffect(
-        VigilancePalette.getDivider(),
-        1f
-    ).bindColor(BasicState(VigilancePalette.getDivider()))
-
-    private val textInput: UIText = UIText(text).constrain {
-        x = 3.pixels()
-        y = 3.pixels()
-    }
-
-    init {
-        textInput childOf textHolder
-
-        constrain {
-            width = ChildBasedSizeConstraint()
-            height = ChildBasedSizeConstraint()
-        }
     }
 }

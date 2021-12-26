@@ -1,7 +1,7 @@
 package com.raeids.stratus.mixin;
 
 import com.raeids.stratus.config.StratusConfig;
-import com.raeids.stratus.hook.ChatTabs;
+import com.raeids.stratus.chat.ChatTabs;
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

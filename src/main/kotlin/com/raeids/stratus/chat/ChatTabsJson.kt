@@ -1,4 +1,4 @@
-package com.raeids.stratus.hook
+package com.raeids.stratus.chat
 
 import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName

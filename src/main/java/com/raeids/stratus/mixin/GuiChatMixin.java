@@ -1,9 +1,12 @@
 package com.raeids.stratus.mixin;
 
 import com.google.common.collect.Lists;
-import com.raeids.stratus.Stratus;
+import com.raeids.stratus.chat.*;
 import com.raeids.stratus.config.StratusConfig;
+import com.raeids.stratus.gui.components.ScreenshotButton;
+import com.raeids.stratus.gui.components.SearchButton;
 import com.raeids.stratus.hook.*;
+import com.raeids.stratus.utils.ModCompatHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
@@ -36,17 +39,15 @@ public abstract class GuiChatMixin extends GuiScreen {
             "\u00A73\u00A7l\u00A7nModifiers",
             "\u00A7lALT\u00A7r - Formatting Codes");
 
-    private CleanSearchButton searchButton;
-    private ScreenshotButton screenshotButton;
+    private SearchButton searchButton;
 
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         if (StratusConfig.INSTANCE.getChatSearch()) {
-            searchButton = new CleanSearchButton();
+            searchButton = new SearchButton();
             buttonList.add(searchButton);
         }
-        screenshotButton = new ScreenshotButton();
-        buttonList.add(screenshotButton);
+        buttonList.add(new ScreenshotButton());
         if (StratusConfig.INSTANCE.getChatTabs()) {
             for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
                 buttonList.add(chatTab.getButton());
@@ -70,7 +71,7 @@ public abstract class GuiChatMixin extends GuiScreen {
                 return;
             }
             searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
-            ChatSearchingKt.setPrevText(searchButton.getInputField().getText());
+            ChatSearchingManager.setPrevText(searchButton.getInputField().getText());
         }
     }
 
@@ -79,7 +80,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.shouldCopy() && (hook.getRight() + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) <= x && (hook.getRight() + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) + 9 > x) {
+        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset()) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 9 > x) {
             GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
             GlStateManager.disableLighting();
         }
@@ -90,7 +91,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.shouldCopy() && (hook.getRight() + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) <= x && (hook.getRight() + (Stratus.INSTANCE.isBetterChat() ? ModCompatHooks.getXOffset() : 0)) + 9 > x) {
+        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset()) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 9 > x) {
             Transferable message = hook.getStratusChatComponent(Mouse.getY());
             if (message == null) return;
             try {

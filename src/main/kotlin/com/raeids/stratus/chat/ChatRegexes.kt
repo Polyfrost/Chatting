@@ -1,4 +1,4 @@
-package com.raeids.stratus.hook
+package com.raeids.stratus.chat
 
 data class ChatRegexes(val regexList: List<String>?) {
     val compiledRegexList: MutableList<Regex> = arrayListOf()
