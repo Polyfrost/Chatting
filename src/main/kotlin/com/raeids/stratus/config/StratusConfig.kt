@@ -17,11 +17,31 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
 
     @Property(
         type = PropertyType.SWITCH,
-        name = "Chat Searching",
-        description = "Add a chat search bar.",
-        category = "Searching"
+        name = "Custom Chat Height",
+        description = "Allows you to change the height of chat to heights greater than before.",
+        category = "Chat Window"
     )
-    var chatSearch = true
+    var customChatHeight = true
+
+    @Property(
+        type = PropertyType.SLIDER,
+        min = 180,
+        max = 10000,
+        name = "Focused Height",
+        description = "Height in pixels.",
+        category = "Chat Window"
+    )
+    var focusedHeight = 180
+
+    @Property(
+        type = PropertyType.SLIDER,
+        min = 180,
+        max = 10000,
+        name = "Unfocused Height",
+        description = "Height in pixels.",
+        category = "Chat Window"
+    )
+    var unfocusedHeight = 180
 
     @Property(
         type = PropertyType.SELECTOR,
@@ -35,6 +55,14 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
         ]
     )
     var copyMode = 0
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Chat Searching",
+        description = "Add a chat search bar.",
+        category = "Searching"
+    )
+    var chatSearch = true
 
     @Property(
         type = PropertyType.SWITCH,

@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.awt.datatransfer.StringSelection;
@@ -117,6 +118,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (!stratus$chatCheck && stratus$shouldCopy) {
             stratus$shouldCopy = false;
         }
+    }
+
+    @Inject(method = "getChatHeight", at = @At("HEAD"), cancellable = true)
+    private void customHeight_getChatHeight(CallbackInfoReturnable<Integer> cir) {
+        if (StratusConfig.INSTANCE.getCustomChatHeight()) cir.setReturnValue(Stratus.INSTANCE.getChatHeight(this.getChatOpen()));
     }
 
     @Override
