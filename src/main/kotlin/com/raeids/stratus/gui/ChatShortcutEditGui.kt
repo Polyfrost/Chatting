@@ -51,7 +51,7 @@ class ChatShortcutEditGui(private var alias: String, private var command: String
         }
         ButtonComponent("Save") {
             alias = alias.substringAfter("/")
-            command = alias.substringAfter("/")
+            command = command.substringAfter("/")
             if (editing) {
                 ChatShortcuts.removeShortcut(initialAlias)
             }
