@@ -3,9 +3,9 @@ package com.raeids.stratus.mixin;
 import com.raeids.stratus.Stratus;
 import com.raeids.stratus.chat.ChatSearchingManager;
 import com.raeids.stratus.chat.ChatTabs;
-import com.raeids.stratus.utils.ModCompatHooks;
 import com.raeids.stratus.config.StratusConfig;
 import com.raeids.stratus.hook.GuiNewChatHook;
+import com.raeids.stratus.utils.ModCompatHooks;
 import com.raeids.stratus.utils.RenderHelper;
 import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
@@ -15,7 +15,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import org.spongepowered.asm.lib.Opcodes;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,6 +36,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique private int stratus$right = 0;
     @Unique private boolean stratus$shouldCopy;
     @Unique private boolean stratus$chatCheck;
+    @Unique private int stratus$textOpacity;
     @Shadow @Final private Minecraft mc;
     @Shadow @Final private List<ChatLine> drawnChatLines;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
@@ -111,6 +112,16 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
         return ChatSearchingManager.filterMessages(stratus$previousText, drawnChatLines);
+    }
+
+    @ModifyVariable(method = "drawChat", at = @At("STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;getChatComponent()Lnet/minecraft/util/IChatComponent;")), name = "l1")
+    private int modifyYeah(int value) {
+        return stratus$textOpacity = value;
+    }
+
+    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
+    private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
+        return ModCompatHooks.redirectDrawString(text, x, y, color);
     }
 
     @Inject(method = "drawChat", at = @At("RETURN"))
@@ -220,5 +231,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Override
     public void setPrevText(String prevText) {
         stratus$previousText = prevText;
+    }
+
+    @Override
+    public int getTextOpacity() {
+        return stratus$textOpacity;
     }
 }

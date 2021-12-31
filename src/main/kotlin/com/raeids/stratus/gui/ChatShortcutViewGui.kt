@@ -3,6 +3,7 @@ package com.raeids.stratus.gui
 import com.raeids.stratus.chat.ChatShortcuts
 import com.raeids.stratus.gui.components.TextBlock
 import gg.essential.api.EssentialAPI
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.constraints.CenterConstraint
@@ -12,7 +13,7 @@ import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
 
-class ChatShortcutViewGui : WindowScreen() {
+class ChatShortcutViewGui : WindowScreen(version = ElementaVersion.V1) {
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
         for ((yes, shortcut) in ChatShortcuts.shortcuts.withIndex()) {

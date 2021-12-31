@@ -4,6 +4,8 @@ import club.sk1er.patcher.config.PatcherConfig
 import com.llamalad7.betterchat.BetterChat
 import com.raeids.stratus.Stratus.isBetterChat
 import com.raeids.stratus.Stratus.isPatcher
+import com.raeids.stratus.config.StratusConfig.textRenderType
+import com.raeids.stratus.utils.RenderHelper.drawBorderedString
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 
@@ -28,4 +30,17 @@ object ModCompatHooks {
     @JvmStatic
     val fontRenderer: FontRenderer
         get() = Minecraft.getMinecraft().fontRendererObj
+
+    @JvmStatic
+    fun redirectDrawString(text: String, x: Float, y: Float, color: Int): Int {
+        return when (textRenderType) {
+            0 -> {
+                fontRenderer.drawString(text, x, y, color, false)
+            }
+            2 -> {
+                drawBorderedString(fontRenderer, text, x.toInt(), y.toInt(), color)
+            }
+            else -> fontRenderer.drawString(text, x, y, color, true)
+        }
+    }
 }

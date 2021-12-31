@@ -4,11 +4,12 @@ import com.raeids.stratus.Stratus
 import gg.essential.api.EssentialAPI
 import gg.essential.api.gui.buildConfirmationModal
 import gg.essential.api.utils.Multithreading
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.dsl.childOf
 import java.io.File
 
-class DownloadGui : WindowScreen(true, true, true, -1) {
+class DownloadGui : WindowScreen(ElementaVersion.V1, true, true, true, -1) {
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
         EssentialAPI.getEssentialComponentFactory().buildConfirmationModal {

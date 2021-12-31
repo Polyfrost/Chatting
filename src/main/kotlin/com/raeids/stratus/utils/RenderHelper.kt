@@ -1,6 +1,9 @@
 package com.raeids.stratus.utils
 
 import com.raeids.stratus.config.StratusConfig
+import com.raeids.stratus.hook.GuiNewChatHook
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.shader.Framebuffer
@@ -18,9 +21,12 @@ import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 
 
 object RenderHelper {
+    private val regex = Regex("(?i)\\u00A7[0-9a-f]")
+
     /**
      * Taken from https://github.com/Moulberry/HyChat
      * Modified so if not on Windows just in case it will switch it to RGB and remove the transparent background.
@@ -207,5 +213,33 @@ object RenderHelper {
         GlStateManager.translate(0.0f, 0.0f, -2000.0f)
         framebuffer.bindFramebuffer(true)
         return framebuffer
+    }
+
+    /**
+     * Taken from https://github.com/Moulberry/HyChat
+     */
+    fun drawBorderedString(
+        fontRendererIn: FontRenderer,
+        text: String,
+        x: Int,
+        y: Int,
+        color: Int
+    ): Int {
+        val noColors = text.replace(regex, "\u00A7r")
+        var yes = 0
+        if (((Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity / 4) > 3) {
+            for (xOff in -2..2) {
+                for (yOff in -2..2) {
+                    if (xOff * xOff != yOff * yOff) {
+                        yes += fontRendererIn.drawString(
+                            noColors,
+                            (xOff / 2f) + x, (yOff / 2f) + y, ((Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity / 4) shl 24, false
+                        )
+                    }
+                }
+            }
+        }
+        yes += fontRendererIn.drawString(text, x, y, color)
+        return yes
     }
 }

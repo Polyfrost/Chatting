@@ -9,6 +9,10 @@ import gg.essential.elementa.state.BasicState
 import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.SettingComponent
 
+/**
+ * Heavily modified from Vigilance under LGPLv3 (modified to be just a text block)
+ * https://github.com/Sk1erLLC/Vigilance/blob/master/LICENSE
+ */
 class TextBlock(
     text: String
 ) : SettingComponent() {
@@ -21,13 +25,13 @@ class TextBlock(
         1f
     ).bindColor(BasicState(VigilancePalette.getDivider()))
 
-    private val textInput: UIText = UIText(text) constrain {
+    private val text: UIText = UIText(text) constrain {
         x = 3.pixels()
         y = 3.pixels()
     }
 
     init {
-        textInput childOf textHolder
+        this.text childOf textHolder
 
         constrain {
             width = ChildBasedSizeConstraint()

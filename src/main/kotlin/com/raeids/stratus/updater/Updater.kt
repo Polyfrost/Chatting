@@ -27,7 +27,7 @@ object Updater {
                     DefaultArtifactVersion(Stratus.VER.substringBefore("-"))
                 val latestVersion = DefaultArtifactVersion(latestTag!!.substringAfter("v").substringBefore("-"))
                 if (currentVersion >= latestVersion) {
-                    if (!Stratus.VER.contains("-")) {
+                    if (currentVersion != latestVersion || !Stratus.VER.contains("-")) {
                         return@runAsync
                     }
                 }

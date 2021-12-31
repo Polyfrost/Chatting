@@ -18,4 +18,6 @@ public interface GuiNewChatHook {
     String getPrevText();
 
     void setPrevText(String prevText);
+
+    int getTextOpacity();
 }

@@ -9,11 +9,22 @@ import com.raeids.stratus.updater.DownloadGui
 import com.raeids.stratus.updater.Updater
 import gg.essential.api.EssentialAPI
 import gg.essential.vigilance.Vigilant
+import gg.essential.vigilance.data.Category
 import gg.essential.vigilance.data.Property
 import gg.essential.vigilance.data.PropertyType
+import gg.essential.vigilance.data.SortingBehavior
 import java.io.File
 
-object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stratus.NAME) {
+object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stratus.NAME, sortingBehavior = ConfigSorting) {
+
+    @Property(
+        type = PropertyType.SELECTOR,
+        name = "Text Render Type",
+        description = "Choose the type of rendering for the text.",
+        category = "General",
+        options = ["No Shadow", "Shadow", "Full Shadow"]
+    )
+    var textRenderType = 1
 
     @Property(
         type = PropertyType.SWITCH,
@@ -161,6 +172,16 @@ object StratusConfig : Vigilant(File(Stratus.modDir, "${Stratus.ID}.toml"), Stra
         registerListener("chatShortcuts") { funny: Boolean ->
             chatShortcuts = funny
             ChatShortcuts.initialize()
+        }
+    }
+
+    private object ConfigSorting : SortingBehavior() {
+        override fun getCategoryComparator(): Comparator<in Category> = Comparator { o1, o2 ->
+            if (o1.name == "General") return@Comparator -1
+            if (o2.name == "General") return@Comparator 1
+            else compareValuesBy(o1, o2) {
+                it.name
+            }
         }
     }
 }
