@@ -16,10 +16,10 @@ import gg.essential.vigilance.gui.settings.ButtonComponent
 class ChatShortcutViewGui : WindowScreen(version = ElementaVersion.V1) {
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
-        for ((yes, shortcut) in ChatShortcuts.shortcuts.withIndex()) {
+        for ((index, shortcut) in ChatShortcuts.shortcuts.withIndex()) {
             val block = UIBlock(VigilancePalette.getBackground()).constrain {
                 x = 3.percent()
-                y = (yes * 12).percent()
+                y = (index * 12).percent()
                 this.width = 94.percent()
                 this.height = 25.pixels()
             } childOf this.window

@@ -9,7 +9,8 @@
     "GuiChatMixin",
     "GuiNewChatAccessor",
     "GuiNewChatMapMixin",
-    "GuiNewChatMixin"
+    "GuiNewChatMixin",
+    "WyvtilsListenerMixin"
   ],
   "verbose": true
 }

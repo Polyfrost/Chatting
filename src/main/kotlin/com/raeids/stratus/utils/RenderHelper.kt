@@ -21,11 +21,12 @@ import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.imageio.ImageIO
-import kotlin.math.roundToInt
 
 
 object RenderHelper {
     private val regex = Regex("(?i)\\u00A7[0-9a-f]")
+    var bypassWyvtils = false
+    private set
 
     /**
      * Taken from https://github.com/Moulberry/HyChat
@@ -228,6 +229,7 @@ object RenderHelper {
         val noColors = text.replace(regex, "\u00A7r")
         var yes = 0
         if (((Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity / 4) > 3) {
+            bypassWyvtils = true
             for (xOff in -2..2) {
                 for (yOff in -2..2) {
                     if (xOff * xOff != yOff * yOff) {
@@ -238,6 +240,7 @@ object RenderHelper {
                     }
                 }
             }
+            bypassWyvtils = false
         }
         yes += fontRendererIn.drawString(text, x, y, color)
         return yes

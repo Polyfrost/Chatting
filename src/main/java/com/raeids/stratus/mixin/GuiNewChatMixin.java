@@ -114,9 +114,9 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         return ChatSearchingManager.filterMessages(stratus$previousText, drawnChatLines);
     }
 
-    @ModifyVariable(method = "drawChat", at = @At("STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;getChatComponent()Lnet/minecraft/util/IChatComponent;")), name = "l1")
+    @ModifyVariable(method = "drawChat", at = @At("STORE"), ordinal = 7)
     private int modifyYeah(int value) {
-        return stratus$textOpacity = value;
+        return stratus$textOpacity = (int) (((float) (getChatOpen() ? 255 : value)) * (mc.gameSettings.chatOpacity * 0.9F + 0.1F));
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
