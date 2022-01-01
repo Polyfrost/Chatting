@@ -1,0 +1,16 @@
+{
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.8",
+  "package": "cc.woverflow.chattils.mixin",
+  "refmap": "mixins.${id}.refmap.json",
+  "mixins": [
+    "ClientCommandHandlerMixin",
+    "EntityPlayerSPMixin",
+    "GuiChatMixin",
+    "GuiNewChatAccessor",
+    "GuiNewChatMapMixin",
+    "GuiNewChatMixin",
+    "WyvtilsListenerMixin"
+  ],
+  "verbose": true
+}

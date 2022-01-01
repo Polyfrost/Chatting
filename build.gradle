@@ -8,11 +8,11 @@ plugins {
 }
 
 version = mod_version
-group = "com.raeids"
+group = "cc.woverflow"
 archivesBaseName = mod_name
 
 blossom {
-    String className = "src/main/kotlin/com/raeids/stratus/Stratus.kt"
+    String className = "src/main/kotlin/cc/woverflow/chattils/Chattils.kt"
     replaceToken("@VER@", project.version, className)
     replaceToken("@NAME@", mod_name, className)
     replaceToken("@ID@", mod_id, className)
