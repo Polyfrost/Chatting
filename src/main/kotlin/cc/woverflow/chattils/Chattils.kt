@@ -150,8 +150,8 @@ object Chattils {
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
         EssentialAPI.getNotifications()
-            .push("Chattils", "Chat screenshotted successfully.\nClick to open.") {
-                if (!UDesktop.browse(file.toURI())) {
+            .push("Chattils", "Chat screenshotted successfully." + (if (ChattilsConfig.copyMode != 1) "\nClick to open." else "")) {
+                if (!UDesktop.open(file)) {
                     EssentialAPI.getNotifications().push("Chattils", "Could not browse!")
                 }
             }

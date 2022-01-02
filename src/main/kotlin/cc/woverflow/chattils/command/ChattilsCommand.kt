@@ -8,6 +8,8 @@ import gg.essential.api.commands.DefaultHandler
 
 object ChattilsCommand : Command(Chattils.ID, true) {
 
+    override val commandAliases: Set<Alias> = setOf(Alias("stratus"))
+
     @DefaultHandler
     fun handle() {
         EssentialAPI.getGuiUtil().openScreen(ChattilsConfig.gui())
