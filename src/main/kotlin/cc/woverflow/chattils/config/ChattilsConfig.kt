@@ -28,6 +28,14 @@ object ChattilsConfig : Vigilant(File(Chattils.modDir, "${Chattils.ID}.toml"), C
 
     @Property(
         type = PropertyType.SWITCH,
+        name = "Remove Tooltip Background",
+        description = "Remove the tooltip background.",
+        category = "General"
+    )
+    var removeTooltipBackground = false
+
+    @Property(
+        type = PropertyType.SWITCH,
         name = "Custom Chat Height",
         description = "Allows you to change the height of chat to heights greater than before.",
         category = "Chat Window"
