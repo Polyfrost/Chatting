@@ -1,3 +1,4 @@
+//file:noinspection GradlePackageUpdate
 plugins {
     id "net.minecraftforge.gradle.forge" version "6f53277"
     id "com.github.johnrengelman.shadow" version "6.1.0"
@@ -49,7 +50,10 @@ dependencies {
         transitive = false
     }
     compileOnly 'gg.essential:essential-1.8.9-forge:1725'
-    compileOnly annotationProcessor('org.spongepowered:mixin:0.7.11-SNAPSHOT')
+    compileOnly annotationProcessor ('org.spongepowered:mixin:0.8.5-SNAPSHOT')
+    annotationProcessor("com.google.code.gson:gson:2.2.4")
+    annotationProcessor("com.google.guava:guava:21.0")
+    annotationProcessor("org.ow2.asm:asm-tree:6.2")
 }
 
 /**
