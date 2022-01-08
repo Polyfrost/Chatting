@@ -83,7 +83,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset()) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 11 > x) {
+        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
             GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
             GlStateManager.disableLighting();
         }
@@ -94,7 +94,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset()) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 11 > x) {
+        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
             Transferable message = hook.getChattingChatComponent(Mouse.getY());
             if (message == null) return;
             try {

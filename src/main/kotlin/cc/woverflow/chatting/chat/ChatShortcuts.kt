@@ -1,7 +1,6 @@
 package cc.woverflow.chatting.chat
 
 import cc.woverflow.chatting.Chatting
-import cc.woverflow.chatting.utils.ListenableArrayList
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.io.File
@@ -12,11 +11,16 @@ object ChatShortcuts {
 
     private var initialized = false
 
-    val shortcuts = ListenableArrayList<Pair<String, String>>({
-        it.sortWith(comparator)
-    })
-    private val comparator = Comparator<Pair<String, String>> { o1, o2 ->
-        return@Comparator o2.first.length.compareTo(o1.first.length)
+    val shortcuts = object : ArrayList<Pair<String, String>>() {
+        private val comparator = Comparator<Pair<String, String>> { o1, o2 ->
+            return@Comparator o2.first.length.compareTo(o1.first.length)
+        }
+
+        override fun add(element: Pair<String, String>): Boolean {
+            val value = super.add(element)
+            sortWith(comparator)
+            return value
+        }
     }
 
 

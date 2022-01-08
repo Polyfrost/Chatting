@@ -27,7 +27,7 @@ object Updater {
                     DefaultArtifactVersion(Chatting.VER.substringBefore("-"))
                 val latestVersion = DefaultArtifactVersion(latestTag!!.substringAfter("v").substringBefore("-"))
                 if (currentVersion >= latestVersion) {
-                    if (currentVersion != latestVersion || !Chatting.VER.contains("-")) {
+                    if (currentVersion.compareTo(latestVersion) == 0 || !Chatting.VER.contains("-")) {
                         return@runAsync
                     }
                 }
