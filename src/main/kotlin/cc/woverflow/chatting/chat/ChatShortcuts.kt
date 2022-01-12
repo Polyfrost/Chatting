@@ -23,7 +23,6 @@ object ChatShortcuts {
         }
     }
 
-
     fun initialize() {
         if (initialized) {
             return

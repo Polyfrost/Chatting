@@ -23,6 +23,7 @@ import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
+import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraft.util.MathHelper
@@ -221,6 +222,10 @@ object Chatting {
     private fun screenshot(messages: List<String>, width: Int): BufferedImage? {
         if (messages.isEmpty()) {
             EssentialAPI.getNotifications().push("Chatting", "Chat window is empty.")
+            return null
+        }
+        if (!OpenGlHelper.isFramebufferEnabled()) {
+            EssentialAPI.getNotifications().push("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
             return null
         }
 
