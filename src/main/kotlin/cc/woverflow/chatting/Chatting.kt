@@ -10,7 +10,14 @@ import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import cc.woverflow.chatting.updater.Updater
 import cc.woverflow.chatting.utils.ModCompatHooks
 import cc.woverflow.chatting.utils.RenderHelper
+import com.google.gson.JsonParser
 import gg.essential.api.EssentialAPI
+import gg.essential.api.gui.buildConfirmationModal
+import gg.essential.api.utils.Multithreading
+import gg.essential.api.utils.WebUtil
+import gg.essential.elementa.ElementaVersion
+import gg.essential.elementa.WindowScreen
+import gg.essential.elementa.dsl.childOf
 import gg.essential.universal.UDesktop
 import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
@@ -23,12 +30,11 @@ import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.event.*
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
+import skytils.skytilsmod.core.Config
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -53,6 +59,12 @@ object Chatting {
     var isPatcher = false
         private set
     var isBetterChat = false
+        private set
+    var isSkyclientStupid = false
+        private set
+    var isSkytils = false
+        private set
+    var isHychat = false
         private set
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
@@ -80,6 +92,83 @@ object Chatting {
     fun onPostInitialization(event: FMLPostInitializationEvent) {
         isPatcher = Loader.isModLoaded("patcher")
         isBetterChat = Loader.isModLoaded("betterchat")
+        isSkytils = Loader.isModLoaded("skytils")
+        val date = Date(jarFile.lastModified())
+        isSkyclientStupid = date.before(Date(1641985860)) && date.after(Date(1641956460)) && Loader.isModLoaded("skyblockclientupdater") && !isSkytils // between 10am gmt+7 and 6pm gmt+7 skyclient updater falsely detected skytils as chatting
+        isHychat = Loader.isModLoaded("hychat")
+    }
+
+    @Mod.EventHandler
+    fun onForgeLoad(event: FMLLoadCompleteEvent) {
+        if (ChattingConfig.firstLaunch) {
+            ChattingConfig.firstLaunch = false
+            ChattingConfig.markDirty()
+            ChattingConfig.writeData()
+            if (isSkyclientStupid) {
+                EssentialAPI.getGuiUtil().openScreen(object : WindowScreen(version = ElementaVersion.V1) {
+                    override fun initScreen(width: Int, height: Int) {
+                        super.initScreen(width, height)
+                        EssentialAPI.getEssentialComponentFactory().buildConfirmationModal {
+                            this.text = "You may have had Skytils accidentally update to Chatting. Do you want to install the latest version of Skytils?"
+                            this.onConfirm = {
+                                restorePreviousScreen()
+                                Multithreading.runAsync {
+                                    val json = JsonParser().parse(WebUtil.fetchString(
+                                        "https://api.github.com/repos/Skytils/SkytilsMod/releases"
+                                    )).asJsonArray[0].asJsonObject
+                                    if (Updater.download(
+                                            json["assets"].asJsonArray[0].asJsonObject["browser_download_url"].asString,
+                                            File(
+                                                "mods/Skytils-${
+                                                    json["tag_name"].asString.substringAfter("v")
+                                                }.jar"
+                                            )
+                                        )
+                                    ) {
+                                        EssentialAPI.getNotifications()
+                                            .push(
+                                                NAME,
+                                                "The ingame updater has successfully installed Skytils."
+                                            )
+                                    } else {
+                                        EssentialAPI.getNotifications().push(
+                                            NAME,
+                                            "The ingame updater has NOT installed Skytils as something went wrong."
+                                        )
+                                    }
+                                }
+                            }
+                            this.onDeny = {
+                                restorePreviousScreen()
+                            }
+                        } childOf this.window
+                    }
+                })
+            }
+        }
+        if (ChattingConfig.informForAlternatives) {
+            if (isHychat) {
+                EssentialAPI.getNotifications().push(NAME, "Hychat can be removed at it is replaced by Chatting.")
+            }
+            if (isSkytils) {
+                if (Config.chatTabs) {
+                    EssentialAPI.getNotifications().push(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F) {
+                        Config.chatTabs = false
+                        ChattingConfig.chatTabs = true
+                        ChattingConfig.hypixelOnlyChatTabs = true
+                        Config.markDirty()
+                        Config.writeData()
+                    }
+                }
+                if (Config.copyChat) {
+                    EssentialAPI.getNotifications().push(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F) {
+                        Config.copyChat = false
+                        Config.markDirty()
+                        Config.writeData()
+                    }
+                }
+            }
+        }
     }
 
     @SubscribeEvent

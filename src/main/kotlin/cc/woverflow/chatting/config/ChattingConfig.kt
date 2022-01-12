@@ -36,6 +36,14 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
 
     @Property(
         type = PropertyType.SWITCH,
+        name = "Inform for Alternatives",
+        description = "Inform the user if a mod they are using can be replaced by a feature in Chatting.",
+        category = "General"
+    )
+    var informForAlternatives = true
+
+    @Property(
+        type = PropertyType.SWITCH,
         name = "Custom Chat Height",
         description = "Allows you to change the height of chat to heights greater than before.",
         category = "Chat Window"
@@ -163,6 +171,14 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
                 "No update had been detected at startup, and thus the update GUI has not been shown."
             )
     }
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "First Launch",
+        category = "General",
+        hidden = true
+    )
+    var firstLaunch = true
 
     init {
         initialize()
