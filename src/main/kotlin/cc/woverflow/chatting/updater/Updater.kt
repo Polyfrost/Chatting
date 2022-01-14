@@ -38,8 +38,8 @@ object Updater {
                     if (ChattingConfig.showUpdate) {
                         EssentialAPI.getNotifications().push(
                             Chatting.NAME,
-                            "${Chatting.NAME} has a new update ($latestTag)! Click here to download it automatically!"
-                        ) { EssentialAPI.getGuiUtil().openScreen(DownloadGui()) }
+                            "${Chatting.NAME} has a new update ($latestTag)! Click here to download it automatically!", action = { EssentialAPI.getGuiUtil().openScreen(DownloadGui()) }
+                        )
                     }
                     shouldUpdate = true
                 }

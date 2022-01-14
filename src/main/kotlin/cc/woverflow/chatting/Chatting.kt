@@ -153,20 +153,20 @@ object Chatting {
             }
             if (isSkytils) {
                 if (Config.chatTabs) {
-                    EssentialAPI.getNotifications().push(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F) {
+                    EssentialAPI.getNotifications().push(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
                         Config.chatTabs = false
                         ChattingConfig.chatTabs = true
                         ChattingConfig.hypixelOnlyChatTabs = true
                         Config.markDirty()
                         Config.writeData()
-                    }
+                    })
                 }
                 if (Config.copyChat) {
-                    EssentialAPI.getNotifications().push(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F) {
+                    EssentialAPI.getNotifications().push(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
                         Config.copyChat = false
                         Config.markDirty()
                         Config.writeData()
-                    }
+                    })
                 }
             }
         }
@@ -244,11 +244,11 @@ object Chatting {
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
         EssentialAPI.getNotifications()
-            .push("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else "")) {
+            .push("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""), action = {
                 if (!UDesktop.open(file)) {
                     EssentialAPI.getNotifications().push("Chatting", "Could not browse!")
                 }
-            }
+            })
         return image
     }
 }
