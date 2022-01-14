@@ -51,7 +51,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow public abstract int getLineCount();
 
     @Shadow private int scrollPos;
-    @Shadow @Final public List<ChatLine> chatLines;
+    @Shadow @Final private List<ChatLine> chatLines;
 
     @Shadow public abstract void deleteChatLine(int id);
 
