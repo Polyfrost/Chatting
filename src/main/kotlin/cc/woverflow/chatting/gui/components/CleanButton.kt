@@ -1,6 +1,7 @@
 package cc.woverflow.chatting.gui.components
 
 import cc.woverflow.chatting.Chatting
+import cc.woverflow.chatting.utils.drawBorderedString
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
@@ -12,7 +13,7 @@ import java.awt.Color
  * https://github.com/P0keDev/ChatShortcuts/blob/master/LICENSE
  * @author P0keDev
  */
-open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: () -> Int, widthIn: Int, heightIn: Int, name: String) :
+open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: () -> Int, widthIn: Int, heightIn: Int, name: String, private val renderType: () -> RenderType) :
     GuiButton(buttonId, x.invoke(), 0, widthIn, heightIn, name) {
 
     open fun isEnabled(): Boolean {
@@ -59,7 +60,14 @@ open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: (
             } else if (hovered) {
                 j = 16777120
             }
-            drawCenteredString(fontrenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, j)
+            when (renderType.invoke()) {
+                RenderType.NONE, RenderType.SHADOW -> {
+                    drawCenteredString(fontrenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, j)
+                }
+                RenderType.FULL -> {
+                    fontrenderer.drawBorderedString(displayString, (xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2), yPosition + (height - 8) / 2, j)
+                }
+            }
         }
     }
 

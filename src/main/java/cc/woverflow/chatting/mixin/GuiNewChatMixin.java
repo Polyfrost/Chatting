@@ -7,7 +7,7 @@ import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
-import cc.woverflow.chatting.utils.RenderHelper;
+import cc.woverflow.chatting.utils.RenderUtils;
 import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -125,6 +125,28 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         return ModCompatHooks.redirectDrawString(text, x, y, color);
     }
 
+    @ModifyArg(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0), index = 4)
+    private int changeChatBackgroundColor(int color) {
+        return (((color >> 24) & 0xFF) << 24) |
+                ((ChattingConfig.INSTANCE.getChatBackgroundColor().getRed() & 0xFF) << 16) |
+                ((ChattingConfig.INSTANCE.getChatBackgroundColor().getGreen() & 0xFF) << 8)  |
+                ((ChattingConfig.INSTANCE.getChatBackgroundColor().getBlue() & 0xFF));
+    }
+
+    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))
+    private void redirectScrollBar(int left, int top, int right, int bottom, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) {
+            drawRect(left, top, right, bottom, color);
+        }
+    }
+
+    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 2))
+    private void redirectScrollBar2(int left, int top, int right, int bottom, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) {
+            drawRect(left, top, right, bottom, color);
+        }
+    }
+
     @Inject(method = "drawChat", at = @At("RETURN"))
     private void checkStuff(int j2, CallbackInfo ci) {
         if (!chatting$chatCheck && chatting$shouldCopy) {
@@ -210,7 +232,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                         if (GuiScreen.isShiftKeyDown()) {
                             if (fullLine != null) {
                                 BufferedImage image = Chatting.INSTANCE.screenshotLine(fullLine);
-                                if (image != null) RenderHelper.INSTANCE.copyBufferedImageToClipboard(image);
+                                if (image != null) RenderUtils.copyToClipboard(image);
                             }
                             return null;
                         }

@@ -10,7 +10,8 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
 
 class SearchButton :
-    CleanButton(3993935, { UResolution.scaledWidth - 14 }, { UResolution.scaledHeight - 27 }, 12, 12, "") {
+    CleanButton(3993935, { UResolution.scaledWidth - 14 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
+        { RenderType.NONE }) {
     val inputField = SearchTextField()
     private var chatBox = false
 

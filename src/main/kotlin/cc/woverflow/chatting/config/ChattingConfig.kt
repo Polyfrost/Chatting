@@ -13,6 +13,7 @@ import gg.essential.vigilance.data.Category
 import gg.essential.vigilance.data.Property
 import gg.essential.vigilance.data.PropertyType
 import gg.essential.vigilance.data.SortingBehavior
+import java.awt.Color
 import java.io.File
 
 object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), Chatting.NAME, sortingBehavior = ConfigSorting) {
@@ -33,6 +34,23 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
         category = "General"
     )
     var removeTooltipBackground = false
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Remove Scroll Bar",
+        description = "Remove the scroll bar.",
+        category = "General"
+    )
+    var removeScrollBar = false
+
+    @Property(
+        type = PropertyType.COLOR,
+        name = "Chat Background Color",
+        description = "Change the color of the chat background.",
+        category = "General",
+        allowAlpha = false
+    )
+    var chatBackgroundColor = Color(0, 0, 0, 50)
 
     @Property(
         type = PropertyType.SWITCH,

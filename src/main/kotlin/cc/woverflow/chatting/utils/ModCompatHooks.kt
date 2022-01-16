@@ -5,7 +5,6 @@ import com.llamalad7.betterchat.BetterChat
 import cc.woverflow.chatting.Chatting.isBetterChat
 import cc.woverflow.chatting.Chatting.isPatcher
 import cc.woverflow.chatting.config.ChattingConfig.textRenderType
-import cc.woverflow.chatting.utils.RenderHelper.drawBorderedString
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 
@@ -38,7 +37,7 @@ object ModCompatHooks {
                 fontRenderer.drawString(text, x, y, color, false)
             }
             2 -> {
-                drawBorderedString(fontRenderer, text, x.toInt(), y.toInt(), color)
+                fontRenderer.drawBorderedString(text, x.toInt(), y.toInt(), color)
             }
             else -> fontRenderer.drawString(text, x, y, color, true)
         }

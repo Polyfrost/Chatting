@@ -11,7 +11,8 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
 
 class ScreenshotButton :
-    CleanButton(448318, { UResolution.scaledWidth - 28 }, { UResolution.scaledHeight - 27 }, 12, 12, "") {
+    CleanButton(448318, { UResolution.scaledWidth - 28 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
+        { RenderType.NONE }) {
 
     override fun onMousePress() {
         val chat = Minecraft.getMinecraft().ingameGUI.chatGUI

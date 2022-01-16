@@ -9,7 +9,9 @@ import cc.woverflow.chatting.hook.GuiNewChatHook
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import cc.woverflow.chatting.updater.Updater
 import cc.woverflow.chatting.utils.ModCompatHooks
-import cc.woverflow.chatting.utils.RenderHelper
+import cc.woverflow.chatting.utils.copyToClipboard
+import cc.woverflow.chatting.utils.createBindFramebuffer
+import cc.woverflow.chatting.utils.screenshot
 import com.google.gson.JsonParser
 import gg.essential.api.EssentialAPI
 import gg.essential.api.gui.buildConfirmationModal
@@ -213,9 +215,7 @@ object Chatting {
                 chatLines.add(drawnLines[i].chatComponent.formattedText)
             }
 
-            screenshot(chatLines, chat.chatWidth)?.let {
-                RenderHelper.copyBufferedImageToClipboard(it)
-            }
+            screenshot(chatLines, chat.chatWidth)?.copyToClipboard()
         }
     }
 
@@ -230,7 +230,7 @@ object Chatting {
         }
 
         val fr: FontRenderer = ModCompatHooks.fontRenderer
-        val fb: Framebuffer = RenderHelper.createBindFramebuffer(width * 3, (messages.size * 9) * 3)
+        val fb: Framebuffer = createBindFramebuffer(width * 3, (messages.size * 9) * 3)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
         GlStateManager.scale(3f, 3f, 1f)
@@ -240,7 +240,7 @@ object Chatting {
             fr.drawStringWithShadow(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
         }
 
-        val image = RenderHelper.screenshotFramebuffer(fb, file)
+        val image = fb.screenshot(file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
         EssentialAPI.getNotifications()

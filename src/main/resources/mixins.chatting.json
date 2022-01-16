@@ -10,7 +10,6 @@
     "GuiNewChatAccessor",
     "GuiNewChatMapMixin",
     "GuiNewChatMixin",
-    "GuiIngameForgeMixin",
     "GuiUtilsMixin",
     "WyvtilsListenerMixin"
   ],
