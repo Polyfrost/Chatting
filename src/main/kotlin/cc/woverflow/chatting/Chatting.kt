@@ -198,7 +198,7 @@ object Chatting {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
-        return screenshot(GuiUtilRenderComponents.splitText(line.chatComponent, i, Minecraft.getMinecraft().fontRendererObj, false, false).map { it.formattedText }.reversed(), chat.chatWidth)
+        return screenshot(GuiUtilRenderComponents.splitText(line.chatComponent, i, Minecraft.getMinecraft().fontRendererObj, false, false).map { it.formattedText }.reversed())
     }
 
     private fun screenshotChat() {
@@ -215,11 +215,11 @@ object Chatting {
                 chatLines.add(drawnLines[i].chatComponent.formattedText)
             }
 
-            screenshot(chatLines, chat.chatWidth)?.copyToClipboard()
+            screenshot(chatLines)?.copyToClipboard()
         }
     }
 
-    private fun screenshot(messages: List<String>, width: Int): BufferedImage? {
+    private fun screenshot(messages: List<String>): BufferedImage? {
         if (messages.isEmpty()) {
             EssentialAPI.getNotifications().push("Chatting", "Chat window is empty.")
             return null
@@ -230,10 +230,11 @@ object Chatting {
         }
 
         val fr: FontRenderer = ModCompatHooks.fontRenderer
-        val fb: Framebuffer = createBindFramebuffer(width * 3, (messages.size * 9) * 3)
+        val width = messages.maxOf { fr.getStringWidth(it) }
+        val fb: Framebuffer = createBindFramebuffer(width * 2, (messages.size * 9) * 2)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
-        GlStateManager.scale(3f, 3f, 1f)
+        GlStateManager.scale(2f, 2f, 1f)
         val scale = Minecraft.getMinecraft().gameSettings.chatScale
         GlStateManager.scale(scale, scale, 1f)
         for (i in messages.indices) {

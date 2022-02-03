@@ -204,7 +204,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         chatting$right = right;
         Gui.drawModalRectWithCustomSizedTexture(right + 1, top, 0f, 0f, 9, 9, 9, 9);
-        drawRect(right + 1, top, right + 11, top + 9, (((right + ModCompatHooks.getXOffset() + 3) <= (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale()) && (right + ModCompatHooks.getXOffset()) + 13 > (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale())) ? CleanButton.Companion.getHoveredColor() : CleanButton.Companion.getColor()));
+        drawRect(right + 1, top, right + 10, top + 9, (((right + ModCompatHooks.getXOffset() + 3) <= (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale()) && (right + ModCompatHooks.getXOffset()) + 13 > (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale())) ? CleanButton.Companion.getHoveredColor() : CleanButton.Companion.getColor()));
         GlStateManager.disableAlpha();
         GlStateManager.disableRescaleNormal();
         GlStateManager.disableLighting();
