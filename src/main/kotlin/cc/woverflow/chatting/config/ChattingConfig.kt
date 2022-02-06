@@ -52,6 +52,14 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
 
     @Property(
         type = PropertyType.SWITCH,
+        name = "Compact Input Box",
+        description = "Make the width of the input box the same size as the chat box.",
+        category = "General"
+    )
+    var compactInputBox = false
+
+    @Property(
+        type = PropertyType.SWITCH,
         name = "Inform for Alternatives",
         description = "Inform the user if a mod they are using can be replaced by a feature in Chatting.",
         category = "General"

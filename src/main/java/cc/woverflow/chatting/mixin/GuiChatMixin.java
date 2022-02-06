@@ -89,6 +89,11 @@ public abstract class GuiChatMixin extends GuiScreen {
         }
     }
 
+    @ModifyArg(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"), index = 2)
+    private int modifyRight(int right) {
+        return ChattingConfig.INSTANCE.getCompactInputBox() ? (MathHelper.ceiling_float_int((float)mc.ingameGUI.getChatGUI().getChatWidth() / mc.ingameGUI.getChatGUI().getChatScale()) + 6) : right;
+    }
+
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void mouseClicked(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
