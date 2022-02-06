@@ -24,7 +24,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.imageio.ImageIO
 
-var bypassWyvtils = false
+var bypassNameHighlight = false
     private set
 
 private val regex = Regex("(?i)\\u00A7[0-9a-f]")
@@ -226,7 +226,7 @@ fun FontRenderer.drawBorderedString(text: String,
     val noColors = text.replace(regex, "\u00A7r")
     var yes = 0
     if (((Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity / 4) > 3) {
-        bypassWyvtils = true
+        bypassNameHighlight = true
         for (xOff in -2..2) {
             for (yOff in -2..2) {
                 if (xOff * xOff != yOff * yOff) {
@@ -237,7 +237,7 @@ fun FontRenderer.drawBorderedString(text: String,
                 }
             }
         }
-        bypassWyvtils = false
+        bypassNameHighlight = false
     }
     yes += drawString(text, x, y, color)
     return yes

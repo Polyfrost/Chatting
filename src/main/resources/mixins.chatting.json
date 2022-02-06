@@ -11,6 +11,7 @@
     "GuiNewChatMapMixin",
     "GuiNewChatMixin",
     "GuiUtilsMixin",
+    "RedactionNameHighlightMixin",
     "WyvtilsListenerMixin"
   ],
   "verbose": true

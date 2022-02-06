@@ -5,6 +5,7 @@ import cc.woverflow.chatting.gui.components.TextBlock
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
+import gg.essential.elementa.components.ScrollComponent
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.RelativeWindowConstraint
@@ -16,13 +17,20 @@ import gg.essential.vigilance.gui.settings.ButtonComponent
 class ChatShortcutViewGui : WindowScreen(version = ElementaVersion.V1) {
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
+        window.clearChildren() // make sure everything is cleared, sometimes the shortcuts duplicated
+        val container by ScrollComponent() constrain {
+            x = 0.pixels()
+            y = 0.pixels()
+            this.width = 85.percent()
+            this.height = 85.percent()
+        } childOf window
         for ((index, shortcut) in ChatShortcuts.shortcuts.withIndex()) {
             val block = UIBlock(VigilancePalette.getBackground()).constrain {
                 x = 3.percent()
                 y = (index * 12).percent()
                 this.width = 94.percent()
                 this.height = 25.pixels()
-            } childOf this.window
+            } childOf container
             TextBlock(shortcut.first).constrain {
                 x = RelativeWindowConstraint(0.05F)
                 y = CenterConstraint()
@@ -51,7 +59,7 @@ class ChatShortcutViewGui : WindowScreen(version = ElementaVersion.V1) {
             EssentialAPI.getGuiUtil().openScreen(ChatShortcutEditGui("", "", false))
         } constrain {
             x = CenterConstraint()
-            y = 80.percent()
+            y = 90.percent()
         } childOf window
     }
 }

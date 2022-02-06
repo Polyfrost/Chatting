@@ -3,23 +3,17 @@ package cc.woverflow.chatting
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatTabs
-import cc.woverflow.chatting.command.ChattingCommand
 import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.hook.GuiNewChatHook
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
-import cc.woverflow.chatting.updater.Updater
 import cc.woverflow.chatting.utils.ModCompatHooks
 import cc.woverflow.chatting.utils.copyToClipboard
 import cc.woverflow.chatting.utils.createBindFramebuffer
 import cc.woverflow.chatting.utils.screenshot
-import com.google.gson.JsonParser
+import cc.woverflow.wcore.utils.Updater
+import cc.woverflow.wcore.utils.command
+import cc.woverflow.wcore.utils.openGUI
 import gg.essential.api.EssentialAPI
-import gg.essential.api.gui.buildConfirmationModal
-import gg.essential.api.utils.Multithreading
-import gg.essential.api.utils.WebUtil
-import gg.essential.elementa.ElementaVersion
-import gg.essential.elementa.WindowScreen
-import gg.essential.elementa.dsl.childOf
 import gg.essential.universal.UDesktop
 import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
@@ -33,7 +27,10 @@ import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.event.*
+import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
@@ -57,13 +54,9 @@ object Chatting {
     const val VER = "@VER@"
     const val ID = "@ID@"
     var doTheThing = false
-    lateinit var jarFile: File
-        private set
     var isPatcher = false
         private set
     var isBetterChat = false
-        private set
-    var isSkyclientStupid = false
         private set
     var isSkytils = false
         private set
@@ -77,18 +70,21 @@ object Chatting {
     @Mod.EventHandler
     fun onFMLPreInitialization(event: FMLPreInitializationEvent) {
         if (!modDir.exists()) modDir.mkdirs()
-        jarFile = event.sourceFile
+        Updater.addToUpdater(event.sourceFile, NAME, ID, VER, "W-OVERFLOW/${ID}")
     }
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
         ChattingConfig.preload()
-        ChattingCommand.register()
+        command("chatting", aliases = arrayListOf("stratus")) {
+            main {
+                ChattingConfig.openGUI()
+            }
+        }
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
-        Updater.update()
     }
 
     @Mod.EventHandler
@@ -96,59 +92,11 @@ object Chatting {
         isPatcher = Loader.isModLoaded("patcher")
         isBetterChat = Loader.isModLoaded("betterchat")
         isSkytils = Loader.isModLoaded("skytils")
-        val date = Date(jarFile.lastModified())
-        isSkyclientStupid = date.before(Date(1641985860)) && date.after(Date(1641956460)) && Loader.isModLoaded("skyblockclientupdater") && !isSkytils // between 10am gmt+7 and 6pm gmt+7 skyclient updater falsely detected skytils as chatting
         isHychat = Loader.isModLoaded("hychat")
     }
 
     @Mod.EventHandler
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
-        if (ChattingConfig.firstLaunch) {
-            ChattingConfig.firstLaunch = false
-            ChattingConfig.markDirty()
-            ChattingConfig.writeData()
-            if (isSkyclientStupid) {
-                EssentialAPI.getGuiUtil().openScreen(object : WindowScreen(version = ElementaVersion.V1) {
-                    override fun initScreen(width: Int, height: Int) {
-                        super.initScreen(width, height)
-                        EssentialAPI.getEssentialComponentFactory().buildConfirmationModal {
-                            this.text = "You may have had Skytils accidentally update to Chatting. Do you want to install the latest version of Skytils?"
-                            this.onConfirm = {
-                                restorePreviousScreen()
-                                Multithreading.runAsync {
-                                    val json = JsonParser().parse(WebUtil.fetchString(
-                                        "https://api.github.com/repos/Skytils/SkytilsMod/releases"
-                                    )).asJsonArray[0].asJsonObject
-                                    if (Updater.download(
-                                            json["assets"].asJsonArray[0].asJsonObject["browser_download_url"].asString,
-                                            File(
-                                                "mods/Skytils-${
-                                                    json["tag_name"].asString.substringAfter("v")
-                                                }.jar"
-                                            )
-                                        )
-                                    ) {
-                                        EssentialAPI.getNotifications()
-                                            .push(
-                                                NAME,
-                                                "The ingame updater has successfully installed Skytils."
-                                            )
-                                    } else {
-                                        EssentialAPI.getNotifications().push(
-                                            NAME,
-                                            "The ingame updater has NOT installed Skytils as something went wrong."
-                                        )
-                                    }
-                                }
-                            }
-                            this.onDeny = {
-                                restorePreviousScreen()
-                            }
-                        } childOf this.window
-                    }
-                })
-            }
-        }
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
                 EssentialAPI.getNotifications().push(NAME, "Hychat can be removed at it is replaced by Chatting.")
@@ -230,7 +178,7 @@ object Chatting {
         }
 
         val fr: FontRenderer = ModCompatHooks.fontRenderer
-        val width = messages.maxOf { fr.getStringWidth(it) }
+        val width = messages.maxOf { fr.getStringWidth(it) } + 4
         val fb: Framebuffer = createBindFramebuffer(width * 2, (messages.size * 9) * 2)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
@@ -238,7 +186,7 @@ object Chatting {
         val scale = Minecraft.getMinecraft().gameSettings.chatScale
         GlStateManager.scale(scale, scale, 1f)
         for (i in messages.indices) {
-            fr.drawStringWithShadow(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
+            ModCompatHooks.redirectDrawString(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
         }
 
         val image = fb.screenshot(file)

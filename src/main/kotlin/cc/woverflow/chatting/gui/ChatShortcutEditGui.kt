@@ -8,10 +8,7 @@ import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
-import gg.essential.elementa.dsl.childOf
-import gg.essential.elementa.dsl.constrain
-import gg.essential.elementa.dsl.percent
-import gg.essential.elementa.dsl.pixels
+import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import gg.essential.vigilance.gui.settings.TextComponent
@@ -24,7 +21,8 @@ class ChatShortcutEditGui(private var alias: String, private var command: String
 
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
-        val block = UIBlock(VigilancePalette.getBackground()).constrain {
+        window.clearChildren()  // make sure everything is cleared, sometimes the shortcuts duplicated
+        val block by UIBlock(VigilancePalette.getBackground()).constrain {
             this.x = CenterConstraint()
             this.y = CenterConstraint()
             this.width = 100.pixels()

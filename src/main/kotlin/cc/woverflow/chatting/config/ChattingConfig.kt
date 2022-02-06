@@ -5,8 +5,6 @@ import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.gui.ChatShortcutViewGui
-import cc.woverflow.chatting.updater.DownloadGui
-import cc.woverflow.chatting.updater.Updater
 import gg.essential.api.EssentialAPI
 import gg.essential.vigilance.Vigilant
 import gg.essential.vigilance.data.Category
@@ -166,37 +164,6 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
     fun openChatShortcutsGUI() {
         EssentialAPI.getGuiUtil().openScreen(ChatShortcutViewGui())
     }
-
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Show Update Notification",
-        description = "Show a notification when you start Minecraft informing you of new updates.",
-        category = "Updater"
-    )
-    var showUpdate = true
-
-    @Property(
-        type = PropertyType.BUTTON,
-        name = "Update Now",
-        description = "Update by clicking the button.",
-        category = "Updater"
-    )
-    fun update() {
-        if (Updater.shouldUpdate) EssentialAPI.getGuiUtil()
-            .openScreen(DownloadGui()) else EssentialAPI.getNotifications()
-            .push(
-                Chatting.NAME,
-                "No update had been detected at startup, and thus the update GUI has not been shown."
-            )
-    }
-
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "First Launch",
-        category = "General",
-        hidden = true
-    )
-    var firstLaunch = true
 
     init {
         initialize()

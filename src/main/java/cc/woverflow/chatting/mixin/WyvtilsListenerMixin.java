@@ -16,6 +16,6 @@ public class WyvtilsListenerMixin {
     @Dynamic("Wyvtils")
     @Inject(method = "onStringRendered", at = @At("HEAD"), cancellable = true, remap = false)
     private void cancelStringRender(@Coerce Object a, CallbackInfo ci) {
-        if (RenderUtils.getBypassWyvtils()) ci.cancel();
+        if (RenderUtils.getBypassNameHighlight()) ci.cancel();
     }
 }
