@@ -223,3 +223,15 @@ over all the other color properties. Like the other color properties, it is in R
 
 The `prefix` property appends the prefix to any message sent while in the specific chat tab **if it is not a command**.
 This can be used to automatically send messages in a specific channel in servers, like in Hypixel.
+
+## Chat Tabs JSON Changelogs
+
+
+### Version 4
+- Added color text options (`color`, `hovered_color`, and `selected_color`)
+
+### Version 3
+- Added `ignore_` options (`ignore_starts`, `ignore_ends`, `ignore_equals`, and `ignore_regex`)
+
+### Version 2
+- Added `enabled` property
