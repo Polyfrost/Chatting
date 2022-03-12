@@ -229,6 +229,7 @@ This can be used to automatically send messages in a specific channel in servers
 
 ### Version 4
 - Added color text options (`color`, `hovered_color`, and `selected_color`)
+- `version` is now actually an integer
 
 ### Version 3
 - Added `ignore_` options (`ignore_starts`, `ignore_ends`, `ignore_equals`, and `ignore_regex`)

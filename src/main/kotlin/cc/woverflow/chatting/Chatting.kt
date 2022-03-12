@@ -73,7 +73,7 @@ object Chatting {
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
         ChattingConfig.preload()
-        command("chatting", aliases = arrayListOf("stratus")) {
+        command("chatting") {
             main {
                 ChattingConfig.openScreen()
             }
