@@ -10,10 +10,7 @@ import cc.woverflow.chatting.utils.ModCompatHooks
 import cc.woverflow.chatting.utils.copyToClipboard
 import cc.woverflow.chatting.utils.createBindFramebuffer
 import cc.woverflow.chatting.utils.screenshot
-import cc.woverflow.wcore.utils.Updater
-import cc.woverflow.wcore.utils.command
-import cc.woverflow.wcore.utils.openGUI
-import gg.essential.api.EssentialAPI
+import cc.woverflow.onecore.utils.*
 import gg.essential.universal.UDesktop
 import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
@@ -78,7 +75,7 @@ object Chatting {
         ChattingConfig.preload()
         command("chatting", aliases = arrayListOf("stratus")) {
             main {
-                ChattingConfig.openGUI()
+                ChattingConfig.openScreen()
             }
         }
         ClientRegistry.registerKeyBinding(keybind)
@@ -99,11 +96,13 @@ object Chatting {
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
-                EssentialAPI.getNotifications().push(NAME, "Hychat can be removed at it is replaced by Chatting.")
+                sendBrandedNotification(NAME, "Hychat can be removed at it is replaced by Chatting. Click here for more information.", action = {
+                    UDesktop.browseURL("https://github.com/MicrocontrollersDev/Alternatives/blob/main/Hychat.md")
+                })
             }
             if (isSkytils) {
                 if (Config.chatTabs) {
-                    EssentialAPI.getNotifications().push(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
+                    sendBrandedNotification(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
                         Config.chatTabs = false
                         ChattingConfig.chatTabs = true
                         ChattingConfig.hypixelOnlyChatTabs = true
@@ -112,7 +111,7 @@ object Chatting {
                     })
                 }
                 if (Config.copyChat) {
-                    EssentialAPI.getNotifications().push(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
+                    sendBrandedNotification(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
                         Config.copyChat = false
                         Config.markDirty()
                         Config.writeData()
@@ -169,11 +168,11 @@ object Chatting {
 
     private fun screenshot(messages: List<String>): BufferedImage? {
         if (messages.isEmpty()) {
-            EssentialAPI.getNotifications().push("Chatting", "Chat window is empty.")
+            sendBrandedNotification("Chatting", "Chat window is empty.")
             return null
         }
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            EssentialAPI.getNotifications().push("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
+            sendBrandedNotification("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
             return null
         }
 
@@ -192,10 +191,9 @@ object Chatting {
         val image = fb.screenshot(file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
-        EssentialAPI.getNotifications()
-            .push("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""), action = {
+        sendBrandedNotification("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""), action = {
                 if (!UDesktop.open(file)) {
-                    EssentialAPI.getNotifications().push("Chatting", "Could not browse!")
+                    sendBrandedNotification("Chatting", "Could not browse!")
                 }
             })
         return image

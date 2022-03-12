@@ -45,10 +45,17 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
         type = PropertyType.COLOR,
         name = "Chat Background Color",
         description = "Change the color of the chat background.",
-        category = "General",
-        allowAlpha = false
+        category = "General"
     )
-    var chatBackgroundColor = Color(0, 0, 0, 50)
+    var chatBackgroundColor = Color(0, 0, 0, 128)
+
+    @Property(
+        type = PropertyType.COLOR,
+        name = "Copy Chat Message Background Color",
+        description = "Change the color of chat messages that are ready to copy.",
+        category = "General"
+    )
+    var hoveredChatBackgroundColor = Color(80, 80, 80, 128)
 
     @Property(
         type = PropertyType.SWITCH,
@@ -179,7 +186,7 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
             chatTabs = funny
             ChatTabs.initialize()
             if (!funny) {
-                val dummy = ChatTab(true, "ALL", false, null, null, null, null, null, "")
+                val dummy = ChatTab(true, "ALL", false, null, null, null, null, null, null, null, null, null, null, "")
                 dummy.initialize()
                 ChatTabs.currentTab = dummy
             } else {

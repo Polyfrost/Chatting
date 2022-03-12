@@ -37,13 +37,24 @@ object ChatTabs {
         } else {
             try {
                 val chatTabJson = GSON.fromJson(tabFile.readText(), ChatTabsJson::class.java)
-                if (chatTabJson.version == 1) {
-                    // ver 2 adds `enabled`
-                    chatTabJson.tabs.forEach {
-                        it.asJsonObject.addProperty("enabled", true)
+                when (chatTabJson.version) {
+                    1 -> {
+                        // ver 2 adds `enabled`
+                        chatTabJson.tabs.forEach {
+                            applyVersion2Changes(it.asJsonObject)
+                            applyVersion3Changes(it.asJsonObject)
+                        }
+                        chatTabJson.version = 3
+                        tabFile.writeText(chatTabJson.toString())
                     }
-                    chatTabJson.version = 2
-                    tabFile.writeText(chatTabJson.toString())
+                    2 -> {
+                        // ver 2 adds `enabled`
+                        chatTabJson.tabs.forEach {
+                            applyVersion3Changes(it.asJsonObject)
+                        }
+                        chatTabJson.version = 3
+                        tabFile.writeText(chatTabJson.toString())
+                    }
                 }
                 chatTabJson.tabs.forEach {
                     val chatTab = GSON.fromJson(it.toString(), ChatTab::class.java)
@@ -63,6 +74,18 @@ object ChatTabs {
         currentTab = tabs[0]
     }
 
+    private fun applyVersion2Changes(json: JsonObject) {
+        json.addProperty("enabled", true)
+    }
+
+    private fun applyVersion3Changes(json: JsonObject) {
+        json.add("ignore_starts", JsonArray())
+        json.add("ignore_contains", JsonArray())
+        json.add("ignore_ends", JsonArray())
+        json.add("ignore_equals", JsonArray())
+        json.add("ignore_regex", JsonArray())
+    }
+
     fun shouldRender(message: IChatComponent): Boolean {
         return currentTab?.shouldRender(message) ?: true
     }
@@ -72,12 +95,12 @@ object ChatTabs {
         val jsonObject = JsonObject()
         val defaultTabs = generateDefaultTabs()
         jsonObject.add("tabs", defaultTabs)
-        jsonObject.addProperty("version", 1)
+        jsonObject.addProperty("version", 3)
         tabFile.writeText(jsonObject.toString())
     }
 
     private fun generateDefaultTabs(): JsonArray {
-        val all = ChatTab(true, "ALL", false, null, null, null, null, null, "")
+        val all = ChatTab(true, "ALL", false, null, null, null, null, null, null, null, null, null, null, "")
         val party = ChatTab(
             true,
             "PARTY",
@@ -136,6 +159,11 @@ object ChatTabs {
                 "§cThis party is currently muted\\.§r",
                 "(§r)*(§9P §8\u003e)+(.*)"
             ),
+            null,
+            null,
+            null,
+            null,
+            null,
             "/pc "
         )
         val guild = ChatTab(
@@ -147,6 +175,11 @@ object ChatTabs {
             null,
             null,
             null,
+            null,
+            null,
+            null,
+            null,
+            null,
             "/gc "
         )
         val pm = ChatTab(
@@ -154,6 +187,11 @@ object ChatTabs {
             "PM",
             true,
             listOf("To ", "From "),
+            null,
+            null,
+            null,
+            null,
+            null,
             null,
             null,
             null,

@@ -4,13 +4,13 @@
     "name": "${name}",
     "description": "A chat mod.",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "1.8.9",
     "url": "",
     "updateUrl": "",
     "authorList": [
       "W-OVERFLOW"
     ],
-    "credits": "Mo2men#2806 for copy and screenshot images.",
+    "credits": "Mo2men#2806 for chat icons, Pablo",
     "logoFile": "",
     "screenshots": [],
     "dependencies": []

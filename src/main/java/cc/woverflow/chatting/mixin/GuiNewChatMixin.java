@@ -106,8 +106,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 11 + ModCompatHooks.getXOffset()) && mouseY >= top) {
                 chatting$shouldCopy = true;
                 drawCopyChatBox(right, top);
+                args.set(4, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getRGB());
+                return;
             }
         }
+        args.set(4, ChattingConfig.INSTANCE.getChatBackgroundColor().getRGB());
     }
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
@@ -123,14 +126,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
         return ModCompatHooks.redirectDrawString(text, x, y, color);
-    }
-
-    @ModifyArg(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0), index = 4)
-    private int changeChatBackgroundColor(int color) {
-        return (((color >> 24) & 0xFF) << 24) |
-                ((ChattingConfig.INSTANCE.getChatBackgroundColor().getRed() & 0xFF) << 16) |
-                ((ChattingConfig.INSTANCE.getChatBackgroundColor().getGreen() & 0xFF) << 8)  |
-                ((ChattingConfig.INSTANCE.getChatBackgroundColor().getBlue() & 0xFF));
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))

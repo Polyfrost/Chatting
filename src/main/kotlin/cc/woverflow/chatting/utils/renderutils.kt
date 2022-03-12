@@ -3,9 +3,6 @@
 package cc.woverflow.chatting.utils
 
 import cc.woverflow.chatting.config.ChattingConfig
-import cc.woverflow.chatting.hook.GuiNewChatHook
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.shader.Framebuffer
@@ -23,11 +20,6 @@ import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.imageio.ImageIO
-
-var bypassNameHighlight = false
-    private set
-
-private val regex = Regex("(?i)\\u00A7[0-9a-f]")
 
 /**
  * Taken from https://github.com/Moulberry/HyChat
@@ -214,31 +206,4 @@ fun Framebuffer.screenshot(file: File): BufferedImage {
         }
     }
     return bufferedimage
-}
-
-/**
- * Taken from https://github.com/Moulberry/HyChat
- */
-fun FontRenderer.drawBorderedString(text: String,
-                                    x: Int,
-                                    y: Int,
-                                    color: Int): Int {
-    val noColors = text.replace(regex, "\u00A7r")
-    var yes = 0
-    if (((Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity / 4) > 3) {
-        bypassNameHighlight = true
-        for (xOff in -2..2) {
-            for (yOff in -2..2) {
-                if (xOff * xOff != yOff * yOff) {
-                    yes += drawString(
-                        noColors,
-                        (xOff / 2f) + x, (yOff / 2f) + y, ((Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity / 4) shl 24, false
-                    )
-                }
-            }
-        }
-        bypassNameHighlight = false
-    }
-    yes += drawString(text, x, y, color)
-    return yes
 }

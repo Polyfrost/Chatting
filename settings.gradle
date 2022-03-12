@@ -1,29 +1,12 @@
 pluginManagement {
     repositories {
-        mavenCentral()
         gradlePluginPortal()
-
-        // Add the Forge Repository (ForgeGradle fetches most of its stuff from here)
-        maven {
-            name = "Forge"
-            url = "https://maven.minecraftforge.net"
-        }
-
-        // Add the Jitpack Repository (We fetch ForgeGradle from this)
-        maven {
-            name = "Jitpack"
-            url = "https://jitpack.io/"
-        }
+        maven { url = "https://repo.woverflow.cc" }
     }
     resolutionStrategy {
         eachPlugin {
-            switch (requested.id.id) {
-                case 'net.minecraftforge.gradle.forge':
-                    useModule "com.github.asbyth:ForgeGradle:${requested.version}"
-                    break
-                case 'org.spongepowered.mixin':
-                    useModule "com.github.Skytils:MixinGradle:${requested.version}"
-                    break
+            if (requested.id.id == "cc.woverflow.loom") {
+                useModule("cc.woverflow:architectury-loom:${requested.version}")
             }
         }
     }

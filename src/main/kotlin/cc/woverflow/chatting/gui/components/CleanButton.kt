@@ -1,7 +1,8 @@
 package cc.woverflow.chatting.gui.components
 
 import cc.woverflow.chatting.Chatting
-import cc.woverflow.chatting.utils.drawBorderedString
+import cc.woverflow.chatting.hook.GuiNewChatHook
+import cc.woverflow.onecore.utils.drawBorderedString
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
@@ -65,7 +66,7 @@ open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: (
                     drawCenteredString(fontrenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, j)
                 }
                 RenderType.FULL -> {
-                    fontrenderer.drawBorderedString(displayString, (xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2), yPosition + (height - 8) / 2, j)
+                    fontrenderer.drawBorderedString(displayString, (xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2), yPosition + (height - 8) / 2, j, (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
                 }
             }
         }
