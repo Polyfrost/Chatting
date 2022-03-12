@@ -12,6 +12,9 @@ something like this:
       "enabled": true,
       "name": "ALL",
       "unformatted": false,
+      "color": 14737632,
+      "hovered_color": 16777120,
+      "selected_color": 10526880,
       "prefix": ""
     },
     {
@@ -78,6 +81,9 @@ something like this:
         "§cThis party is currently muted\\.§r",
         "(§r)*(§9P §8>)+(.*)"
       ],
+      "color": 14737632,
+      "hovered_color": 16777120,
+      "selected_color": 10526880,
       "prefix": "/pc "
     },
     {
@@ -88,6 +94,9 @@ something like this:
         "Guild >",
         "G >"
       ],
+      "color": 14737632,
+      "hovered_color": 16777120,
+      "selected_color": 10526880,
       "prefix": "/gc "
     },
     {
@@ -98,15 +107,19 @@ something like this:
         "To ",
         "From "
       ],
+      "color": 14737632,
+      "hovered_color": 16777120,
+      "selected_color": 10526880,
       "prefix": "/r "
     }
   ],
-  "version": 3
+  "version": 4
 }
 ```
 
 The `version` property stores the version number of the Chat Tabs JSON file. This should not be touched unless you have
-an older Chat Tab JSON and would like Chatting to automatically migrate to the newer version.
+an older Chat Tab JSON and would like Chatting to automatically migrate to the newer version. The current version is `4`
+.
 
 The `tabs` property stores all the chat tabs, in the order they should be displayed in. By default, there are 4 chat
 tabs - ALL, PARTY, GUILD, and PM. ALL simply shows all messages; nothing is filtered. PARTY shows only party messages,
@@ -144,6 +157,9 @@ that you may want to use.
     ...
     "(§r)*(§9P §8>)+(.*)"
   ],
+  "color": 14737632,
+  "hovered_color": 16777120,
+  "selected_color": 10526880,
   "prefix": "/pc "
 }
 ```
@@ -196,6 +212,14 @@ The `regex` property allows you to only allow a message if it matches a regex in
 
 You can append `ignore_` to `starts`, `ends`, `equals`, or `regex` to ignore messages that match rather than allow, and
 of course use both at the same time.
+
+The `color` property allows you to change the color of the chat tab text. It is in RGBA format.
+
+The `hovered_color` property allows you to change the color of the chat tab text while being hovered. This takes
+priority over the `color` property. Like the `color` property, it is in RGBA format.
+
+The `selected_color` property allows you to change the color of the chat tab text while selected. This takes priority
+over all the other color properties. Like the other color properties, it is in RGBA format.
 
 The `prefix` property appends the prefix to any message sent while in the specific chat tab **if it is not a command**.
 This can be used to automatically send messages in a specific channel in servers, like in Hypixel.

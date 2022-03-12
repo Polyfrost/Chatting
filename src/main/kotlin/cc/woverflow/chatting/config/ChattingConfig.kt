@@ -5,6 +5,8 @@ import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.gui.ChatShortcutViewGui
+import cc.woverflow.chatting.gui.components.TabButton
+import cc.woverflow.onecore.utils.openScreen
 import gg.essential.api.EssentialAPI
 import gg.essential.vigilance.Vigilant
 import gg.essential.vigilance.data.Category
@@ -14,7 +16,8 @@ import gg.essential.vigilance.data.SortingBehavior
 import java.awt.Color
 import java.io.File
 
-object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), Chatting.NAME, sortingBehavior = ConfigSorting) {
+object ChattingConfig :
+    Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), Chatting.NAME, sortingBehavior = ConfigSorting) {
 
     @Property(
         type = PropertyType.SELECTOR,
@@ -106,11 +109,7 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
         name = "Screenshot Mode",
         description = "The mode in which screenshotting will work.",
         category = "Screenshotting",
-        options = [
-            "Save To System",
-            "Add To Clipboard",
-            "Both"
-        ]
+        options = ["Save To System", "Add To Clipboard", "Both"]
     )
     var copyMode = 0
 
@@ -123,10 +122,7 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
     var chatSearch = true
 
     @Property(
-        type = PropertyType.SWITCH,
-        name = "Chat Tabs",
-        description = "Add chat tabs.",
-        category = "Tabs"
+        type = PropertyType.SWITCH, name = "Chat Tabs", description = "Add chat tabs.", category = "Tabs"
     )
     var chatTabs = true
         get() {
@@ -147,10 +143,7 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
     var hypixelOnlyChatTabs = true
 
     @Property(
-        type = PropertyType.SWITCH,
-        name = "Chat Shortcuts",
-        description = "Add chat shortcuts.",
-        category = "Shortcuts"
+        type = PropertyType.SWITCH, name = "Chat Shortcuts", description = "Add chat shortcuts.", category = "Shortcuts"
     )
     var chatShortcuts = false
         get() {
@@ -176,9 +169,7 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
         description = "Edit chat shortcuts.",
         category = "Shortcuts"
     )
-    fun openChatShortcutsGUI() {
-        EssentialAPI.getGuiUtil().openScreen(ChatShortcutViewGui())
-    }
+    fun openChatShortcutsGUI() = ChatShortcutViewGui().openScreen()
 
     init {
         initialize()
@@ -186,7 +177,25 @@ object ChattingConfig : Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), C
             chatTabs = funny
             ChatTabs.initialize()
             if (!funny) {
-                val dummy = ChatTab(true, "ALL", false, null, null, null, null, null, null, null, null, null, null, "")
+                val dummy = ChatTab(
+                    true,
+                    "ALL",
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    TabButton.color,
+                    TabButton.hoveredColor,
+                    TabButton.selectedColor,
+                    ""
+                )
                 dummy.initialize()
                 ChatTabs.currentTab = dummy
             } else {

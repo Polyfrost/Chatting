@@ -14,7 +14,17 @@ import java.awt.Color
  * https://github.com/P0keDev/ChatShortcuts/blob/master/LICENSE
  * @author P0keDev
  */
-open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: () -> Int, widthIn: Int, heightIn: Int, name: String, private val renderType: () -> RenderType) :
+open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: () -> Int, widthIn: Int, heightIn: Int, name: String, private val renderType: () -> RenderType, private val textColor: (packedFGColour: Int, enabled: Boolean, hovered: Boolean) -> Int = { packedFGColour: Int, enabled: Boolean, hovered: Boolean ->
+    var j = 14737632
+    if (packedFGColour != 0) {
+        j = packedFGColour
+    } else if (!enabled) {
+        j = 10526880
+    } else if (hovered) {
+        j = 16777120
+    }
+    j
+}) :
     GuiButton(buttonId, x.invoke(), 0, widthIn, heightIn, name) {
 
     open fun isEnabled(): Boolean {
@@ -36,8 +46,8 @@ open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: (
 
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
         enabled = isEnabled()
-        xPosition = x.invoke()
-        yPosition = y.invoke()
+        xPosition = x()
+        yPosition = y()
         if (visible) {
             val fontrenderer = mc.fontRendererObj
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
@@ -53,15 +63,8 @@ open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: (
                 )
             }
             mouseDragged(mc, mouseX, mouseY)
-            var j = 14737632
-            if (packedFGColour != 0) {
-                j = packedFGColour
-            } else if (!enabled) {
-                j = 10526880
-            } else if (hovered) {
-                j = 16777120
-            }
-            when (renderType.invoke()) {
+            val j = textColor(packedFGColour, enabled, hovered)
+            when (renderType()) {
                 RenderType.NONE, RenderType.SHADOW -> {
                     drawCenteredString(fontrenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, j)
                 }

@@ -1,6 +1,7 @@
 package cc.woverflow.chatting.chat
 
 import cc.woverflow.chatting.Chatting
+import cc.woverflow.chatting.gui.components.TabButton
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -43,16 +44,26 @@ object ChatTabs {
                         chatTabJson.tabs.forEach {
                             applyVersion2Changes(it.asJsonObject)
                             applyVersion3Changes(it.asJsonObject)
+                            applyVersion4Changes(it.asJsonObject)
                         }
-                        chatTabJson.version = 3
+                        chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(chatTabJson.toString())
                     }
                     2 -> {
-                        // ver 2 adds `enabled`
+                        // ver 3 adds ignore_
                         chatTabJson.tabs.forEach {
                             applyVersion3Changes(it.asJsonObject)
+                            applyVersion4Changes(it.asJsonObject)
                         }
-                        chatTabJson.version = 3
+                        chatTabJson.version = ChatTabsJson.VERSION
+                        tabFile.writeText(chatTabJson.toString())
+                    }
+                    3 -> {
+                        // ver 4 adds color options
+                        chatTabJson.tabs.forEach {
+                            applyVersion4Changes(it.asJsonObject)
+                        }
+                        chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(chatTabJson.toString())
                     }
                 }
@@ -86,6 +97,12 @@ object ChatTabs {
         json.add("ignore_regex", JsonArray())
     }
 
+    private fun applyVersion4Changes(json: JsonObject) {
+        json.addProperty("color", TabButton.color)
+        json.addProperty("hovered_color", TabButton.hoveredColor)
+        json.addProperty("selected_color", TabButton.selectedColor)
+    }
+
     fun shouldRender(message: IChatComponent): Boolean {
         return currentTab?.shouldRender(message) ?: true
     }
@@ -95,12 +112,30 @@ object ChatTabs {
         val jsonObject = JsonObject()
         val defaultTabs = generateDefaultTabs()
         jsonObject.add("tabs", defaultTabs)
-        jsonObject.addProperty("version", 3)
+        jsonObject.addProperty("version", ChatTabsJson.VERSION)
         tabFile.writeText(jsonObject.toString())
     }
 
     private fun generateDefaultTabs(): JsonArray {
-        val all = ChatTab(true, "ALL", false, null, null, null, null, null, null, null, null, null, null, "")
+        val all = ChatTab(
+            true,
+            "ALL",
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            TabButton.color,
+            TabButton.hoveredColor,
+            TabButton.selectedColor,
+            ""
+        )
         val party = ChatTab(
             true,
             "PARTY",
@@ -164,6 +199,9 @@ object ChatTabs {
             null,
             null,
             null,
+            TabButton.color,
+            TabButton.hoveredColor,
+            TabButton.selectedColor,
             "/pc "
         )
         val guild = ChatTab(
@@ -180,6 +218,9 @@ object ChatTabs {
             null,
             null,
             null,
+            TabButton.color,
+            TabButton.hoveredColor,
+            TabButton.selectedColor,
             "/gc "
         )
         val pm = ChatTab(
@@ -196,6 +237,9 @@ object ChatTabs {
             null,
             null,
             null,
+            TabButton.color,
+            TabButton.hoveredColor,
+            TabButton.selectedColor,
             "/r "
         )
         tabs.add(all)

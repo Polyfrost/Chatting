@@ -20,6 +20,9 @@ data class ChatTab(
     @SerializedName("ignore_ends") val ignoreEndsWith: List<String>?,
     @SerializedName("ignore_equals") val ignoreEquals: List<String>?,
     @SerializedName("ignore_regex") val uncompiledIgnoreRegex: List<String>?,
+    val color: Int?,
+    @SerializedName("hovered_color") val hoveredColor: Int?,
+    @SerializedName("selected_color") val selectedColor: Int?,
     val prefix: String,
 ) {
     lateinit var button: TabButton
