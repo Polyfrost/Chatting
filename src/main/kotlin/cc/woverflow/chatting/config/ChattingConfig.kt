@@ -48,7 +48,8 @@ object ChattingConfig :
         type = PropertyType.COLOR,
         name = "Chat Background Color",
         description = "Change the color of the chat background.",
-        category = "General"
+        category = "General",
+        allowAlpha = false
     )
     var chatBackgroundColor = Color(0, 0, 0, 128)
 
@@ -56,7 +57,8 @@ object ChattingConfig :
         type = PropertyType.COLOR,
         name = "Copy Chat Message Background Color",
         description = "Change the color of chat messages that are ready to copy.",
-        category = "General"
+        category = "General",
+        allowAlpha = false
     )
     var hoveredChatBackgroundColor = Color(80, 80, 80, 128)
 

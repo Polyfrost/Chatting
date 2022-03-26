@@ -10,9 +10,7 @@
     "GuiNewChatAccessor",
     "GuiNewChatMapMixin",
     "GuiNewChatMixin",
-    "GuiUtilsMixin",
-    "RedactionNameHighlightMixin",
-    "WyvtilsListenerMixin"
+    "GuiUtilsMixin"
   ],
   "verbose": true
 }

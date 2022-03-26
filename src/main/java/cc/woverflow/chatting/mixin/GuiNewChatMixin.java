@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
@@ -106,11 +107,18 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 11 + ModCompatHooks.getXOffset()) && mouseY >= top) {
                 chatting$shouldCopy = true;
                 drawCopyChatBox(right, top);
-                args.set(4, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getRGB());
+                args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getHoveredChatBackgroundColor(), args.get(4)));
                 return;
             }
         }
-        args.set(4, ChattingConfig.INSTANCE.getChatBackgroundColor().getRGB());
+        args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getChatBackgroundColor(), args.get(4)));
+    }
+
+    private int changeChatBackgroundColor(Color color, int alphaColor) {
+        return (((alphaColor >> 24) & 0xFF) << 24) |
+                ((color.getRed() & 0xFF) << 16) |
+                ((color.getGreen() & 0xFF) << 8)  |
+                ((color.getBlue() & 0xFF));
     }
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
