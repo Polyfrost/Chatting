@@ -89,7 +89,7 @@ object ChattingConfig :
     @Property(
         type = PropertyType.SLIDER,
         min = 180,
-        max = 10000,
+        max = 2160,
         name = "Focused Height",
         description = "Height in pixels.",
         category = "Chat Window"
@@ -99,7 +99,7 @@ object ChattingConfig :
     @Property(
         type = PropertyType.SLIDER,
         min = 180,
-        max = 10000,
+        max = 2160,
         name = "Unfocused Height",
         description = "Height in pixels.",
         category = "Chat Window"
