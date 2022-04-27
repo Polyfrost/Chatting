@@ -47,7 +47,7 @@ class SearchButton :
         69420,
         Minecraft.getMinecraft().fontRendererObj,
         UResolution.scaledWidth * 4 / 5 - 60,
-        UResolution.scaledHeight - 27,
+        UResolution.scaledHeight - 26,
         UResolution.scaledWidth / 5,
         12
     ) {
