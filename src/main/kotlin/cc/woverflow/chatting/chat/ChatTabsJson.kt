@@ -10,6 +10,6 @@ data class ChatTabsJson(@SerializedName("tabs") val tabs: JsonArray, var version
     }
 
     companion object {
-        const val VERSION = 4
+        const val VERSION = 5
     }
 }

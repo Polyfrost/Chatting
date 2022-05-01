@@ -183,6 +183,7 @@ object ChattingConfig :
                     true,
                     "ALL",
                     false,
+                    false,
                     null,
                     null,
                     null,

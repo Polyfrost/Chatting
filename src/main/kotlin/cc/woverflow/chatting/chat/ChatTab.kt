@@ -5,11 +5,13 @@ import com.google.gson.annotations.SerializedName
 import net.minecraft.client.Minecraft
 import net.minecraft.util.EnumChatFormatting
 import net.minecraft.util.IChatComponent
+import java.util.*
 
 data class ChatTab(
     val enabled: Boolean,
     val name: String,
     val unformatted: Boolean,
+    val lowercase: Boolean?,
     @SerializedName("starts") val startsWith: List<String>?,
     val contains: List<String>?,
     @SerializedName("ends") val endsWith: List<String>?,
@@ -23,7 +25,7 @@ data class ChatTab(
     val color: Int?,
     @SerializedName("hovered_color") val hoveredColor: Int?,
     @SerializedName("selected_color") val selectedColor: Int?,
-    val prefix: String,
+    val prefix: String?,
 ) {
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
@@ -43,7 +45,11 @@ data class ChatTab(
 
     fun shouldRender(chatComponent: IChatComponent): Boolean {
         val message =
-            if (unformatted) EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.unformattedText) else chatComponent.formattedText
+            (if (unformatted) EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.unformattedText) else chatComponent.formattedText).let {
+                if (lowercase == true) it.lowercase(
+                    Locale.ENGLISH
+                ) else it
+            }
         ignoreStartsWith?.forEach {
             if (message.startsWith(it)) {
                 return false

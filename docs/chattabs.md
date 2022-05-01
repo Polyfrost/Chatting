@@ -12,15 +12,16 @@ something like this:
       "enabled": true,
       "name": "ALL",
       "unformatted": false,
+      "lowercase": false,
       "color": 14737632,
       "hovered_color": 16777120,
-      "selected_color": 10526880,
-      "prefix": ""
+      "selected_color": 10526880
     },
     {
       "enabled": true,
       "name": "PARTY",
       "unformatted": false,
+      "lowercase": false,
       "starts": [
         "§r§9Party §8> ",
         "§r§9P §8> ",
@@ -90,6 +91,7 @@ something like this:
       "enabled": true,
       "name": "GUILD",
       "unformatted": true,
+      "lowercase": false,
       "starts": [
         "Guild >",
         "G >"
@@ -103,6 +105,7 @@ something like this:
       "enabled": true,
       "name": "PM",
       "unformatted": true,
+      "lowercase": false,
       "starts": [
         "To ",
         "From "
@@ -113,7 +116,7 @@ something like this:
       "prefix": "/r "
     }
   ],
-  "version": 4
+  "version": 5
 }
 ```
 
@@ -222,17 +225,22 @@ The `selected_color` property allows you to change the color of the chat tab tex
 over all the other color properties. Like the other color properties, it is in RGBA format.
 
 The `prefix` property appends the prefix to any message sent while in the specific chat tab **if it is not a command**.
-This can be used to automatically send messages in a specific channel in servers, like in Hypixel.
+This can be used to automatically send messages in a specific channel in servers, like in Hypixel. This is no longer required as of version 5.
+
+The `lowercase` property makes the message trigger lowercase.
 
 ## Chat Tabs JSON Changelogs
 
+### Version 5 (Chatting 1.4.0)
+- The `prefix` property is no longer a required property.
+- Added `lowercase` property
 
-### Version 4
+### Version 4 (Chatting 1.4.0 [eece3cb])
 - Added color text options (`color`, `hovered_color`, and `selected_color`)
 - `version` is now actually an integer
 
-### Version 3
+### Version 3 (Chatting 1.4.0-alpha1)
 - Added `ignore_` options (`ignore_starts`, `ignore_ends`, `ignore_equals`, and `ignore_regex`)
 
-### Version 2
+### Version 2 (1.0.0)
 - Added `enabled` property

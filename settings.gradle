@@ -3,13 +3,6 @@ pluginManagement {
         gradlePluginPortal()
         maven { url = "https://repo.woverflow.cc" }
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "cc.woverflow.loom") {
-                useModule("cc.woverflow:architectury-loom:${requested.version}")
-            }
-        }
-    }
 }
 
 rootProject.name = mod_name

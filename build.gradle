@@ -10,7 +10,7 @@ plugins {
 }
 
 version = mod_version
-group = "com.example"
+group = "cc.woverflow"
 archivesBaseName = mod_name
 
 blossom {
