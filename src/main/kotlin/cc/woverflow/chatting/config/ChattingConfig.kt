@@ -79,6 +79,32 @@ object ChattingConfig :
     var informForAlternatives = true
 
     @Property(
+        type = PropertyType.SLIDER,
+        min = 0,
+        max = 100,
+        name = "Spam Threshold",
+        description = "If Chatting detects a player message seems like spam, and the probability is above this threshold, it will hide it. Set to 0 to disable.",
+        category = "Player Spam Blocker"
+    )
+    var spamThreshold = 95
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Show Spam (with styling)",
+        description = "Show messages Chatting detects as spam in gray, instead of hiding them.",
+        category = "Player Spam Blocker"
+    )
+    var showSpamInGray = true
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Custom Message Formatting",
+        description = "Hide ranks, and show messages in public chat from no-ranks as white.",
+        category = "Player Spam Blocker"
+    )
+    var customFormatting = false
+
+    @Property(
         type = PropertyType.SWITCH,
         name = "Custom Chat Height",
         description = "Allows you to change the height of chat to heights greater than before.",
