@@ -231,7 +231,7 @@ The `lowercase` property makes the message trigger lowercase.
 
 ## Chat Tabs JSON Changelogs
 
-### Version 5 (Chatting 1.4.0)
+### Version 5 (Chatting 1.4.0 [04363f5])
 - The `prefix` property is no longer a required property.
 - Added `lowercase` property
 
