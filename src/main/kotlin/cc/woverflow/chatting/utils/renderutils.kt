@@ -3,9 +3,17 @@
 package cc.woverflow.chatting.utils
 
 import cc.woverflow.chatting.config.ChattingConfig
+import cc.woverflow.chatting.mixin.GuiNewChatAccessor
+import cc.woverflow.chatting.utils.ModCompatHooks.fontRenderer
+import gg.essential.universal.UMouse
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.ChatLine
+import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.shader.Framebuffer
+import net.minecraft.util.ChatComponentText
+import net.minecraft.util.MathHelper
 import org.apache.commons.lang3.SystemUtils
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
@@ -19,7 +27,10 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 
 /**
  * Taken from https://github.com/Moulberry/HyChat
@@ -206,4 +217,40 @@ fun Framebuffer.screenshot(file: File): BufferedImage {
         }
     }
     return bufferedimage
+}
+
+private val sdf: SimpleDateFormat = SimpleDateFormat("HH:mm:ss")
+
+@JvmField
+val messages: Map<ChatLine, Long> = mutableMapOf()
+var lastMessage: ChatLine? = null
+fun showTimestamp() {
+    if (!ChattingConfig.showTimestamp) return
+    val chatLine = getChatLineOverMouse(UMouse.Raw.x.roundToInt(), UMouse.Raw.y.roundToInt())
+    if (chatLine != null) {
+        val long = messages[chatLine]
+        if (long != null) chatLine.chatComponent.appendText(" §7[${sdf.format(Date(long))}]§r")
+    }
+    val long = messages[lastMessage]
+    if (long != null) lastMessage?.chatComponent?.siblings?.remove(ChatComponentText(" §7[${sdf.format(Date(long))}]§r"))
+    lastMessage = chatLine
+}
+
+private fun getChatLineOverMouse(mouseX: Int, mouseY: Int): ChatLine? {
+    val chat = Minecraft.getMinecraft().ingameGUI.chatGUI
+    if (!chat.chatOpen) return null
+    val scaledResolution = ScaledResolution(Minecraft.getMinecraft())
+    val i = scaledResolution.scaleFactor
+    val f = chat.chatScale
+    val j = MathHelper.floor_float((mouseX / i - 3).toFloat() / f)
+    val k = MathHelper.floor_float((mouseY / i - 27).toFloat() / f)
+    if (j < 0 || k < 0) return null
+    val drawnChatLines = (chat as GuiNewChatAccessor).drawnChatLines
+    val l = chat.lineCount.coerceAtMost(drawnChatLines.size)
+    if (j <= MathHelper.floor_float(chat.chatWidth.toFloat() / f) && k < fontRenderer.FONT_HEIGHT * l + l) {
+        val m = k / Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + chat.scrollPos
+        if (m >= 0 && m < drawnChatLines.size)
+            return drawnChatLines[m]
+    }
+    return null
 }
