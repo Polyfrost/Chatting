@@ -12,7 +12,7 @@ public class EntityPlayerSPMixin {
     @ModifyVariable(method = "sendChatMessage", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private String handleSentMessages(String value) {
         if (value.startsWith("/")) return value;
-        if (ChattingConfig.INSTANCE.getChatTabs() && ChatTabs.INSTANCE.getCurrentTab() != null && !ChatTabs.INSTANCE.getCurrentTab().getPrefix().isEmpty()) {
+        if (ChattingConfig.INSTANCE.getChatTabs() && ChatTabs.INSTANCE.getCurrentTab() != null && ChatTabs.INSTANCE.getCurrentTab().getPrefix() != null && !ChatTabs.INSTANCE.getCurrentTab().getPrefix().isEmpty()) {
             return ChatTabs.INSTANCE.getCurrentTab().getPrefix() + value;
         } else {
             return value;

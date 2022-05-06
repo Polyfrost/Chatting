@@ -1,12 +1,12 @@
 package cc.woverflow.chatting.utils
 
-import club.sk1er.patcher.config.PatcherConfig
-import com.llamalad7.betterchat.BetterChat
 import cc.woverflow.chatting.Chatting.isBetterChat
 import cc.woverflow.chatting.Chatting.isPatcher
 import cc.woverflow.chatting.config.ChattingConfig.textRenderType
 import cc.woverflow.chatting.hook.GuiNewChatHook
 import cc.woverflow.onecore.utils.drawBorderedString
+import club.sk1er.patcher.config.PatcherConfig
+import com.llamalad7.betterchat.BetterChat
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 
@@ -35,12 +35,8 @@ object ModCompatHooks {
     @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int): Int {
         return when (textRenderType) {
-            0 -> {
-                fontRenderer.drawString(text, x, y, color, false)
-            }
-            2 -> {
-                fontRenderer.drawBorderedString(text, x.toInt(), y.toInt(), color, (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
-            }
+            0 -> fontRenderer.drawString(text, x, y, color, false)
+            2 -> fontRenderer.drawBorderedString(text, x.toInt(), y.toInt(), color, (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
             else -> fontRenderer.drawString(text, x, y, color, true)
         }
     }

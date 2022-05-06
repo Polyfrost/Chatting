@@ -72,6 +72,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
+    @Inject(method = "setChatLine", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;scroll(I)V"), to = @At(value = "INVOKE", target = "Ljava/util/List;size()I")), cancellable = true)
+    private void handleAddDrawnLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        ci.cancel();
+        ChatLine chatLine = new ChatLine(updateCounter, chatComponent, chatLineId);
+        RenderUtils.messages.put(chatLine, System.currentTimeMillis());
+        this.drawnChatLines.add(0, chatLine);
+    }
+
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
         if (Chatting.INSTANCE.getKeybind().isPressed()) {
@@ -133,6 +141,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
+        RenderUtils.showTimestamp();
         return ModCompatHooks.redirectDrawString(text, x, y, color);
     }
 

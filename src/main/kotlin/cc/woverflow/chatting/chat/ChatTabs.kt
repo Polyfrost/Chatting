@@ -45,26 +45,37 @@ object ChatTabs {
                             applyVersion2Changes(it.asJsonObject)
                             applyVersion3Changes(it.asJsonObject)
                             applyVersion4Changes(it.asJsonObject)
+                            applyVersion5Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(chatTabJson.toString())
+                        tabFile.writeText(GSON.toJson(chatTabJson))
                     }
                     2 -> {
                         // ver 3 adds ignore_
                         chatTabJson.tabs.forEach {
                             applyVersion3Changes(it.asJsonObject)
                             applyVersion4Changes(it.asJsonObject)
+                            applyVersion5Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(chatTabJson.toString())
+                        tabFile.writeText(GSON.toJson(chatTabJson))
                     }
                     3 -> {
                         // ver 4 adds color options
                         chatTabJson.tabs.forEach {
                             applyVersion4Changes(it.asJsonObject)
+                            applyVersion5Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(chatTabJson.toString())
+                        tabFile.writeText(GSON.toJson(chatTabJson))
+                    }
+                    4 -> {
+                        // ver 5 adds lowercase
+                        chatTabJson.tabs.forEach {
+                            applyVersion5Changes(it.asJsonObject)
+                        }
+                        chatTabJson.version = ChatTabsJson.VERSION
+                        tabFile.writeText(GSON.toJson(chatTabJson))
                     }
                 }
                 chatTabJson.tabs.forEach {
@@ -103,6 +114,10 @@ object ChatTabs {
         json.addProperty("selected_color", TabButton.selectedColor)
     }
 
+    private fun applyVersion5Changes(json: JsonObject) {
+        json.addProperty("lowercase", false)
+    }
+
     fun shouldRender(message: IChatComponent): Boolean {
         return currentTab?.shouldRender(message) ?: true
     }
@@ -113,13 +128,14 @@ object ChatTabs {
         val defaultTabs = generateDefaultTabs()
         jsonObject.add("tabs", defaultTabs)
         jsonObject.addProperty("version", ChatTabsJson.VERSION)
-        tabFile.writeText(jsonObject.toString())
+        tabFile.writeText(GSON.toJson(jsonObject))
     }
 
     private fun generateDefaultTabs(): JsonArray {
         val all = ChatTab(
             true,
             "ALL",
+            false,
             false,
             null,
             null,
@@ -139,6 +155,7 @@ object ChatTabs {
         val party = ChatTab(
             true,
             "PARTY",
+            false,
             false,
             listOf("§r§9Party §8> ", "§r§9P §8> ", "§eThe party was transferred to §r", "§eKicked §r"),
             null,
@@ -208,6 +225,7 @@ object ChatTabs {
             true,
             "GUILD",
             true,
+            false,
             listOf("Guild >", "G >"),
             null,
             null,
@@ -227,6 +245,7 @@ object ChatTabs {
             true,
             "PM",
             true,
+            false,
             listOf("To ", "From "),
             null,
             null,

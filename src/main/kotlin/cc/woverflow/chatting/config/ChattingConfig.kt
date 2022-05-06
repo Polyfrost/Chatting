@@ -80,6 +80,14 @@ object ChattingConfig :
 
     @Property(
         type = PropertyType.SWITCH,
+        name = "Show Timestamp",
+        description = "Show message timestamp on hover.",
+        category = "General"
+    )
+    var showTimestamp = false
+
+    @Property(
+        type = PropertyType.SWITCH,
         name = "Custom Chat Height",
         description = "Allows you to change the height of chat to heights greater than before.",
         category = "Chat Window"
@@ -182,6 +190,7 @@ object ChattingConfig :
                 val dummy = ChatTab(
                     true,
                     "ALL",
+                    false,
                     false,
                     null,
                     null,
