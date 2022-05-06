@@ -5,6 +5,7 @@ import cc.woverflow.chatting.chat.ChatShortcuts;
 import cc.woverflow.chatting.chat.ChatTab;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
+import cc.woverflow.chatting.gui.components.ClearButton;
 import cc.woverflow.chatting.gui.components.ScreenshotButton;
 import cc.woverflow.chatting.gui.components.SearchButton;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
@@ -51,6 +52,7 @@ public abstract class GuiChatMixin extends GuiScreen {
             buttonList.add(searchButton);
         }
         buttonList.add(new ScreenshotButton());
+        buttonList.add(new ClearButton());
         if (ChattingConfig.INSTANCE.getChatTabs()) {
             for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
                 buttonList.add(chatTab.getButton());

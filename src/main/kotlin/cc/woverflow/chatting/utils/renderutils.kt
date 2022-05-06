@@ -226,7 +226,7 @@ val messages: Map<ChatLine, Long> = mutableMapOf()
 var lastMessage: ChatLine? = null
 fun showTimestamp() {
     if (!ChattingConfig.showTimestamp) return
-    val chatLine = getChatLineOverMouse(UMouse.Raw.x.roundToInt(), UMouse.Raw.y.roundToInt())
+    val chatLine = getChatLineOverMouse(UMouse.getTrueX().roundToInt(), UMouse.getTrueY().roundToInt())
     if (chatLine != null) {
         val long = messages[chatLine]
         if (long != null) chatLine.chatComponent.appendText(" §7[${sdf.format(Date(long))}]§r")
