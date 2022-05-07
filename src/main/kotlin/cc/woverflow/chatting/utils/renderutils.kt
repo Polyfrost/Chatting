@@ -5,6 +5,7 @@ package cc.woverflow.chatting.utils
 import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import cc.woverflow.chatting.utils.ModCompatHooks.fontRenderer
+import gg.essential.universal.ChatColor
 import gg.essential.universal.UMouse
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
@@ -12,7 +13,6 @@ import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.shader.Framebuffer
-import net.minecraft.util.ChatComponentText
 import net.minecraft.util.MathHelper
 import org.apache.commons.lang3.SystemUtils
 import org.lwjgl.BufferUtils
@@ -27,8 +27,6 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.imageio.ImageIO
 import kotlin.math.roundToInt
 
@@ -219,21 +217,32 @@ fun Framebuffer.screenshot(file: File): BufferedImage {
     return bufferedimage
 }
 
-private val sdf: SimpleDateFormat = SimpleDateFormat("HH:mm:ss")
-
-@JvmField
-val messages: Map<ChatLine, Long> = mutableMapOf()
-var lastMessage: ChatLine? = null
-fun showTimestamp() {
-    if (!ChattingConfig.showTimestamp) return
+private val timePattern = Regex("\\[\\d+:\\d+:\\d+]")
+private var lastLines = mutableListOf<ChatLine>()
+fun timestampPre() {
+    if (!ChattingConfig.showTimestampHover) return
+    val drawnChatLines = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines
     val chatLine = getChatLineOverMouse(UMouse.getTrueX().roundToInt(), UMouse.getTrueY().roundToInt())
-    if (chatLine != null) {
-        val long = messages[chatLine]
-        if (long != null) chatLine.chatComponent.appendText(" §7[${sdf.format(Date(long))}]§r")
+
+    lastLines.clear()
+    for (line in drawnChatLines) {
+        val chatComponent = line.chatComponent.createCopy()
+        val newline = ChatLine(line.updatedCounter, chatComponent, line.chatLineID)
+        lastLines.add(newline)
     }
-    val long = messages[lastMessage]
-    if (long != null) lastMessage?.chatComponent?.siblings?.remove(ChatComponentText(" §7[${sdf.format(Date(long))}]§r"))
-    lastMessage = chatLine
+
+    drawnChatLines.map {
+        if (it != chatLine) it.chatComponent.siblings.removeAll { itt ->
+            timePattern.find(ChatColor.stripControlCodes(itt.unformattedText)!!) != null
+        }
+    }
+}
+
+fun timestampPost() {
+    if (!ChattingConfig.showTimestampHover) return
+    val drawnChatLines = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines
+    drawnChatLines.clear()
+    drawnChatLines.addAll(lastLines)
 }
 
 private fun getChatLineOverMouse(mouseX: Int, mouseY: Int): ChatLine? {

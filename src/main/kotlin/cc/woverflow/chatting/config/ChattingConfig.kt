@@ -107,10 +107,18 @@ object ChattingConfig :
     @Property(
         type = PropertyType.SWITCH,
         name = "Show Timestamp",
-        description = "Show message timestamp on hover.",
+        description = "Show message timestamp.",
         category = "General"
     )
     var showTimestamp = false
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Timestamp Only On Hover",
+        description = "Show timestamp only on mouse hover.",
+        category = "General"
+    )
+    var showTimestampHover = true
 
     @Property(
         type = PropertyType.SWITCH,
@@ -243,6 +251,7 @@ object ChattingConfig :
             chatShortcuts = funny
             ChatShortcuts.initialize()
         }
+        addDependency("showTimestampHover", "showTimestamp")
     }
 
     private object ConfigSorting : SortingBehavior() {

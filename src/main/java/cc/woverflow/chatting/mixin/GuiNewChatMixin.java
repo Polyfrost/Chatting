@@ -12,10 +12,7 @@ import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,6 +27,8 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -72,12 +71,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
-    @Inject(method = "setChatLine", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;scroll(I)V"), to = @At(value = "INVOKE", target = "Ljava/util/List;size()I")), cancellable = true)
-    private void handleAddDrawnLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
-        ci.cancel();
-        ChatLine chatLine = new ChatLine(updateCounter, chatComponent, chatLineId);
-        RenderUtils.messages.put(chatLine, System.currentTimeMillis());
-        this.drawnChatLines.add(0, chatLine);
+    @Unique
+    private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    @ModifyArg(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;<init>(ILnet/minecraft/util/IChatComponent;I)V"))
+    private IChatComponent handleAddDrawnLine(IChatComponent iChatComponent) {
+        if (!ChattingConfig.INSTANCE.getShowTimestamp()) return iChatComponent;
+        String time = " §7["+ sdf.format(new Date(System.currentTimeMillis())) + "]§r";
+        iChatComponent.appendSibling(new ChatComponentText(time));
+        return iChatComponent;
     }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
@@ -139,9 +140,18 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         return chatting$textOpacity = (int) (((float) (getChatOpen() ? 255 : value)) * (mc.gameSettings.chatOpacity * 0.9F + 0.1F));
     }
 
+    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;scale(FFF)V"))
+    private void drawPre(int updateCounter, CallbackInfo ci) {
+        RenderUtils.timestampPre();
+    }
+
+    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
+    private void drawPost(int updateCounter, CallbackInfo ci) {
+        RenderUtils.timestampPost();
+    }
+
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
-        RenderUtils.showTimestamp();
         return ModCompatHooks.redirectDrawString(text, x, y, color);
     }
 
