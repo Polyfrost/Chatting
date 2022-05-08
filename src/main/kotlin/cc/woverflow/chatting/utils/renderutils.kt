@@ -216,7 +216,7 @@ fun Framebuffer.screenshot(file: File): BufferedImage {
     }
     return bufferedimage
 }
-
+/*/
 private val timePattern = Regex("\\[\\d+:\\d+:\\d+]")
 private var lastLines = mutableListOf<ChatLine>()
 fun timestampPre() {
@@ -263,3 +263,5 @@ private fun getChatLineOverMouse(mouseX: Int, mouseY: Int): ChatLine? {
     }
     return null
 }
+
+ */

@@ -104,6 +104,7 @@ object ChattingConfig :
     )
     var customFormatting = false
 
+    /*/
     @Property(
         type = PropertyType.SWITCH,
         name = "Show Timestamp",
@@ -119,6 +120,8 @@ object ChattingConfig :
         category = "General"
     )
     var showTimestampHover = true
+
+     */
 
     @Property(
         type = PropertyType.SWITCH,
@@ -251,7 +254,7 @@ object ChattingConfig :
             chatShortcuts = funny
             ChatShortcuts.initialize()
         }
-        addDependency("showTimestampHover", "showTimestamp")
+        //addDependency("showTimestampHover", "showTimestamp")
     }
 
     private object ConfigSorting : SortingBehavior() {

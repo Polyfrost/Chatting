@@ -71,6 +71,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
+    /*?
     @Unique
     private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
     @ModifyArg(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;<init>(ILnet/minecraft/util/IChatComponent;I)V"))
@@ -80,6 +81,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         iChatComponent.appendSibling(new ChatComponentText(time));
         return iChatComponent;
     }
+
+     */
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
@@ -139,7 +142,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private int modifyYeah(int value) {
         return chatting$textOpacity = (int) (((float) (getChatOpen() ? 255 : value)) * (mc.gameSettings.chatOpacity * 0.9F + 0.1F));
     }
-
+    /*/
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;scale(FFF)V"))
     private void drawPre(int updateCounter, CallbackInfo ci) {
         RenderUtils.timestampPre();
@@ -149,6 +152,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private void drawPost(int updateCounter, CallbackInfo ci) {
         RenderUtils.timestampPost();
     }
+
+     */
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
