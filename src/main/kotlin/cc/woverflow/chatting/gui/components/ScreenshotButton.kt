@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
 
 class ScreenshotButton :
-    CleanButton(448318, { UResolution.scaledWidth - 42 }, { UResolution.scaledHeight - 26 }, 12, 12, "",
+    CleanButton(448318, { UResolution.scaledWidth - 42 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
         { RenderType.NONE }) {
 
     override fun onMousePress() {
