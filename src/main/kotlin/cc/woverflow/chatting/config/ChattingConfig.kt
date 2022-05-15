@@ -83,26 +83,10 @@ object ChattingConfig :
         min = 0,
         max = 100,
         name = "Spam Threshold",
-        description = "If Chatting detects a player message seems like spam, and the probability is above this threshold, it will hide it.\nMade for Hypixel Skyblock, and doesn't work if chat messages have extra prefixes. Set to 100 to disable.",
+        description = "If Chatting detects a player message seems like spam, and the probability is above this threshold, it will hide it. Set to 0 to disable.",
         category = "Player Spam Blocker"
     )
     var spamThreshold = 95
-        get() {
-            val isOnHypixel = EssentialAPI.getMinecraftUtil().isHypixel()
-            return if (!isOnHypixel && hypixelOnlySpamBlocker) {
-                100
-            } else {
-                field
-            }
-        }
-
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Enable Spam Blocker only on Hypixel",
-        description = "Disable all player-based message tweaks outside of Hypixel.",
-        category = "Player Spam Blocker"
-    )
-    var hypixelOnlySpamBlocker = true
 
     @Property(
         type = PropertyType.SWITCH,

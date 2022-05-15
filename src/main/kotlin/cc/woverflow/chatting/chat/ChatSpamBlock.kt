@@ -25,7 +25,6 @@ object ChatSpamBlock {
         val tokens = tokenize(content)
         val spamProb = findSpamProbability(tokens)
         println("\n[CHATTING]$message")
-        if (ChattingConfig.spamThreshold == 100) return
         if (spamProb * 100 > ChattingConfig.spamThreshold) {
             if (ChattingConfig.showSpamInGray) {
                 var newMessage = EnumChatFormatting.DARK_GRAY.toString() + EnumChatFormatting.STRIKETHROUGH.toString()
