@@ -2,7 +2,6 @@ package cc.woverflow.chatting
 
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
-import cc.woverflow.chatting.chat.ChatSpamBlock
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.hook.GuiNewChatHook
@@ -81,7 +80,6 @@ object Chatting {
         }
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
-        EVENT_BUS.register(ChatSpamBlock)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
     }
