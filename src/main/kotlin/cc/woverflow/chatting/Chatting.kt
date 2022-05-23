@@ -31,7 +31,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
-import skytils.skytilsmod.core.Config
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -101,23 +100,43 @@ object Chatting {
                 })
             }
             if (isSkytils) {
-                if (Config.chatTabs) {
-                    sendBrandedNotification(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
-                        Config.chatTabs = false
-                        ChattingConfig.chatTabs = true
-                        ChattingConfig.hypixelOnlyChatTabs = true
-                        Config.markDirty()
-                        Config.writeData()
-                    })
-                }
-                if (Config.copyChat) {
-                    sendBrandedNotification(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
-                        Config.copyChat = false
-                        Config.markDirty()
-                        Config.writeData()
-                    })
+                try {
+                    skytilsCompat(Class.forName("gg.skytils.skytilsmod.core.Config"))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    try {
+                        skytilsCompat(Class.forName("skytils.skytilsmod.core.Config"))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
+        }
+    }
+
+    private fun skytilsCompat(skytilsClass: Class<*>) {
+        val instance = skytilsClass.getDeclaredField("INSTANCE")
+        val chatTabs = skytilsClass.getDeclaredField("chatTabs")
+        chatTabs.isAccessible = true
+        if (chatTabs.getBoolean(instance)) {
+            sendBrandedNotification(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
+                chatTabs.setBoolean(instance, false)
+                ChattingConfig.chatTabs = true
+                ChattingConfig.hypixelOnlyChatTabs = true
+                ChattingConfig.markDirty()
+                ChattingConfig.writeData()
+                skytilsClass.getMethod("markDirty").invoke(instance)
+                skytilsClass.getMethod("writeData").invoke(instance)
+            })
+        }
+        val copyChat = skytilsClass.getDeclaredField("chatTabs")
+        copyChat.isAccessible = true
+        if (copyChat.getBoolean(instance)) {
+            sendBrandedNotification(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
+                copyChat.setBoolean(instance, false)
+                skytilsClass.getMethod("markDirty").invoke(instance)
+                skytilsClass.getMethod("writeData").invoke(instance)
+            })
         }
     }
 
