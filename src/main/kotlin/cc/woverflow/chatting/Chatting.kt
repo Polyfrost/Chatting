@@ -97,8 +97,8 @@ object Chatting {
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
-                sendBrandedNotification(NAME, "Hychat can be removed at it is replaced by Chatting. Click here for more information.", action = {
-                    UDesktop.browseURL("https://github.com/MicrocontrollersDev/Alternatives/blob/main/Hychat.md")
+                sendBrandedNotification(NAME, "Hychat can be removed as it is replaced by Chatting. Click here for more information.", action = {
+                    UDesktop.browseURL("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")
                 })
             }
             if (isSkytils) {
