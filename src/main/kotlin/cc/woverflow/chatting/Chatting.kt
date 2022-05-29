@@ -2,6 +2,7 @@ package cc.woverflow.chatting
 
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
+import cc.woverflow.chatting.chat.ChatSpamBlock
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.hook.GuiNewChatHook
@@ -13,6 +14,10 @@ import cc.woverflow.chatting.utils.screenshot
 import cc.woverflow.onecore.utils.*
 import gg.essential.universal.UDesktop
 import gg.essential.universal.UResolution
+import java.awt.image.BufferedImage
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
@@ -36,6 +41,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+import skytils.skytilsmod.core.Config
 
 @Mod(
     modid = Chatting.ID,
@@ -72,13 +78,10 @@ object Chatting {
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
         ChattingConfig.preload()
-        command("chatting") {
-            main {
-                ChattingConfig.openScreen()
-            }
-        }
+        command("chatting") { main { ChattingConfig.openScreen() } }
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
+        EVENT_BUS.register(ChatSpamBlock)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
     }
@@ -95,20 +98,42 @@ object Chatting {
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
-                sendBrandedNotification(NAME, "Hychat can be removed at it is replaced by Chatting. Click here for more information.", action = {
-                    UDesktop.browseURL("https://github.com/MicrocontrollersDev/Alternatives/blob/main/Hychat.md")
-                })
+                sendBrandedNotification(
+                    NAME,
+                    "Hychat can be removed at it is replaced by Chatting. Click here for more information.",
+                    action = {
+                        UDesktop.browseURL(
+                            "https://github.com/MicrocontrollersDev/Alternatives/blob/main/Hychat.md"
+                        )
+                    }
+                )
             }
             if (isSkytils) {
-                try {
-                    skytilsCompat(Class.forName("gg.skytils.skytilsmod.core.Config"))
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    try {
-                        skytilsCompat(Class.forName("skytils.skytilsmod.core.Config"))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                if (Config.chatTabs) {
+                    sendBrandedNotification(
+                        NAME,
+                        "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.",
+                        6F,
+                        action = {
+                            Config.chatTabs = false
+                            ChattingConfig.chatTabs = true
+                            ChattingConfig.hypixelOnlyChatTabs = true
+                            Config.markDirty()
+                            Config.writeData()
+                        }
+                    )
+                }
+                if (Config.copyChat) {
+                    sendBrandedNotification(
+                        NAME,
+                        "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.",
+                        6F,
+                        action = {
+                            Config.copyChat = false
+                            Config.markDirty()
+                            Config.writeData()
+                        }
+                    )
                 }
             }
         }
@@ -142,7 +167,12 @@ object Chatting {
 
     @SubscribeEvent
     fun onTickEvent(event: TickEvent.ClientTickEvent) {
-        if (event.phase == TickEvent.Phase.START && Minecraft.getMinecraft().theWorld != null && Minecraft.getMinecraft().thePlayer != null && (Minecraft.getMinecraft().currentScreen == null || Minecraft.getMinecraft().currentScreen is GuiChat)) {
+        if (event.phase == TickEvent.Phase.START &&
+                Minecraft.getMinecraft().theWorld != null &&
+                Minecraft.getMinecraft().thePlayer != null &&
+                (Minecraft.getMinecraft().currentScreen == null ||
+                    Minecraft.getMinecraft().currentScreen is GuiChat)
+        ) {
             if (doTheThing) {
                 screenshotChat()
                 doTheThing = false
@@ -154,8 +184,13 @@ object Chatting {
         var height = if (opened) ChattingConfig.focusedHeight else ChattingConfig.unfocusedHeight
         height = (height * Minecraft.getMinecraft().gameSettings.chatScale).toInt()
         val chatY = ModCompatHooks.yOffset + ModCompatHooks.chatPosition
-        if (height + chatY + 27 > (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale).toInt() - 27 - chatY) {
-            height = (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale).toInt() - 27 - chatY
+        if (height + chatY + 27 >
+                (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale)
+                    .toInt() - 27 - chatY
+        ) {
+            height =
+                (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale)
+                    .toInt() - 27 - chatY
         }
         return height
     }
@@ -164,7 +199,17 @@ object Chatting {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
-        return screenshot(GuiUtilRenderComponents.splitText(line.chatComponent, i, Minecraft.getMinecraft().fontRendererObj, false, false).map { it.formattedText }.reversed())
+        return screenshot(
+            GuiUtilRenderComponents.splitText(
+                    line.chatComponent,
+                    i,
+                    Minecraft.getMinecraft().fontRendererObj,
+                    false,
+                    false
+                )
+                .map { it.formattedText }
+                .reversed()
+        )
     }
 
     private fun screenshotChat() {
@@ -175,14 +220,23 @@ object Chatting {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val chatLines = ArrayList<String>()
-        ChatSearchingManager.filterMessages((chat as GuiNewChatHook).prevText, (chat as GuiNewChatAccessor).drawnChatLines)?.let { drawnLines ->
-            val chatHeight = if (ChattingConfig.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9)
-            for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
-                chatLines.add(drawnLines[i].chatComponent.formattedText)
-            }
+        ChatSearchingManager.filterMessages(
+                (chat as GuiNewChatHook).prevText,
+                (chat as GuiNewChatAccessor).drawnChatLines
+            )
+            ?.let { drawnLines ->
+                val chatHeight =
+                    if (ChattingConfig.customChatHeight) getChatHeight(true) / 9
+                    else
+                        GuiNewChat.calculateChatboxHeight(
+                            Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9
+                        )
+                for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
+                    chatLines.add(drawnLines[i].chatComponent.formattedText)
+                }
 
-            screenshot(chatLines)?.copyToClipboard()
-        }
+                screenshot(chatLines)?.copyToClipboard()
+            }
     }
 
     private fun screenshot(messages: List<String>): BufferedImage? {
@@ -191,30 +245,47 @@ object Chatting {
             return null
         }
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            sendBrandedNotification("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
+            sendBrandedNotification(
+                "Chatting",
+                "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab."
+            )
             return null
         }
 
         val fr: FontRenderer = ModCompatHooks.fontRenderer
         val width = messages.maxOf { fr.getStringWidth(it) } + 4
         val fb: Framebuffer = createBindFramebuffer(width * 2, (messages.size * 9) * 2)
-        val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
+        val file =
+            File(
+                Minecraft.getMinecraft().mcDataDir,
+                "screenshots/chat/" + fileFormatter.format(Date())
+            )
 
         GlStateManager.scale(2f, 2f, 1f)
         val scale = Minecraft.getMinecraft().gameSettings.chatScale
         GlStateManager.scale(scale, scale, 1f)
         for (i in messages.indices) {
-            ModCompatHooks.redirectDrawString(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
+            ModCompatHooks.redirectDrawString(
+                messages[i],
+                0f,
+                (messages.size - 1 - i) * 9f,
+                0xffffff
+            )
         }
 
         val image = fb.screenshot(file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
-        sendBrandedNotification("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""), action = {
+        sendBrandedNotification(
+            "Chatting",
+            "Chat screenshotted successfully." +
+                (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""),
+            action = {
                 if (!UDesktop.open(file)) {
                     sendBrandedNotification("Chatting", "Could not browse!")
                 }
-            })
+            }
+        )
         return image
     }
 }

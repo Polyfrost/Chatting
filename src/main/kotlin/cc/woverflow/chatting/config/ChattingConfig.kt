@@ -17,7 +17,11 @@ import java.awt.Color
 import java.io.File
 
 object ChattingConfig :
-    Vigilant(File(Chatting.modDir, "${Chatting.ID}.toml"), Chatting.NAME, sortingBehavior = ConfigSorting) {
+    Vigilant(
+        File(Chatting.modDir, "${Chatting.ID}.toml"),
+        Chatting.NAME,
+        sortingBehavior = ConfigSorting
+    ) {
 
     @Property(
         type = PropertyType.SELECTOR,
@@ -73,7 +77,8 @@ object ChattingConfig :
     @Property(
         type = PropertyType.SWITCH,
         name = "Inform for Alternatives",
-        description = "Inform the user if a mod they are using can be replaced by a feature in Chatting.",
+        description =
+            "Inform the user if a mod they are using can be replaced by a feature in Chatting.",
         category = "General"
     )
     var informForAlternatives = true
@@ -96,6 +101,40 @@ object ChattingConfig :
     var showTimestampHover = true
 
      */
+
+    @Property(
+        type = PropertyType.SLIDER,
+        min = 80,
+        max = 100,
+        name = "Spam Blocker Threshold",
+        description =
+            "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" +
+                "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" +
+                "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
+        category = "Player Chats"
+    )
+    var spamThreshold = 100
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Custom Chat Formatting",
+        description =
+            "Reformat all Skyblock chat messages. Example:\n" +
+                "§a[VIP] Person§f: Message\n§7Person2: Message\n" +
+                "§eBecomes:\n" +
+                "§aPerson§f: Message\n§7Person2§f: Message",
+        category = "Player Chats"
+    )
+    var customChatFormatting = false
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Hide Spam",
+        description =
+            "When Chatting detects spam (if it's enabled), hide it instead of just graying it out.",
+        category = "Player Chats"
+    )
+    var hideSpam = false
 
     @Property(
         type = PropertyType.SWITCH,
@@ -143,7 +182,10 @@ object ChattingConfig :
     var chatSearch = true
 
     @Property(
-        type = PropertyType.SWITCH, name = "Chat Tabs", description = "Add chat tabs.", category = "Tabs"
+        type = PropertyType.SWITCH,
+        name = "Chat Tabs",
+        description = "Add chat tabs.",
+        category = "Tabs"
     )
     var chatTabs = true
         get() {
@@ -164,7 +206,10 @@ object ChattingConfig :
     var hypixelOnlyChatTabs = true
 
     @Property(
-        type = PropertyType.SWITCH, name = "Chat Shortcuts", description = "Add chat shortcuts.", category = "Shortcuts"
+        type = PropertyType.SWITCH,
+        name = "Chat Shortcuts",
+        description = "Add chat shortcuts.",
+        category = "Shortcuts"
     )
     var chatShortcuts = false
         get() {
@@ -198,26 +243,27 @@ object ChattingConfig :
             chatTabs = funny
             ChatTabs.initialize()
             if (!funny) {
-                val dummy = ChatTab(
-                    true,
-                    "ALL",
-                    false,
-                    false,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    TabButton.color,
-                    TabButton.hoveredColor,
-                    TabButton.selectedColor,
-                    ""
-                )
+                val dummy =
+                    ChatTab(
+                        true,
+                        "ALL",
+                        false,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        TabButton.color,
+                        TabButton.hoveredColor,
+                        TabButton.selectedColor,
+                        ""
+                    )
                 dummy.initialize()
                 ChatTabs.currentTab = dummy
             } else {
@@ -228,16 +274,13 @@ object ChattingConfig :
             chatShortcuts = funny
             ChatShortcuts.initialize()
         }
-        //addDependency("showTimestampHover", "showTimestamp")
+        // addDependency("showTimestampHover", "showTimestamp")
     }
 
     private object ConfigSorting : SortingBehavior() {
         override fun getCategoryComparator(): Comparator<in Category> = Comparator { o1, o2 ->
             if (o1.name == "General") return@Comparator -1
-            if (o2.name == "General") return@Comparator 1
-            else compareValuesBy(o1, o2) {
-                it.name
-            }
+            if (o2.name == "General") return@Comparator 1 else compareValuesBy(o1, o2) { it.name }
         }
     }
 }
