@@ -32,6 +32,7 @@ object ChattingConfig :
     )
     var textRenderType = 1
 
+    /*
     @Property(
         type = PropertyType.SWITCH,
         name = "Remove Tooltip Background",
@@ -39,6 +40,7 @@ object ChattingConfig :
         category = "General"
     )
     var removeTooltipBackground = false
+    */
 
     @Property(
         type = PropertyType.SWITCH,
