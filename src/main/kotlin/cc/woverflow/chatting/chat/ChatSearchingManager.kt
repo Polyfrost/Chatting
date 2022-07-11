@@ -1,9 +1,9 @@
 package cc.woverflow.chatting.chat
 
+import cc.polyfrost.oneconfig.libs.caffeine.cache.Cache
+import cc.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
+import cc.polyfrost.oneconfig.libs.universal.wrappers.message.UTextComponent
 import cc.woverflow.chatting.hook.GuiNewChatHook
-import gg.essential.lib.caffeine.cache.Cache
-import gg.essential.lib.caffeine.cache.Caffeine
-import gg.essential.universal.wrappers.message.UTextComponent
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
 import java.util.concurrent.LinkedBlockingQueue

@@ -4,7 +4,6 @@ import cc.woverflow.chatting.Chatting.isBetterChat
 import cc.woverflow.chatting.Chatting.isPatcher
 import cc.woverflow.chatting.config.ChattingConfig.textRenderType
 import cc.woverflow.chatting.hook.GuiNewChatHook
-import cc.woverflow.onecore.utils.drawBorderedString
 import club.sk1er.patcher.config.PatcherConfig
 import com.llamalad7.betterchat.BetterChat
 import net.minecraft.client.Minecraft
@@ -36,8 +35,45 @@ object ModCompatHooks {
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int): Int {
         return when (textRenderType) {
             0 -> fontRenderer.drawString(text, x, y, color, false)
-            2 -> fontRenderer.drawBorderedString(text, x.toInt(), y.toInt(), color, (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
+            2 -> fontRenderer.drawBorderedString(
+                text,
+                x.toInt(),
+                y.toInt(),
+                color,
+                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity
+            )
+
             else -> fontRenderer.drawString(text, x, y, color, true)
         }
+    }
+
+
+    private val regex = Regex("(?i)\\u00A7[0-9a-f]")
+    private var bypassNameHighlight = false
+    fun FontRenderer.drawBorderedString(
+        text: String, x: Int, y: Int, color: Int, opacity: Int
+    ): Int {
+        val noColors = text.replace(regex, "\u00A7r")
+        var yes = 0
+        if (opacity > 3) {
+            bypassNameHighlight = true
+            for (xOff in -2..2) {
+                for (yOff in -2..2) {
+                    if (xOff * xOff != yOff * yOff) {
+                        yes +=
+                            drawString(
+                                noColors, (xOff / 2f) + x, (yOff / 2f) + y, (opacity) shl 24, false
+                            )
+
+                    }
+                }
+            }
+            bypassNameHighlight = false
+        }
+        yes +=
+                //#if MODERN==0
+            drawString(text, x, y, color)
+
+        return yes
     }
 }

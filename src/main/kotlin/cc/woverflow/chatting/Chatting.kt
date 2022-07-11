@@ -1,9 +1,12 @@
 package cc.woverflow.chatting
 
+import cc.polyfrost.oneconfig.libs.universal.UResolution
+import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatSpamBlock
 import cc.woverflow.chatting.chat.ChatTabs
+import cc.woverflow.chatting.command.ChattingCommand
 import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.hook.GuiNewChatHook
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
@@ -11,9 +14,6 @@ import cc.woverflow.chatting.utils.ModCompatHooks
 import cc.woverflow.chatting.utils.copyToClipboard
 import cc.woverflow.chatting.utils.createBindFramebuffer
 import cc.woverflow.chatting.utils.screenshot
-import cc.woverflow.onecore.utils.*
-import gg.essential.universal.UDesktop
-import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
@@ -67,17 +67,12 @@ object Chatting {
     @Mod.EventHandler
     fun onFMLPreInitialization(event: FMLPreInitializationEvent) {
         if (!modDir.exists()) modDir.mkdirs()
-        Updater.addToUpdater(event.sourceFile, NAME, ID, VER, "W-OVERFLOW/${ID}")
     }
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
-        ChattingConfig.preload()
-        command("chatting") {
-            main {
-                ChattingConfig.openScreen()
-            }
-        }
+        ChattingConfig.initialize()
+        CommandManager.INSTANCE.registerCommand(ChattingCommand.Companion::class.java)
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
         EVENT_BUS.register(ChatSpamBlock)
@@ -97,9 +92,9 @@ object Chatting {
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
-                sendBrandedNotification(NAME, "Hychat can be removed as it is replaced by Chatting. Click here for more information.", action = {
-                    UDesktop.browseURL("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")
-                })
+                //sendBrandedNotification(NAME, "Hychat can be removed as it is replaced by Chatting. Click here for more information.", action = {
+                //    UDesktop.browseURL("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")
+                //})
             }
             if (isSkytils) {
                 try {
@@ -121,24 +116,23 @@ object Chatting {
         val chatTabs = skytilsClass.getDeclaredField("chatTabs")
         chatTabs.isAccessible = true
         if (chatTabs.getBoolean(instance)) {
-            sendBrandedNotification(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
-                chatTabs.setBoolean(instance, false)
-                ChattingConfig.chatTabs = true
-                ChattingConfig.hypixelOnlyChatTabs = true
-                ChattingConfig.markDirty()
-                ChattingConfig.writeData()
-                skytilsClass.getMethod("markDirty").invoke(instance)
-                skytilsClass.getMethod("writeData").invoke(instance)
-            })
+            //sendBrandedNotification(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
+            //    chatTabs.setBoolean(instance, false)
+            //    ChattingConfig.chatTabs = true
+            //    ChattingConfig.hypixelOnlyChatTabs = true
+            //    ChattingConfig.save()
+            //    skytilsClass.getMethod("markDirty").invoke(instance)
+            //    skytilsClass.getMethod("writeData").invoke(instance)
+            //})
         }
         val copyChat = skytilsClass.getDeclaredField("chatTabs")
         copyChat.isAccessible = true
         if (copyChat.getBoolean(instance)) {
-            sendBrandedNotification(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
-                copyChat.setBoolean(instance, false)
-                skytilsClass.getMethod("markDirty").invoke(instance)
-                skytilsClass.getMethod("writeData").invoke(instance)
-            })
+            //sendBrandedNotification(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F, action = {
+            //    copyChat.setBoolean(instance, false)
+            //    skytilsClass.getMethod("markDirty").invoke(instance)
+            //    skytilsClass.getMethod("writeData").invoke(instance)
+            //})
         }
     }
 
@@ -166,7 +160,15 @@ object Chatting {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
-        return screenshot(GuiUtilRenderComponents.splitText(line.chatComponent, i, Minecraft.getMinecraft().fontRendererObj, false, false).map { it.formattedText }.reversed())
+        return screenshot(
+            GuiUtilRenderComponents.splitText(
+                line.chatComponent,
+                i,
+                Minecraft.getMinecraft().fontRendererObj,
+                false,
+                false
+            ).map { it.formattedText }.reversed()
+        )
     }
 
     private fun screenshotChat() {
@@ -177,8 +179,14 @@ object Chatting {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
         val chatLines = ArrayList<String>()
-        ChatSearchingManager.filterMessages((chat as GuiNewChatHook).prevText, (chat as GuiNewChatAccessor).drawnChatLines)?.let { drawnLines ->
-            val chatHeight = if (ChattingConfig.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9)
+        ChatSearchingManager.filterMessages(
+            (chat as GuiNewChatHook).prevText,
+            (chat as GuiNewChatAccessor).drawnChatLines
+        )?.let { drawnLines ->
+            val chatHeight =
+                if (ChattingConfig.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
+                    Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9
+                )
             for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
                 chatLines.add(drawnLines[i].chatComponent.formattedText)
             }
@@ -189,11 +197,11 @@ object Chatting {
 
     private fun screenshot(messages: List<String>): BufferedImage? {
         if (messages.isEmpty()) {
-            sendBrandedNotification("Chatting", "Chat window is empty.")
+            //sendBrandedNotification("Chatting", "Chat window is empty.")
             return null
         }
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            sendBrandedNotification("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
+            //sendBrandedNotification("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
             return null
         }
 
@@ -212,11 +220,11 @@ object Chatting {
         val image = fb.screenshot(file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
-        sendBrandedNotification("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""), action = {
-                if (!UDesktop.open(file)) {
-                    sendBrandedNotification("Chatting", "Could not browse!")
-                }
-            })
+        //sendBrandedNotification("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""), action = {
+        //        if (!UDesktop.open(file)) {
+        //            sendBrandedNotification("Chatting", "Could not browse!")
+        //        }
+        //    })
         return image
     }
 }

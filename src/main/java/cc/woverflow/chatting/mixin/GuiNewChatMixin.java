@@ -1,5 +1,6 @@
 package cc.woverflow.chatting.mixin;
 
+import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
@@ -12,7 +13,10 @@ import gg.essential.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.*;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,39 +27,52 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 @Mixin(value = GuiNewChat.class, priority = Integer.MIN_VALUE)
 public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
-    @Unique private int chatting$right = 0;
-    @Unique private boolean chatting$shouldCopy;
-    @Unique private boolean chatting$chatCheck;
-    @Unique private int chatting$textOpacity;
-    @Shadow @Final private Minecraft mc;
-    @Shadow @Final private List<ChatLine> drawnChatLines;
+    @Unique
+    private int chatting$right = 0;
+    @Unique
+    private boolean chatting$shouldCopy;
+    @Unique
+    private boolean chatting$chatCheck;
+    @Unique
+    private int chatting$textOpacity;
+    @Shadow
+    @Final
+    private Minecraft mc;
+    @Shadow
+    @Final
+    private List<ChatLine> drawnChatLines;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private float percentComplete;
     private String chatting$previousText = "";
 
-    @Shadow public abstract boolean getChatOpen();
+    @Shadow
+    public abstract boolean getChatOpen();
 
-    @Shadow public abstract float getChatScale();
+    @Shadow
+    public abstract float getChatScale();
 
-    @Shadow public abstract int getLineCount();
+    @Shadow
+    public abstract int getLineCount();
 
-    @Shadow private int scrollPos;
-    @Shadow @Final private List<ChatLine> chatLines;
+    @Shadow
+    private int scrollPos;
+    @Shadow
+    @Final
+    private List<ChatLine> chatLines;
 
-    @Shadow public abstract void deleteChatLine(int id);
+    @Shadow
+    public abstract void deleteChatLine(int id);
 
-    @Unique private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
+    @Unique
+    private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
 
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"), cancellable = true)
     private void handlePrintChatMessage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
@@ -93,7 +110,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @ModifyVariable(method = "drawChat", at = @At("HEAD"), argsOnly = true)
-    private int setUpdateCounterWhjenYes(int updateCounter) {
+    private int setUpdateCounterWhenYes(int updateCounter) {
         return Chatting.INSTANCE.getDoTheThing() ? 0 : updateCounter;
     }
 
@@ -114,8 +131,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             float f = this.getChatScale();
             int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - 3;
             int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + ModCompatHooks.getYOffset() - ModCompatHooks.getChatPosition();
-            mouseX = MathHelper.floor_float((float)mouseX / f);
-            mouseY = -(MathHelper.floor_float((float)mouseY / f)); //WHY DO I NEED TO DO THIS
+            mouseX = MathHelper.floor_float((float) mouseX / f);
+            mouseY = -(MathHelper.floor_float((float) mouseY / f)); //WHY DO I NEED TO DO THIS
             if (mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 11 + ModCompatHooks.getXOffset()) && mouseY >= top) {
                 chatting$shouldCopy = true;
                 drawCopyChatBox(right, top);
@@ -126,10 +143,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getChatBackgroundColor(), args.get(4)));
     }
 
-    private int changeChatBackgroundColor(Color color, int alphaColor) {
+    private int changeChatBackgroundColor(OneColor color, int alphaColor) {
         return (((alphaColor >> 24) & 0xFF) << 24) |
                 ((color.getRed() & 0xFF) << 16) |
-                ((color.getGreen() & 0xFF) << 8)  |
+                ((color.getGreen() & 0xFF) << 8) |
                 ((color.getBlue() & 0xFF));
     }
 
@@ -183,7 +200,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Inject(method = "getChatHeight", at = @At("HEAD"), cancellable = true)
     private void customHeight_getChatHeight(CallbackInfoReturnable<Integer> cir) {
-        if (ChattingConfig.INSTANCE.getCustomChatHeight()) cir.setReturnValue(Chatting.INSTANCE.getChatHeight(this.getChatOpen()));
+        if (ChattingConfig.INSTANCE.getCustomChatHeight())
+            cir.setReturnValue(Chatting.INSTANCE.getChatHeight(this.getChatOpen()));
     }
 
     @Override
@@ -205,8 +223,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 }
                 if (!displayOnly) {
                     chatLines.add(0, new ChatLine(updateCounter, chatComponent, chatLineId));
-                    while (this.chatLines.size() > (100 + ModCompatHooks.getExtendedChatLength()))
-                    {
+                    while (this.chatLines.size() > (100 + ModCompatHooks.getExtendedChatLength())) {
                         this.chatLines.remove(this.chatLines.size() - 1);
                     }
                 }

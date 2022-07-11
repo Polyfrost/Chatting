@@ -2,18 +2,11 @@
 
 package cc.woverflow.chatting.utils
 
+import cc.polyfrost.oneconfig.utils.IOUtils
 import cc.woverflow.chatting.config.ChattingConfig
-import cc.woverflow.chatting.mixin.GuiNewChatAccessor
-import cc.woverflow.chatting.utils.ModCompatHooks.fontRenderer
-import gg.essential.universal.ChatColor
-import gg.essential.universal.UMouse
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.ChatLine
-import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.shader.Framebuffer
-import net.minecraft.util.MathHelper
 import org.apache.commons.lang3.SystemUtils
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
@@ -28,7 +21,6 @@ import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.imageio.ImageIO
-import kotlin.math.roundToInt
 
 /**
  * Taken from https://github.com/Moulberry/HyChat
@@ -178,7 +170,7 @@ fun BufferedImage.copyToClipboard() {
     newImage.setRGB(0, 0, newImage.width, newImage.height, pixels, 0, newImage.width)
 
     try {
-        Toolkit.getDefaultToolkit().systemClipboard.setContents(ImageTransferable(this), null)
+        IOUtils.copyImageToClipboard(this)
     } catch (e: Exception) {
         e.printStackTrace()
     }

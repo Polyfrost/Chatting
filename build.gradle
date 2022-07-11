@@ -27,9 +27,8 @@ compileJava.options.encoding = 'UTF-8'
 loom {
     launchConfigs {
         client {
-            arg("--tweakClass", "cc.woverflow.onecore.tweaker.OneCoreTweaker")
-            arg("-Dfml.coreMods.load", "cc.polyfrost.oneconfigwrapper.OneConfigWrapper")
-            property("onecore.mixin", "mixins.${mod_id}.json")
+            arg("--tweakClass", "cc.polyfrost.oneconfigwrapper.OneConfigWrapper")
+            arg("--tweakClass", "gg.essential.loader.stage0.EssentialSetupTweaker")
         }
     }
     runConfigs {
@@ -50,22 +49,22 @@ configurations {
 }
 
 repositories {
-    maven { url 'https://repo.woverflow.cc/' }
     maven { url 'https://repo.polyfrost.cc/releases'}
+    maven { url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:1.8.9")
     mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
     forge("net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9")
+    compileOnly ('org.spongepowered:mixin:0.8.5-SNAPSHOT')
+    compileOnly('cc.polyfrost:oneconfig-1.8.9-forge:0.1.0-alpha50')
+    include('cc.polyfrost:oneconfig-wrapper-1.8.9-forge:1.0.0-alpha6')
     compileOnly 'gg.essential:essential-1.8.9-forge:1933'
-    compileOnly 'cc.woverflow:onecore:1.3.3'
-    include ('cc.woverflow:onecore-tweaker:1.3.0') {
+    include ('gg.essential:loader-launchwrapper:1.1.1') {
         transitive = false
     }
-    compileOnly ('org.spongepowered:mixin:0.8.5-SNAPSHOT')
-    compileOnly('cc.polyfrost:oneconfig-1.8.9-forge:0.1.0-alpha1')
-    include('cc.polyfrost:oneconfig-wrapper-1.8.9-forge:1.0.0')
+    modRuntimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.0")
 }
 
 processResources {
@@ -110,10 +109,8 @@ jar {
     manifest.attributes(
             'ModSide': 'CLIENT',
             'ForceLoadAsMod': true,
-            'TweakClass': 'cc.woverflow.onecore.tweaker.OneCoreTweaker',
             'MixinConfigs': "mixins.${mod_id}.json",
             "TweakOrder": "0",
-            "FMLCorePlugin": "cc.polyfrost.oneconfigwrapper.OneConfigWrapper",
-            "FMLCorePluginContainsFMLMod": "yes",
+            "TweakClass": "cc.polyfrost.oneconfigwrapper.OneConfigWrapper",
     )
 }

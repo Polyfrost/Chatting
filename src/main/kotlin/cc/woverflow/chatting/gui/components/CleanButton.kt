@@ -2,7 +2,7 @@ package cc.woverflow.chatting.gui.components
 
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.hook.GuiNewChatHook
-import cc.woverflow.onecore.utils.drawBorderedString
+import cc.woverflow.chatting.utils.ModCompatHooks.drawBorderedString
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
@@ -14,17 +14,26 @@ import java.awt.Color
  * https://github.com/P0keDev/ChatShortcuts/blob/master/LICENSE
  * @author P0keDev
  */
-open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: () -> Int, widthIn: Int, heightIn: Int, name: String, private val renderType: () -> RenderType, private val textColor: (packedFGColour: Int, enabled: Boolean, hovered: Boolean) -> Int = { packedFGColour: Int, enabled: Boolean, hovered: Boolean ->
-    var j = 14737632
-    if (packedFGColour != 0) {
-        j = packedFGColour
-    } else if (!enabled) {
-        j = 10526880
-    } else if (hovered) {
-        j = 16777120
+open class CleanButton(
+    buttonId: Int,
+    private val x: () -> Int,
+    private val y: () -> Int,
+    widthIn: Int,
+    heightIn: Int,
+    name: String,
+    private val renderType: () -> RenderType,
+    private val textColor: (packedFGColour: Int, enabled: Boolean, hovered: Boolean) -> Int = { packedFGColour: Int, enabled: Boolean, hovered: Boolean ->
+        var j = 14737632
+        if (packedFGColour != 0) {
+            j = packedFGColour
+        } else if (!enabled) {
+            j = 10526880
+        } else if (hovered) {
+            j = 16777120
+        }
+        j
     }
-    j
-}) :
+) :
     GuiButton(buttonId, x.invoke(), 0, widthIn, heightIn, name) {
 
     open fun isEnabled(): Boolean {
@@ -66,10 +75,23 @@ open class CleanButton(buttonId: Int, private val x: () -> Int, private val y: (
             val j = textColor(packedFGColour, enabled, hovered)
             when (renderType()) {
                 RenderType.NONE, RenderType.SHADOW -> {
-                    drawCenteredString(fontrenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, j)
+                    drawCenteredString(
+                        fontrenderer,
+                        displayString,
+                        xPosition + width / 2,
+                        yPosition + (height - 8) / 2,
+                        j
+                    )
                 }
+
                 RenderType.FULL -> {
-                    fontrenderer.drawBorderedString(displayString, (xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2), yPosition + (height - 8) / 2, j, (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
+                    fontrenderer.drawBorderedString(
+                        displayString,
+                        (xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2),
+                        yPosition + (height - 8) / 2,
+                        j,
+                        (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity
+                    )
                 }
             }
         }

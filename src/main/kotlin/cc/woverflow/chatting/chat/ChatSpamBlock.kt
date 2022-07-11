@@ -37,7 +37,7 @@ object ChatSpamBlock {
                     if (!ChattingConfig.customChatFormatting) {
                         newMessage += rank
                     }
-                    newMessage += "$player${EnumChatFormatting.DARK_GRAY.toString()}: $content"
+                    newMessage += "$player${EnumChatFormatting.DARK_GRAY}: $content"
                     event.message = ChatComponentText(newMessage)
                 }
                 return
@@ -67,7 +67,7 @@ object ChatSpamBlock {
         }
         if (message.replace(Regex("[\\w\\s]"), "").length > 2) {
             tokens.add("SPECIAL_CHARS")
-        } else if (message.replace(Regex("[\\w\\s]"), "").length > 0) {
+        } else if (message.replace(Regex("[\\w\\s]"), "").isNotEmpty()) {
             tokens.add("SPECIAL_CHAR")
         } else {
             tokens.add("LOW_SPECIAL_CHARS")

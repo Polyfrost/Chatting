@@ -1,84 +1,75 @@
 package cc.woverflow.chatting.config
 
+import cc.polyfrost.oneconfig.config.Config
+import cc.polyfrost.oneconfig.config.annotations.Button
+import cc.polyfrost.oneconfig.config.annotations.Checkbox
+import cc.polyfrost.oneconfig.config.annotations.Dropdown
+import cc.polyfrost.oneconfig.config.annotations.Info
+import cc.polyfrost.oneconfig.config.annotations.Slider
+import cc.polyfrost.oneconfig.config.annotations.Switch
+import cc.polyfrost.oneconfig.config.core.OneColor
+import cc.polyfrost.oneconfig.config.data.InfoType
+import cc.polyfrost.oneconfig.config.data.Mod
+import cc.polyfrost.oneconfig.config.data.ModType
+import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
+import cc.polyfrost.oneconfig.utils.dsl.openScreen
+import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.gui.ChatShortcutViewGui
 import cc.woverflow.chatting.gui.components.TabButton
-import cc.woverflow.onecore.utils.openScreen
-import gg.essential.api.EssentialAPI
-import gg.essential.vigilance.Vigilant
-import gg.essential.vigilance.data.Category
-import gg.essential.vigilance.data.Property
-import gg.essential.vigilance.data.PropertyType
-import gg.essential.vigilance.data.SortingBehavior
-import java.awt.Color
+
 import java.io.File
 
 object ChattingConfig :
-    Vigilant(
-        File(Chatting.modDir, "${Chatting.ID}.toml"),
-        Chatting.NAME,
-        sortingBehavior = ConfigSorting
+    Config(
+        Mod(Chatting.NAME, ModType.UTIL_QOL, VigilanceMigrator(File(Chatting.modDir, Chatting.ID + ".toml").toPath().toString())),
+        "chatting.json"
     ) {
 
-    @Property(
-        type = PropertyType.SELECTOR,
+    @Dropdown(
         name = "Text Render Type",
-        description = "Choose the type of rendering for the text.",
         category = "General",
         options = ["No Shadow", "Shadow", "Full Shadow"]
     )
     var textRenderType = 1
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Remove Tooltip Background",
-        description = "Remove the tooltip background.",
         category = "General"
     )
     var removeTooltipBackground = false
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Remove Scroll Bar",
-        description = "Remove the scroll bar.",
         category = "General"
     )
     var removeScrollBar = false
 
-    @Property(
-        type = PropertyType.COLOR,
+    @cc.polyfrost.oneconfig.config.annotations.Color(
         name = "Chat Background Color",
-        description = "Change the color of the chat background.",
         category = "General",
         allowAlpha = false
     )
-    var chatBackgroundColor = Color(0, 0, 0, 128)
+    var chatBackgroundColor = OneColor(0, 0, 0, 128)
 
-    @Property(
-        type = PropertyType.COLOR,
+    @cc.polyfrost.oneconfig.config.annotations.Color(
         name = "Copy Chat Message Background Color",
-        description = "Change the color of chat messages that are ready to copy.",
         category = "General",
         allowAlpha = false
     )
-    var hoveredChatBackgroundColor = Color(80, 80, 80, 128)
+    var hoveredChatBackgroundColor = OneColor(80, 80, 80, 128)
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Compact Input Box",
-        description = "Make the width of the input box the same size as the chat box.",
         category = "General"
     )
     var compactInputBox = false
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Inform for Alternatives",
-        description =
-            "Inform the user if a mod they are using can be replaced by a feature in Chatting.",
+    @Switch(
+        name = "Inform Outdated Mods",
         category = "General"
     )
     var informForAlternatives = true
@@ -102,167 +93,141 @@ object ChattingConfig :
 
      */
 
-    @Property(
-        type = PropertyType.SLIDER,
-        min = 80,
-        max = 100,
-        name = "Spam Blocker Threshold",
-        description =
-            "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" +
+    @Info(
+        text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" +
                 "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" +
                 "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
+        size = 2, category = "Player Chats",
+        type = InfoType.INFO
+    )
+    var ignored = false
+
+    @Slider(
+        min = 80F,
+        max = 100F,
+        name = "Spam Blocker Threshold",
         category = "Player Chats"
     )
     var spamThreshold = 100
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Custom Chat Formatting",
-        description =
-            "Reformat all Skyblock chat messages. Example:\n" +
-                "§a[VIP] Person§f: Message\n§7Person2: Message\n" +
-                "§eBecomes:\n" +
-                "§aPerson§f: Message\n§7Person2§f: Message",
+    @Switch(
+        name = "Custom SkyBlock Chat Formatting (remove ranks)",
         category = "Player Chats"
     )
     var customChatFormatting = false
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Hide Spam",
-        description =
-            "When Chatting detects spam (if it's enabled), hide it instead of just graying it out.",
+    @Switch(
+        name = "Completely Hide Spam",
         category = "Player Chats"
     )
     var hideSpam = false
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Custom Chat Height",
-        description = "Allows you to change the height of chat to heights greater than before.",
         category = "Chat Window"
     )
     var customChatHeight = true
 
-    @Property(
-        type = PropertyType.SLIDER,
-        min = 180,
-        max = 2160,
-        name = "Focused Height",
-        description = "Height in pixels.",
+    @Slider(
+        min = 180F,
+        max = 2160F,
+        name = "Focused Height (px)",
         category = "Chat Window"
     )
     var focusedHeight = 180
 
-    @Property(
-        type = PropertyType.SLIDER,
-        min = 180,
-        max = 2160,
-        name = "Unfocused Height",
-        description = "Height in pixels.",
+    @Slider(
+        min = 180F,
+        max = 2160F,
+        name = "Unfocused Height (px)",
         category = "Chat Window"
     )
     var unfocusedHeight = 180
 
-    @Property(
-        type = PropertyType.SELECTOR,
+    @Dropdown(
         name = "Screenshot Mode",
-        description = "The mode in which screenshotting will work.",
         category = "Screenshotting",
         options = ["Save To System", "Add To Clipboard", "Both"]
     )
     var copyMode = 0
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Checkbox(
         name = "Chat Searching",
-        description = "Add a chat search bar.",
         category = "Searching"
     )
     var chatSearch = true
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Chat Tabs",
-        description = "Add chat tabs.",
         category = "Tabs"
     )
     var chatTabs = true
         get() {
             if (!field) return false
             return if (hypixelOnlyChatTabs) {
-                EssentialAPI.getMinecraftUtil().isHypixel()
+                HypixelUtils.INSTANCE.isHypixel
             } else {
                 true
             }
         }
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Checkbox(
         name = "Enable Tabs Only on Hypixel",
-        description = "Enable chat tabs only in Hypixel.",
         category = "Tabs"
     )
     var hypixelOnlyChatTabs = true
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Chat Shortcuts",
-        description = "Add chat shortcuts.",
         category = "Shortcuts"
     )
     var chatShortcuts = false
         get() {
             if (!field) return false
             return if (hypixelOnlyChatShortcuts) {
-                EssentialAPI.getMinecraftUtil().isHypixel()
+                HypixelUtils.INSTANCE.isHypixel
             } else {
                 true
             }
         }
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Checkbox(
         name = "Enable Shortcuts Only on Hypixel",
-        description = "Enable chat shortcuts only in Hypixel.",
         category = "Shortcuts"
     )
     var hypixelOnlyChatShortcuts = true
 
-    @Property(
-        type = PropertyType.BUTTON,
-        name = "Edit Chat Shortcuts",
-        description = "Edit chat shortcuts.",
-        category = "Shortcuts"
+    @Button(
+        name = "Open Chat Shortcuts Editor GUI",
+        category = "Shortcuts", text = "Open"
     )
-    fun openChatShortcutsGUI() = ChatShortcutViewGui().openScreen()
+    var openChatShortcutsGUI = Runnable { ChatShortcutViewGui().openScreen() }
 
     init {
         initialize()
-        registerListener("chatTabs") { funny: Boolean ->
-            chatTabs = funny
+        addListener("chatTabs") {
             ChatTabs.initialize()
-            if (!funny) {
+            if (!chatTabs) {
                 val dummy =
                     ChatTab(
                         true,
                         "ALL",
-                        false,
-                        false,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        TabButton.color,
-                        TabButton.hoveredColor,
-                        TabButton.selectedColor,
-                        ""
+                        unformatted = false,
+                        lowercase = false,
+                        startsWith = null,
+                        contains = null,
+                        endsWith = null,
+                        equals = null,
+                        uncompiledRegex = null,
+                        ignoreStartsWith = null,
+                        ignoreContains = null,
+                        ignoreEndsWith = null,
+                        ignoreEquals = null,
+                        uncompiledIgnoreRegex = null,
+                        color = TabButton.color,
+                        hoveredColor = TabButton.hoveredColor,
+                        selectedColor = TabButton.selectedColor,
+                        prefix = ""
                     )
                 dummy.initialize()
                 ChatTabs.currentTab = dummy
@@ -270,17 +235,9 @@ object ChattingConfig :
                 ChatTabs.currentTab = ChatTabs.tabs[0]
             }
         }
-        registerListener("chatShortcuts") { funny: Boolean ->
-            chatShortcuts = funny
+        addListener("chatShortcuts") {
             ChatShortcuts.initialize()
         }
         // addDependency("showTimestampHover", "showTimestamp")
-    }
-
-    private object ConfigSorting : SortingBehavior() {
-        override fun getCategoryComparator(): Comparator<in Category> = Comparator { o1, o2 ->
-            if (o1.name == "General") return@Comparator -1
-            if (o2.name == "General") return@Comparator 1 else compareValuesBy(o1, o2) { it.name }
-        }
     }
 }
