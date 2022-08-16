@@ -74,7 +74,7 @@ object Chatting {
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
-        ChattingConfig.initialize()
+        ChattingConfig
         CommandManager.INSTANCE.registerCommand(ChattingCommand.Companion::class.java)
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
