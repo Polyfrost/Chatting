@@ -1,6 +1,6 @@
 {
   "compatibilityLevel": "JAVA_8",
-  "minVersion": "0.8",
+  "minVersion": "0.7",
   "package": "cc.woverflow.chatting.mixin",
   "refmap": "mixins.${id}.refmap.json",
   "mixins": [

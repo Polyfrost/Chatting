@@ -1,9 +1,9 @@
 package cc.woverflow.chatting.gui.components
 
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.config.ChattingConfig
-import gg.essential.universal.UResolution
 
 class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val chatTab: ChatTab) :
     CleanButton(buttonId, { x }, {

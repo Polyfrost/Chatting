@@ -9,7 +9,7 @@ import cc.woverflow.chatting.gui.components.CleanButton;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
 import cc.woverflow.chatting.utils.RenderUtils;
-import gg.essential.universal.UMouse;
+import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
@@ -71,6 +71,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow
     public abstract void deleteChatLine(int id);
 
+    @Shadow public abstract int getChatWidth();
+
     @Unique
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
 
@@ -121,26 +123,46 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 : linesToDraw;
     }
 
+    private boolean lineInBounds = false;
+
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
     private void captureDrawRect(Args args) {
-        int left = args.get(0);
-        int top = args.get(1);
-        int right = args.get(2);
-        int bottom = args.get(3);
+        args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getChatBackgroundColor(), args.get(4)));
         if (mc.currentScreen instanceof GuiChat) {
-            float f = this.getChatScale();
-            int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - 3;
-            int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + ModCompatHooks.getYOffset() - ModCompatHooks.getChatPosition();
-            mouseX = MathHelper.floor_float((float) mouseX / f);
-            mouseY = -(MathHelper.floor_float((float) mouseY / f)); //WHY DO I NEED TO DO THIS
-            if (mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 11 + ModCompatHooks.getXOffset()) && mouseY >= top) {
+            int left = args.get(0);
+            int top = args.get(1);
+            int right = args.get(2);
+            int bottom = args.get(3);
+            if (isInBounds(left, top, right, bottom, getChatScale())) {
                 chatting$shouldCopy = true;
-                drawCopyChatBox(right, top);
+                lineInBounds = true;
                 args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getHoveredChatBackgroundColor(), args.get(4)));
-                return;
             }
         }
-        args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getChatBackgroundColor(), args.get(4)));
+    }
+
+    @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
+    private void drawChatBox(Args args) {
+        if (mc.currentScreen instanceof GuiChat) {
+            float f = this.getChatScale();
+            int left = 0;
+            int top = (int) ((float) args.get(2) - 1);
+            int right = MathHelper.ceiling_float_int((float)getChatWidth() / f) + 4;
+            int bottom = (int) ((float) args.get(2) + 8);
+            if ((chatting$shouldCopy && lineInBounds) || isInBounds(left, top, right, bottom, f)) {
+                chatting$shouldCopy = true;
+                drawCopyChatBox(right, top);
+            }
+        }
+        lineInBounds = false;
+    }
+
+    private boolean isInBounds(int left, int top, int right, int bottom, float chatScale) {
+        int mouseX = MathHelper.floor_double(UMouse.getScaledX()) - 3;
+        int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + ModCompatHooks.getYOffset() - ModCompatHooks.getChatPosition();
+        mouseX = MathHelper.floor_float((float) mouseX / chatScale);
+        mouseY = -(MathHelper.floor_float((float) mouseY / chatScale)); //WHY DO I NEED TO DO THIS
+        return mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 11 + ModCompatHooks.getXOffset()) && mouseY >= top;
     }
 
     private int changeChatBackgroundColor(OneColor color, int alphaColor) {

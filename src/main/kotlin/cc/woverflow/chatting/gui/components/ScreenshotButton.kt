@@ -1,9 +1,9 @@
 package cc.woverflow.chatting.gui.components
 
+import cc.polyfrost.oneconfig.libs.universal.UResolution
+import cc.polyfrost.oneconfig.libs.universal.UScreen
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
-import gg.essential.api.utils.GuiUtil
-import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiChat
@@ -16,7 +16,7 @@ class ScreenshotButton :
 
     override fun onMousePress() {
         val chat = Minecraft.getMinecraft().ingameGUI.chatGUI
-        if (GuiUtil.getOpenedScreen() is GuiChat) {
+        if (UScreen.currentScreen is GuiChat) {
             Chatting.screenshotChat((chat as GuiNewChatAccessor).scrollPos)
         }
     }

@@ -1,26 +1,18 @@
 package cc.woverflow.chatting.config
 
 import cc.polyfrost.oneconfig.config.Config
-import cc.polyfrost.oneconfig.config.annotations.Button
-import cc.polyfrost.oneconfig.config.annotations.Checkbox
-import cc.polyfrost.oneconfig.config.annotations.Dropdown
-import cc.polyfrost.oneconfig.config.annotations.Info
-import cc.polyfrost.oneconfig.config.annotations.Slider
-import cc.polyfrost.oneconfig.config.annotations.Switch
+import cc.polyfrost.oneconfig.config.annotations.*
 import cc.polyfrost.oneconfig.config.core.OneColor
 import cc.polyfrost.oneconfig.config.data.InfoType
 import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
 import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
-import cc.polyfrost.oneconfig.utils.dsl.openScreen
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
-import cc.woverflow.chatting.gui.ChatShortcutViewGui
 import cc.woverflow.chatting.gui.components.TabButton
-
 import java.io.File
 
 object ChattingConfig :
@@ -48,14 +40,14 @@ object ChattingConfig :
     )
     var removeScrollBar = false
 
-    @cc.polyfrost.oneconfig.config.annotations.Color(
+    @Color(
         name = "Chat Background Color",
         category = "General",
         allowAlpha = false
     )
     var chatBackgroundColor = OneColor(0, 0, 0, 128)
 
-    @cc.polyfrost.oneconfig.config.annotations.Color(
+    @Color(
         name = "Copy Chat Message Background Color",
         category = "General",
         allowAlpha = false
@@ -196,12 +188,6 @@ object ChattingConfig :
         category = "Shortcuts"
     )
     var hypixelOnlyChatShortcuts = true
-
-    @Button(
-        name = "Open Chat Shortcuts Editor GUI",
-        category = "Shortcuts", text = "Open"
-    )
-    var openChatShortcutsGUI = Runnable { ChatShortcutViewGui().openScreen() }
 
     init {
         initialize()

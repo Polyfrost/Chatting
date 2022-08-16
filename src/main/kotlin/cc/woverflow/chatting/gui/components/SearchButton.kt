@@ -1,8 +1,8 @@
 package cc.woverflow.chatting.gui.components
 
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.hook.GuiNewChatHook
-import gg.essential.universal.UResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiTextField
