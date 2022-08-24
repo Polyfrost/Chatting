@@ -4,7 +4,7 @@ import cc.polyfrost.oneconfig.libs.universal.UDesktop
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
-import cc.polyfrost.oneconfig.utils.notifications.Notifications
+import cc.polyfrost.oneconfig.utils.Notifications
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatSpamBlock
@@ -95,9 +95,12 @@ object Chatting {
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
-                Notifications.INSTANCE.send(NAME, "Hychat can be removed as it is replaced by Chatting. Click here for more information.") {
-                    UDesktop.browseLink("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")
-                }
+                Notifications.INSTANCE.send(
+                    NAME,
+                    "Hychat can be removed as it is replaced by Chatting. Click here for more information.",
+                    Runnable {
+                        UDesktop.browseLink("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")
+                    })
             }
             if (isSkytils) {
                 try {
@@ -119,23 +122,29 @@ object Chatting {
         val chatTabs = skytilsClass.getDeclaredField("chatTabs")
         chatTabs.isAccessible = true
         if (chatTabs.getBoolean(instance)) {
-            Notifications.INSTANCE.send(NAME, "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F) {
-                chatTabs.setBoolean(instance, false)
-                ChattingConfig.chatTabs = true
-                ChattingConfig.hypixelOnlyChatTabs = true
-                ChattingConfig.save()
-                skytilsClass.getMethod("markDirty").invoke(instance)
-                skytilsClass.getMethod("writeData").invoke(instance)
-            }
+            Notifications.INSTANCE.send(
+                NAME,
+                "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.",
+                Runnable {
+                    chatTabs.setBoolean(instance, false)
+                    ChattingConfig.chatTabs = true
+                    ChattingConfig.hypixelOnlyChatTabs = true
+                    ChattingConfig.save()
+                    skytilsClass.getMethod("markDirty").invoke(instance)
+                    skytilsClass.getMethod("writeData").invoke(instance)
+                })
         }
         val copyChat = skytilsClass.getDeclaredField("chatTabs")
         copyChat.isAccessible = true
         if (copyChat.getBoolean(instance)) {
-            Notifications.INSTANCE.send(NAME, "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.", 6F) {
-                copyChat.setBoolean(instance, false)
-                skytilsClass.getMethod("markDirty").invoke(instance)
-                skytilsClass.getMethod("writeData").invoke(instance)
-            }
+            Notifications.INSTANCE.send(
+                NAME,
+                "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.",
+                Runnable {
+                    copyChat.setBoolean(instance, false)
+                    skytilsClass.getMethod("markDirty").invoke(instance)
+                    skytilsClass.getMethod("writeData").invoke(instance)
+                })
         }
     }
 
@@ -204,7 +213,10 @@ object Chatting {
             return null
         }
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            Notifications.INSTANCE.send("Chatting", "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab.")
+            Notifications.INSTANCE.send(
+                "Chatting",
+                "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab."
+            )
             return null
         }
 
@@ -223,11 +235,14 @@ object Chatting {
         val image = fb.screenshot(file)
         Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
         Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
-        Notifications.INSTANCE.send("Chatting", "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else "")) {
-            if (!UDesktop.open(file)) {
-                Notifications.INSTANCE.send("Chatting", "Could not browse!")
-            }
-        }
+        Notifications.INSTANCE.send(
+            "Chatting",
+            "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""),
+            Runnable {
+                if (!UDesktop.open(file)) {
+                    Notifications.INSTANCE.send("Chatting", "Could not browse!")
+                }
+            })
         return image
     }
 }
