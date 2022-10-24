@@ -7,10 +7,8 @@ import cc.woverflow.chatting.config.ChattingConfig
 
 @Command(value = Chatting.ID, description = "Access the " + Chatting.NAME + " GUI.")
 class ChattingCommand {
-    companion object {
-        @Main
-        fun main() {
-            ChattingConfig.openGui()
-        }
+    @Main
+    fun main() {
+        ChattingConfig.openGui()
     }
 }

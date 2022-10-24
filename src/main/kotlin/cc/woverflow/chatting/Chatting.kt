@@ -75,7 +75,7 @@ object Chatting {
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
         ChattingConfig
-        CommandManager.INSTANCE.registerCommand(ChattingCommand.Companion::class.java)
+        CommandManager.INSTANCE.registerCommand(ChattingCommand())
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
         EVENT_BUS.register(ChatSpamBlock)
