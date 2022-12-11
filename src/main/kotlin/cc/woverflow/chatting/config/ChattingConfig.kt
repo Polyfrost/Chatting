@@ -13,6 +13,7 @@ import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.gui.components.TabButton
+import cc.woverflow.chatting.hook.ChatLineHook
 import java.io.File
 
 object ChattingConfig :
@@ -65,6 +66,27 @@ object ChattingConfig :
         category = "General"
     )
     var informForAlternatives = true
+
+    @Switch(
+        name = "Show Chat Heads",
+        description = "Show the chat heads of players in chat",
+        category = "Chat Heads"
+    )
+    var showChatHeads = true
+
+    @Switch(
+        name = "Offset Non-Player Messages",
+        description = "Offset all messages, even if a player has not been detected.",
+        category = "Chat Heads"
+    )
+    var offsetNonPlayerMessages = false
+
+    @Switch(
+        name = "Hide Chat Head on Consecutive Messages",
+        description = "Hide the chat head if the previous message was from the same player.",
+        category = "Chat Heads"
+    )
+    var hideChatHeadOnConsecutiveMessages = true
 
     /*/
     @Property(
@@ -191,6 +213,11 @@ object ChattingConfig :
 
     init {
         initialize()
+        addDependency("offsetNonPlayerMessages", "showChatHeads")
+        addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
+        addListener("hideChatHeadOnConsecutiveMessages") {
+            ChatLineHook.chatLines.map { it.get() as ChatLineHook? }.forEach { it?.updatePlayerInfo() }
+        }
         addListener("chatTabs") {
             ChatTabs.initialize()
             if (!chatTabs) {

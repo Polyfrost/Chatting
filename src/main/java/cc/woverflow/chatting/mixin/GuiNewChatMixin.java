@@ -1,17 +1,20 @@
 package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
+import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
+import cc.woverflow.chatting.hook.ChatLineHook;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
 import cc.woverflow.chatting.utils.RenderUtils;
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
@@ -25,6 +28,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.awt.datatransfer.StringSelection;
@@ -141,6 +145,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         }
     }
 
+    @Unique
+    private ChatLine chatting$drawingLine = null;
+
+    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;getChatComponent()Lnet/minecraft/util/IChatComponent;"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    private void captureChatLine(int updateCounter, CallbackInfo ci, int i, boolean bl, int j, int k, float f, float g, int l, int m, ChatLine chatLine, int n, double d, int o, int p, int q) {
+        chatting$drawingLine = chatLine;
+    }
+
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private void drawChatBox(Args args) {
         if (mc.currentScreen instanceof GuiChat) {
@@ -155,6 +167,23 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             }
         }
         lineInBounds = false;
+        if (ChattingConfig.INSTANCE.getShowChatHeads()) {
+            ChatLineHook hook = ((ChatLineHook) chatting$drawingLine);
+            if (hook.hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages()) {
+                args.set(1, ((float) args.get(1)) + 10f);
+            }
+            NetworkPlayerInfo networkPlayerInfo = hook.getPlayerInfo();
+            if (networkPlayerInfo != null) {
+                GlStateManager.enableBlend();
+                GlStateManager.enableAlpha();
+                mc.getTextureManager().bindTexture(networkPlayerInfo.getLocationSkin());
+                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+                GlStateManager.color(1.0F, 1.0F, 1.0F, ColorUtils.getAlpha(args.get(3)) / 255f);
+                Gui.drawScaledCustomSizeModalRect((int) ((float) args.get(1) - 10f), (int) ((float) args.get(2) - 1f), 8.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
+                Gui.drawScaledCustomSizeModalRect((int) ((float) args.get(1) - 10f), (int) ((float) args.get(2) - 1f), 40.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            }
+        }
     }
 
     private boolean isInBounds(int left, int top, int right, int bottom, float chatScale) {

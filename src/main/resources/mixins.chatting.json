@@ -1,16 +1,19 @@
 {
-  "compatibilityLevel": "JAVA_8",
-  "minVersion": "0.7",
-  "package": "cc.woverflow.chatting.mixin",
-  "refmap": "mixins.${id}.refmap.json",
-  "mixins": [
-    "ClientCommandHandlerMixin",
-    "EntityPlayerSPMixin",
-    "GuiChatMixin",
-    "GuiNewChatAccessor",
-    "GuiNewChatMapMixin",
-    "GuiNewChatMixin",
-    "GuiUtilsMixin"
-  ],
-  "verbose": true
+    "compatibilityLevel": "JAVA_8",
+    "minVersion": "0.7",
+    "package": "cc.woverflow.chatting.mixin",
+    "refmap": "mixins.${id}.refmap.json",
+    "mixins": [
+        "ClientCommandHandlerMixin",
+        "EntityPlayerSPMixin",
+        "GuiChatMixin",
+        "GuiNewChatAccessor",
+        "GuiNewChatMapMixin",
+        "GuiNewChatMixin",
+        "GuiUtilsMixin"
+    ],
+    "verbose": true,
+    "client": [
+        "ChatLineMixin"
+    ]
 }
