@@ -11,6 +11,7 @@ import cc.woverflow.chatting.chat.ChatSpamBlock
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.command.ChattingCommand
 import cc.woverflow.chatting.config.ChattingConfig
+import cc.woverflow.chatting.hook.ChatLineHook
 import cc.woverflow.chatting.hook.GuiNewChatHook
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import cc.woverflow.chatting.utils.ModCompatHooks
@@ -39,6 +40,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
 
 @Mod(
@@ -173,13 +175,17 @@ object Chatting {
         val chat = hud.chatGUI
         val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
         return screenshot(
-            GuiUtilRenderComponents.splitText(
-                line.chatComponent,
-                i,
-                Minecraft.getMinecraft().fontRendererObj,
-                false,
-                false
-            ).map { it.formattedText }.reversed()
+            hashMapOf<String, ChatLine>().also {
+                GuiUtilRenderComponents.splitText(
+                    line.chatComponent,
+                    i,
+                    Minecraft.getMinecraft().fontRendererObj,
+                    false,
+                    false
+                ).map { it.formattedText }.reversed().forEach { string ->
+                    it[string] = line
+                }
+            }
         )
     }
 
@@ -190,7 +196,7 @@ object Chatting {
     fun screenshotChat(scrollPos: Int) {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
-        val chatLines = ArrayList<String>()
+        val chatLines = HashMap<String, ChatLine>()
         ChatSearchingManager.filterMessages(
             (chat as GuiNewChatHook).prevText,
             (chat as GuiNewChatAccessor).drawnChatLines
@@ -200,14 +206,14 @@ object Chatting {
                     Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9
                 )
             for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
-                chatLines.add(drawnLines[i].chatComponent.formattedText)
+                chatLines[drawnLines[i].chatComponent.formattedText] = drawnLines[i]
             }
 
             screenshot(chatLines)?.copyToClipboard()
         }
     }
 
-    private fun screenshot(messages: List<String>): BufferedImage? {
+    private fun screenshot(messages: HashMap<String, ChatLine>): BufferedImage? {
         if (messages.isEmpty()) {
             Notifications.INSTANCE.send("Chatting", "Chat window is empty.")
             return null
@@ -221,15 +227,15 @@ object Chatting {
         }
 
         val fr: FontRenderer = ModCompatHooks.fontRenderer
-        val width = messages.maxOf { fr.getStringWidth(it) } + 4
+        val width = messages.maxOf { fr.getStringWidth(it.key) + (if (ChattingConfig.showChatHeads && ((it.value as ChatLineHook).hasDetected() || ChattingConfig.offsetNonPlayerMessages)) 10 else 0) } + 4
         val fb: Framebuffer = createBindFramebuffer(width * 2, (messages.size * 9) * 2)
         val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
         GlStateManager.scale(2f, 2f, 1f)
         val scale = Minecraft.getMinecraft().gameSettings.chatScale
         GlStateManager.scale(scale, scale, 1f)
-        for (i in messages.indices) {
-            ModCompatHooks.redirectDrawString(messages[i], 0f, (messages.size - 1 - i) * 9f, 0xffffff)
+        messages.entries.forEachIndexed { i: Int, entry: MutableMap.MutableEntry<String, ChatLine> ->
+            ModCompatHooks.redirectDrawString(entry.key, 0f, (messages.size - 1 - i) * 9f, 0xffffff, entry.value)
         }
 
         val image = fb.screenshot(file)

@@ -1,8 +1,8 @@
 package cc.woverflow.chatting.gui.components
 
+import cc.polyfrost.oneconfig.renderer.TextRenderer
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.hook.GuiNewChatHook
-import cc.woverflow.chatting.utils.ModCompatHooks.drawBorderedString
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
@@ -85,10 +85,10 @@ open class CleanButton(
                 }
 
                 RenderType.FULL -> {
-                    fontrenderer.drawBorderedString(
+                    TextRenderer.drawBorderedText(
                         displayString,
-                        (xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2),
-                        yPosition + (height - 8) / 2,
+                        ((xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2)).toFloat(),
+                        (yPosition + (height - 8) / 2).toFloat(),
                         j,
                         (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity
                     )

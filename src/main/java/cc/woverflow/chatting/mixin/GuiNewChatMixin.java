@@ -167,23 +167,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             }
         }
         lineInBounds = false;
-        if (ChattingConfig.INSTANCE.getShowChatHeads()) {
-            ChatLineHook hook = ((ChatLineHook) chatting$drawingLine);
-            if (hook.hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages()) {
-                args.set(1, ((float) args.get(1)) + 10f);
-            }
-            NetworkPlayerInfo networkPlayerInfo = hook.getPlayerInfo();
-            if (networkPlayerInfo != null) {
-                GlStateManager.enableBlend();
-                GlStateManager.enableAlpha();
-                mc.getTextureManager().bindTexture(networkPlayerInfo.getLocationSkin());
-                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-                GlStateManager.color(1.0F, 1.0F, 1.0F, ColorUtils.getAlpha(args.get(3)) / 255f);
-                Gui.drawScaledCustomSizeModalRect((int) ((float) args.get(1) - 10f), (int) ((float) args.get(2) - 1f), 8.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
-                Gui.drawScaledCustomSizeModalRect((int) ((float) args.get(1) - 10f), (int) ((float) args.get(2) - 1f), 40.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            }
-        }
     }
 
     private boolean isInBounds(int left, int top, int right, int bottom, float chatScale) {
@@ -225,7 +208,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
-        return ModCompatHooks.redirectDrawString(text, x, y, color);
+        return ModCompatHooks.redirectDrawString(text, x, y, color, chatting$drawingLine);
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))

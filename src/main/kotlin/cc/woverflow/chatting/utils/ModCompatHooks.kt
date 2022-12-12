@@ -1,13 +1,22 @@
 package cc.woverflow.chatting.utils
 
+import cc.polyfrost.oneconfig.renderer.TextRenderer
+import cc.polyfrost.oneconfig.utils.dsl.getAlpha
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import cc.woverflow.chatting.Chatting.isBetterChat
 import cc.woverflow.chatting.Chatting.isPatcher
+import cc.woverflow.chatting.config.ChattingConfig.offsetNonPlayerMessages
+import cc.woverflow.chatting.config.ChattingConfig.showChatHeads
 import cc.woverflow.chatting.config.ChattingConfig.textRenderType
+import cc.woverflow.chatting.hook.ChatLineHook
 import cc.woverflow.chatting.hook.GuiNewChatHook
 import club.sk1er.patcher.config.PatcherConfig
 import com.llamalad7.betterchat.BetterChat
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.FontRenderer
+import net.minecraft.client.gui.Gui
+import net.minecraft.client.renderer.GlStateManager
 
 // This exists because mixin doesn't like dummy classes
 object ModCompatHooks {
@@ -32,48 +41,56 @@ object ModCompatHooks {
         get() = Minecraft.getMinecraft().fontRendererObj
 
     @JvmStatic
-    fun redirectDrawString(text: String, x: Float, y: Float, color: Int): Int {
-        return when (textRenderType) {
-            0 -> fontRenderer.drawString(text, x, y, color, false)
-            2 -> fontRenderer.drawBorderedString(
-                text,
-                x.toInt(),
-                y.toInt(),
-                color,
-                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity
-            )
-
-            else -> fontRenderer.drawString(text, x, y, color, true)
-        }
-    }
-
-
-    private val regex = Regex("(?i)\\u00A7[0-9a-f]")
-    private var bypassNameHighlight = false
-    fun FontRenderer.drawBorderedString(
-        text: String, x: Int, y: Int, color: Int, opacity: Int
-    ): Int {
-        val noColors = text.replace(regex, "\u00A7r")
-        var yes = 0
-        if (opacity > 3) {
-            bypassNameHighlight = true
-            for (xOff in -2..2) {
-                for (yOff in -2..2) {
-                    if (xOff * xOff != yOff * yOff) {
-                        yes +=
-                            drawString(
-                                noColors, (xOff / 2f) + x, (yOff / 2f) + y, (opacity) shl 24, false
-                            )
-
-                    }
-                }
+    fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine): Int {
+        var actualX = x
+        if (showChatHeads) {
+            val hook = chatLine as ChatLineHook
+            if (hook.hasDetected() || offsetNonPlayerMessages) {
+                actualX += 10f
             }
-            bypassNameHighlight = false
+            val networkPlayerInfo = hook.playerInfo
+            if (networkPlayerInfo != null) {
+                GlStateManager.enableBlend()
+                GlStateManager.enableAlpha()
+                GlStateManager.enableTexture2D()
+                mc.textureManager.bindTexture(networkPlayerInfo.locationSkin)
+                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
+                GlStateManager.color(1.0f, 1.0f, 1.0f, color.getAlpha() / 255f)
+                Gui.drawScaledCustomSizeModalRect(
+                    (x).toInt(),
+                    (y - 1f).toInt(),
+                    8.0f,
+                    8.0f,
+                    8,
+                    8,
+                    8,
+                    8,
+                    64.0f,
+                    64.0f
+                )
+                Gui.drawScaledCustomSizeModalRect(
+                    (x).toInt(),
+                    (y - 1f).toInt(),
+                    40.0f,
+                    8.0f,
+                    8,
+                    8,
+                    8,
+                    8,
+                    64.0f,
+                    64.0f
+                )
+                GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
+            }
         }
-        yes +=
-                //#if MODERN==0
-            drawString(text, x, y, color)
-
-        return yes
+        return when (textRenderType) {
+            0 -> fontRenderer.drawString(text, actualX, y, color, false)
+            2 -> TextRenderer.drawBorderedText(text,
+                actualX,
+                y,
+                color,
+                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
+            else -> fontRenderer.drawString(text, actualX, y, color, true)
+        }
     }
 }
