@@ -26,6 +26,7 @@ data class ChatTab(
     @SerializedName("hovered_color") val hoveredColor: Int?,
     @SerializedName("selected_color") val selectedColor: Int?,
     val prefix: String?,
+    val message: List<String>?,
 ) {
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes

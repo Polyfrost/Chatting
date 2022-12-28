@@ -1,25 +1,19 @@
 package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
-import cc.woverflow.chatting.hook.ChatLineHook;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
 import cc.woverflow.chatting.utils.RenderUtils;
-import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -75,7 +70,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow
     public abstract void deleteChatLine(int id);
 
-    @Shadow public abstract int getChatWidth();
+    @Shadow
+    public abstract int getChatWidth();
 
     @Unique
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
@@ -159,7 +155,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             float f = this.getChatScale();
             int left = 0;
             int top = (int) ((float) args.get(2) - 1);
-            int right = MathHelper.ceiling_float_int((float)getChatWidth() / f) + 4;
+            int right = MathHelper.ceiling_float_int((float) getChatWidth() / f) + 4;
             int bottom = (int) ((float) args.get(2) + 8);
             if ((chatting$shouldCopy && lineInBounds) || isInBounds(left, top, right, bottom, f)) {
                 chatting$shouldCopy = true;
@@ -186,6 +182,13 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
+        if (ChatTabs.INSTANCE.getCurrentTab().getMessage() != null && !ChatTabs.INSTANCE.getCurrentTab().getMessage().isEmpty()) {
+            List<ChatLine> list = new ArrayList<>();
+            for (String message : ChatTabs.INSTANCE.getCurrentTab().getMessage()) {
+                list.add(new ChatLine(0, new ChatComponentText(message), 0));
+            }
+            return list;
+        }
         return ChatSearchingManager.filterMessages(chatting$previousText, drawnChatLines);
     }
 
