@@ -187,7 +187,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             for (String message : ChatTabs.INSTANCE.getCurrentTab().getMessage()) {
                 list.add(new ChatLine(0, new ChatComponentText(message), 0));
             }
-            return list;
+            return ChatSearchingManager.filterMessages(chatting$previousText, list);
         }
         return ChatSearchingManager.filterMessages(chatting$previousText, drawnChatLines);
     }
