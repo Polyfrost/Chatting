@@ -150,8 +150,7 @@ object ChatTabs {
             color = TabButton.color,
             hoveredColor = TabButton.hoveredColor,
             selectedColor = TabButton.selectedColor,
-            prefix = "",
-            null
+            prefix = ""
         )
         val party = ChatTab(
             true,
@@ -220,8 +219,7 @@ object ChatTabs {
             color = TabButton.color,
             hoveredColor = TabButton.hoveredColor,
             selectedColor = TabButton.selectedColor,
-            prefix = "/pc ",
-            null
+            prefix = "/pc "
         )
         val guild = ChatTab(
             true,
@@ -241,8 +239,7 @@ object ChatTabs {
             color = TabButton.color,
             hoveredColor = TabButton.hoveredColor,
             selectedColor = TabButton.selectedColor,
-            prefix = "/gc ",
-            null
+            prefix = "/gc "
         )
         val pm = ChatTab(
             true,
@@ -262,8 +259,7 @@ object ChatTabs {
             color = TabButton.color,
             hoveredColor = TabButton.hoveredColor,
             selectedColor = TabButton.selectedColor,
-            prefix = "/r ",
-            null
+            prefix = "/r "
         )
         tabs.add(all)
         tabs.add(party)

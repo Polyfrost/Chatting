@@ -1,6 +1,7 @@
 package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
+import cc.polyfrost.oneconfig.libs.universal.ChatColor;
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
@@ -182,10 +183,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        if (ChatTabs.INSTANCE.getCurrentTab().getMessage() != null && !ChatTabs.INSTANCE.getCurrentTab().getMessage().isEmpty()) {
+        if (!ChatTabs.INSTANCE.getCurrentTab().getMessages().isEmpty()) {
             List<ChatLine> list = new ArrayList<>();
-            for (String message : ChatTabs.INSTANCE.getCurrentTab().getMessage()) {
-                list.add(new ChatLine(0, new ChatComponentText(message), 0));
+            for (String message : ChatTabs.INSTANCE.getCurrentTab().getMessages()) {
+                list.add(new ChatLine(0, new ChatComponentText(ChatColor.Companion.translateAlternateColorCodes('&', message)), 0));
             }
             return ChatSearchingManager.filterMessages(chatting$previousText, list);
         }

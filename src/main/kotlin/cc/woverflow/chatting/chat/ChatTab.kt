@@ -26,11 +26,11 @@ data class ChatTab(
     @SerializedName("hovered_color") val hoveredColor: Int?,
     @SerializedName("selected_color") val selectedColor: Int?,
     val prefix: String?,
-    val message: List<String>?,
 ) {
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
     lateinit var compiledIgnoreRegex: ChatRegexes
+    var messages: List<String> = ArrayList()
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {
