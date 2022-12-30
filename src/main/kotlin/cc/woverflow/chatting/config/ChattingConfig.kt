@@ -240,8 +240,7 @@ object ChattingConfig :
                         color = TabButton.color,
                         hoveredColor = TabButton.hoveredColor,
                         selectedColor = TabButton.selectedColor,
-                        prefix = "",
-                        message = null
+                        prefix = ""
                     )
                 dummy.initialize()
                 ChatTabs.currentTab = dummy
