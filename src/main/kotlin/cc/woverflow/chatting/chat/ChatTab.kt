@@ -30,7 +30,7 @@ data class ChatTab(
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
     lateinit var compiledIgnoreRegex: ChatRegexes
-    var messages: List<String> = ArrayList()
+    @Transient var messages: List<String> = ArrayList()
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {
