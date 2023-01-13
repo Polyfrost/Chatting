@@ -14,9 +14,11 @@ object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
     private val PARSER = JsonParser()
     val tabs = arrayListOf<ChatTab>()
+    var previousTab: ChatTab? = null
     var currentTab: ChatTab? = null
         set(value) {
             if (value != null) {
+                previousTab = field
                 field = value
                 if (Minecraft.getMinecraft().theWorld != null) {
                     Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()

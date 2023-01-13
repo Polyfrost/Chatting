@@ -1,25 +1,19 @@
 package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
-import cc.woverflow.chatting.hook.ChatLineHook;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
 import cc.woverflow.chatting.utils.RenderUtils;
-import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -75,7 +69,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow
     public abstract void deleteChatLine(int id);
 
-    @Shadow public abstract int getChatWidth();
+    @Shadow
+    public abstract int getChatWidth();
+
+    @Shadow public abstract void printChatMessage(IChatComponent chatComponent);
 
     @Unique
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
@@ -91,7 +88,9 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Inject(method = "setChatLine", at = @At("HEAD"), cancellable = true)
     private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         ChatSearchingManager.getCache().invalidateAll();
-        handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
+        if (updateCounter != -1) {
+            handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
+        }
     }
 
     /*?
@@ -159,7 +158,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             float f = this.getChatScale();
             int left = 0;
             int top = (int) ((float) args.get(2) - 1);
-            int right = MathHelper.ceiling_float_int((float)getChatWidth() / f) + 4;
+            int right = MathHelper.ceiling_float_int((float) getChatWidth() / f) + 4;
             int bottom = (int) ((float) args.get(2) + 8);
             if ((chatting$shouldCopy && lineInBounds) || isInBounds(left, top, right, bottom, f)) {
                 chatting$shouldCopy = true;
