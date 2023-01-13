@@ -34,26 +34,30 @@ public class ChatLineMixin implements ChatLineHook {
     private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {
         chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
+        if (netHandler == null) return;
         Map<String, NetworkPlayerInfo> nicknameCache = new HashMap<>();
-        for (String word : iChatComponent.getFormattedText().split("(§.)|\\W")) {
-            if (word.isEmpty()) continue;
-            playerInfo = netHandler.getPlayerInfo(word);
-            if (playerInfo == null) {
-                playerInfo = getPlayerFromNickname(word, netHandler, nicknameCache);
-            }
-            if (playerInfo != null) {
-                detectedPlayerInfo = playerInfo;
-                detected = true;
-                if (playerInfo == lastPlayerInfo) {
-                    first = false;
-                    if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()) {
-                        playerInfo = null;
-                    }
-                } else {
-                    lastPlayerInfo = playerInfo;
+        try {
+            for (String word : iChatComponent.getFormattedText().split("(§.)|\\W")) {
+                if (word.isEmpty()) continue;
+                playerInfo = netHandler.getPlayerInfo(word);
+                if (playerInfo == null) {
+                    playerInfo = getPlayerFromNickname(word, netHandler, nicknameCache);
                 }
-                break;
+                if (playerInfo != null) {
+                    detectedPlayerInfo = playerInfo;
+                    detected = true;
+                    if (playerInfo == lastPlayerInfo) {
+                        first = false;
+                        if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()) {
+                            playerInfo = null;
+                        }
+                    } else {
+                        lastPlayerInfo = playerInfo;
+                    }
+                    break;
+                }
             }
+        } catch (Exception ignored) {
         }
     }
 
