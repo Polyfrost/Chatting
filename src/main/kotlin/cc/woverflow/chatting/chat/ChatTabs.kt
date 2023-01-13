@@ -29,6 +29,9 @@ object ChatTabs {
             if (value != null) {
                 previousTab = field
                 field = value
+                if (Minecraft.getMinecraft().theWorld != null) {
+                    Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
+                }
             }
         }
     private var initialized = false
