@@ -1,11 +1,9 @@
 package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.libs.universal.ChatColor;
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
-import cc.woverflow.chatting.chat.ChatTab;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
@@ -26,13 +24,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
-import tv.twitch.chat.Chat;
 
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 

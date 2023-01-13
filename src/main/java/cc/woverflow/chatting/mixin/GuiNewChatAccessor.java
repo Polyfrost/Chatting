@@ -1,6 +1,5 @@
 package cc.woverflow.chatting.mixin;
 
-import cc.polyfrost.oneconfig.libs.checker.units.qual.A;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
 import org.spongepowered.asm.mixin.Mixin;
