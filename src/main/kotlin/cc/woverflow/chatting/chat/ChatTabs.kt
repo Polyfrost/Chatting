@@ -77,6 +77,14 @@ object ChatTabs {
                         chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(GSON.toJson(chatTabJson))
                     }
+                    5 -> {
+                        // ver 6 changes pm regex
+                        chatTabJson.tabs.forEach {
+                            applyVersion6Changes(it.asJsonObject)
+                        }
+                        chatTabJson.version = ChatTabsJson.VERSION
+                        tabFile.writeText(GSON.toJson(chatTabJson))
+                    }
                 }
                 chatTabJson.tabs.forEach {
                     val chatTab = GSON.fromJson(it.toString(), ChatTab::class.java)
@@ -116,6 +124,11 @@ object ChatTabs {
 
     private fun applyVersion5Changes(json: JsonObject) {
         json.addProperty("lowercase", false)
+    }
+
+    private fun applyVersion6Changes(json: JsonObject) {
+        json.add("startsWith", JsonArray())
+        json.add("uncompiledRegex", JsonArray())
     }
 
     fun shouldRender(message: IChatComponent): Boolean {
