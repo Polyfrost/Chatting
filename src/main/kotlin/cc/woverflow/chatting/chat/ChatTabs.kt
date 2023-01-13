@@ -1,26 +1,34 @@
 package cc.woverflow.chatting.chat
 
+import cc.polyfrost.oneconfig.libs.universal.ChatColor.Companion.translateAlternateColorCodes
+import cc.polyfrost.oneconfig.utils.Multithreading
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.gui.components.TabButton
+import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.ChatLine
+import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
 import java.io.File
+import java.lang.reflect.Executable
+import java.util.*
+import java.util.function.Consumer
+import kotlin.collections.ArrayList
 
 object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
     private val PARSER = JsonParser()
     val tabs = arrayListOf<ChatTab>()
+    var previousTab: ChatTab? = null
     var currentTab: ChatTab? = null
         set(value) {
             if (value != null) {
+                previousTab = field
                 field = value
-                if (Minecraft.getMinecraft().theWorld != null) {
-                    Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
-                }
             }
         }
     private var initialized = false

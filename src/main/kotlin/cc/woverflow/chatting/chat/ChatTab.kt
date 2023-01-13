@@ -1,8 +1,12 @@
 package cc.woverflow.chatting.chat
 
+import cc.polyfrost.oneconfig.libs.universal.ChatColor
 import cc.woverflow.chatting.gui.components.TabButton
+import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import com.google.gson.annotations.SerializedName
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.ChatLine
+import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
 import net.minecraft.util.IChatComponent
 import java.util.*
@@ -30,7 +34,7 @@ data class ChatTab(
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
     lateinit var compiledIgnoreRegex: ChatRegexes
-    @Transient var messages: List<String> = ArrayList()
+    @Transient var messages: List<String>? = null
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {
@@ -42,6 +46,15 @@ data class ChatTab(
             x += 6 + width
             return@run returnValue
         }, width + 4, 12, this)
+
+        if (messages != null) {
+            messages!!.forEach {
+                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).chatLines.add(
+                    0,
+                    ChatLine(0, ChatComponentText(ChatColor.translateAlternateColorCodes('&', it)), 0)
+                )
+            }
+        }
     }
 
     fun shouldRender(chatComponent: IChatComponent): Boolean {

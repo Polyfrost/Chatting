@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.libs.universal.ChatColor;
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
+import cc.woverflow.chatting.chat.ChatTab;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
@@ -25,11 +26,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import tv.twitch.chat.Chat;
 
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -74,6 +77,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow
     public abstract int getChatWidth();
 
+    @Shadow public abstract void printChatMessage(IChatComponent chatComponent);
+
     @Unique
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
 
@@ -88,7 +93,9 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Inject(method = "setChatLine", at = @At("HEAD"), cancellable = true)
     private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         ChatSearchingManager.getCache().invalidateAll();
-        handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
+        if (updateCounter != -1) {
+            handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
+        }
     }
 
     /*?
@@ -183,13 +190,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        if (!ChatTabs.INSTANCE.getCurrentTab().getMessages().isEmpty()) {
-            List<ChatLine> list = new ArrayList<>();
-            for (String message : ChatTabs.INSTANCE.getCurrentTab().getMessages()) {
-                list.add(new ChatLine(0, new ChatComponentText(ChatColor.Companion.translateAlternateColorCodes('&', message)), 0));
-            }
-            return ChatSearchingManager.filterMessages(chatting$previousText, list);
-        }
         return ChatSearchingManager.filterMessages(chatting$previousText, drawnChatLines);
     }
 
