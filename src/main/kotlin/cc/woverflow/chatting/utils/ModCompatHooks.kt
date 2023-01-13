@@ -41,9 +41,9 @@ object ModCompatHooks {
         get() = Minecraft.getMinecraft().fontRendererObj
 
     @JvmStatic
-    fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine): Int {
+    fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {
         var actualX = x
-        if (showChatHeads) {
+        if (showChatHeads && !screenshot) {
             val hook = chatLine as ChatLineHook
             if (hook.hasDetected() || offsetNonPlayerMessages) {
                 actualX += 10f

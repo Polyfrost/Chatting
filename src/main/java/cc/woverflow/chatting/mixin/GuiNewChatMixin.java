@@ -208,7 +208,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
-        return ModCompatHooks.redirectDrawString(text, x, y, color, chatting$drawingLine);
+        return ModCompatHooks.redirectDrawString(text, x, y, color, chatting$drawingLine, false);
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))

@@ -235,7 +235,7 @@ object Chatting {
         val scale = Minecraft.getMinecraft().gameSettings.chatScale
         GlStateManager.scale(scale, scale, 1f)
         messages.entries.forEachIndexed { i: Int, entry: MutableMap.MutableEntry<String, ChatLine> ->
-            ModCompatHooks.redirectDrawString(entry.key, 0f, (messages.size - 1 - i) * 9f, 0xffffff, entry.value)
+            ModCompatHooks.redirectDrawString(entry.key, 0f, (messages.size - 1 - i) * 9f, 0xffffff, entry.value, true)
         }
 
         val image = fb.screenshot(file)
