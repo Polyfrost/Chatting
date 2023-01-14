@@ -2,7 +2,7 @@ package cc.woverflow.chatting.gui.components
 
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.woverflow.chatting.Chatting
-import cc.woverflow.chatting.hook.GuiNewChatHook
+import cc.woverflow.chatting.chat.ChatSearchingManager
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiTextField
@@ -23,7 +23,7 @@ class SearchButton :
         chatBox = !chatBox
         inputField.setEnabled(chatBox)
         inputField.isFocused = chatBox
-        (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).prevText = ""
+        ChatSearchingManager.lastSearch = ""
         inputField.text = ""
     }
 

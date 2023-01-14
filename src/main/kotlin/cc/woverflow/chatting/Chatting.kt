@@ -12,7 +12,6 @@ import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.command.ChattingCommand
 import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.hook.ChatLineHook
-import cc.woverflow.chatting.hook.GuiNewChatHook
 import cc.woverflow.chatting.mixin.GuiNewChatAccessor
 import cc.woverflow.chatting.utils.ModCompatHooks
 import cc.woverflow.chatting.utils.copyToClipboard
@@ -32,7 +31,6 @@ import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
@@ -193,7 +191,7 @@ object Chatting {
         val chat = hud.chatGUI
         val chatLines = HashMap<String, ChatLine>()
         ChatSearchingManager.filterMessages(
-            (chat as GuiNewChatHook).prevText,
+            ChatSearchingManager.lastSearch,
             (chat as GuiNewChatAccessor).drawnChatLines
         )?.let { drawnLines ->
             val chatHeight =
