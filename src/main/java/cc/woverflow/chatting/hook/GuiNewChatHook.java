@@ -17,9 +17,5 @@ public interface GuiNewChatHook {
         throw new AssertionError("getFullMessage not overridden on GuiNewChat");
     }
 
-    String getPrevText();
-
-    void setPrevText(String prevText);
-
     int getTextOpacity();
 }

@@ -3,8 +3,6 @@ package cc.woverflow.chatting.chat
 import cc.polyfrost.oneconfig.libs.caffeine.cache.Cache
 import cc.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
 import cc.polyfrost.oneconfig.libs.universal.wrappers.message.UTextComponent
-import cc.woverflow.chatting.hook.GuiNewChatHook
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -27,6 +25,8 @@ object ChatSearchingManager {
     @JvmStatic
     val cache: Cache<String, List<ChatLine>> = Caffeine.newBuilder().executor(POOL).maximumSize(5000).build()
 
+    var lastSearch = ""
+
     @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? {
         if (text.isBlank()) return list
@@ -38,10 +38,5 @@ object ChatSearchingManager {
             })
             cache.getIfPresent(text)
         }
-    }
-
-    @JvmStatic
-    fun setPrevText(text: String) {
-        (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).prevText = text
     }
 }

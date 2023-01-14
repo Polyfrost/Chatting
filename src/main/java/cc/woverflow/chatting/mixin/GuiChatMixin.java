@@ -78,7 +78,7 @@ public abstract class GuiChatMixin extends GuiScreen {
                 return;
             }
             searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
-            ChatSearchingManager.setPrevText(searchButton.getInputField().getText());
+            ChatSearchingManager.INSTANCE.setLastSearch(searchButton.getInputField().getText());
         }
     }
 
