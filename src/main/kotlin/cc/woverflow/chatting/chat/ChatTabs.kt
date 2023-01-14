@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
 import net.minecraft.client.Minecraft
 import net.minecraft.util.IChatComponent
 import java.io.File
@@ -46,6 +47,7 @@ object ChatTabs {
                             applyVersion3Changes(it.asJsonObject)
                             applyVersion4Changes(it.asJsonObject)
                             applyVersion5Changes(it.asJsonObject)
+                            applyVersion6Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(GSON.toJson(chatTabJson))
@@ -56,6 +58,7 @@ object ChatTabs {
                             applyVersion3Changes(it.asJsonObject)
                             applyVersion4Changes(it.asJsonObject)
                             applyVersion5Changes(it.asJsonObject)
+                            applyVersion6Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(GSON.toJson(chatTabJson))
@@ -65,6 +68,7 @@ object ChatTabs {
                         chatTabJson.tabs.forEach {
                             applyVersion4Changes(it.asJsonObject)
                             applyVersion5Changes(it.asJsonObject)
+                            applyVersion6Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(GSON.toJson(chatTabJson))
@@ -73,6 +77,7 @@ object ChatTabs {
                         // ver 5 adds lowercase
                         chatTabJson.tabs.forEach {
                             applyVersion5Changes(it.asJsonObject)
+                            applyVersion6Changes(it.asJsonObject)
                         }
                         chatTabJson.version = ChatTabsJson.VERSION
                         tabFile.writeText(GSON.toJson(chatTabJson))
@@ -127,8 +132,31 @@ object ChatTabs {
     }
 
     private fun applyVersion6Changes(json: JsonObject) {
-        json.add("startsWith", JsonArray())
-        json.add("uncompiledRegex", JsonArray())
+        if (json.has("starts")) {
+            val starts = json["starts"].asJsonArray
+            var detected = false
+            starts.iterator().let {
+                while (it.hasNext()) {
+                    when (it.next().asString) {
+                        "To " -> {
+                            detected = true
+                            it.remove()
+                        }
+                        "From " -> {
+                            detected = true
+                            it.remove()
+                        }
+                    }
+                }
+            }
+            if (detected) {
+                json.add("regex", JsonArray().apply {
+                    add(JsonPrimitive("^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>§7.*)(?:§r)?\$"))
+                })
+                json.remove("unformatted")
+                json.addProperty("unformatted", false)
+            }
+        }
     }
 
     fun shouldRender(message: IChatComponent): Boolean {
