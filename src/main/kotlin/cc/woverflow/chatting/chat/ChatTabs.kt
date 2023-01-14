@@ -1,5 +1,6 @@
 package cc.woverflow.chatting.chat
 
+import cc.polyfrost.oneconfig.config.core.ConfigUtils
 import cc.woverflow.chatting.Chatting
 import cc.woverflow.chatting.gui.components.TabButton
 import com.google.gson.GsonBuilder
@@ -26,7 +27,8 @@ object ChatTabs {
         }
     private var initialized = false
 
-    private val tabFile = File(Chatting.modDir, "chattabs.json")
+    private val tabFile = ConfigUtils.getProfileFile("chattabs.json")
+    private val oldTabFile = File(Chatting.oldModDir, "chattabs.json")
 
     fun initialize() {
         if (initialized) {
@@ -35,78 +37,87 @@ object ChatTabs {
             initialized = true
         }
         if (!tabFile.exists()) {
-            generateNewFile()
-        } else {
-            try {
-                val chatTabJson = GSON.fromJson(tabFile.readText(), ChatTabsJson::class.java)
-                when (chatTabJson.version) {
-                    1 -> {
-                        // ver 2 adds `enabled`
-                        chatTabJson.tabs.forEach {
-                            applyVersion2Changes(it.asJsonObject)
-                            applyVersion3Changes(it.asJsonObject)
-                            applyVersion4Changes(it.asJsonObject)
-                            applyVersion5Changes(it.asJsonObject)
-                            applyVersion6Changes(it.asJsonObject)
-                        }
-                        chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(GSON.toJson(chatTabJson))
-                    }
-                    2 -> {
-                        // ver 3 adds ignore_
-                        chatTabJson.tabs.forEach {
-                            applyVersion3Changes(it.asJsonObject)
-                            applyVersion4Changes(it.asJsonObject)
-                            applyVersion5Changes(it.asJsonObject)
-                            applyVersion6Changes(it.asJsonObject)
-                        }
-                        chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(GSON.toJson(chatTabJson))
-                    }
-                    3 -> {
-                        // ver 4 adds color options
-                        chatTabJson.tabs.forEach {
-                            applyVersion4Changes(it.asJsonObject)
-                            applyVersion5Changes(it.asJsonObject)
-                            applyVersion6Changes(it.asJsonObject)
-                        }
-                        chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(GSON.toJson(chatTabJson))
-                    }
-                    4 -> {
-                        // ver 5 adds lowercase
-                        chatTabJson.tabs.forEach {
-                            applyVersion5Changes(it.asJsonObject)
-                            applyVersion6Changes(it.asJsonObject)
-                        }
-                        chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(GSON.toJson(chatTabJson))
-                    }
-                    5 -> {
-                        // ver 6 changes pm regex
-                        chatTabJson.tabs.forEach {
-                            applyVersion6Changes(it.asJsonObject)
-                        }
-                        chatTabJson.version = ChatTabsJson.VERSION
-                        tabFile.writeText(GSON.toJson(chatTabJson))
-                    }
-                }
-                chatTabJson.tabs.forEach {
-                    val chatTab = GSON.fromJson(it.toString(), ChatTab::class.java)
-                    if (chatTab.enabled) {
-                        tabs.add(chatTab)
-                    }
-                }
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                tabFile.delete()
+            if (oldTabFile.exists()) {
+                tabFile.writeText(oldTabFile.readText())
+                handleFile()
+            } else {
                 generateNewFile()
             }
+        } else {
+            handleFile()
         }
         tabs.forEach {
             it.initialize()
         }
         currentTab = tabs[0]
+    }
+
+    private fun handleFile() {
+        try {
+            val chatTabJson = GSON.fromJson(tabFile.readText(), ChatTabsJson::class.java)
+            when (chatTabJson.version) {
+                1 -> {
+                    // ver 2 adds `enabled`
+                    chatTabJson.tabs.forEach {
+                        applyVersion2Changes(it.asJsonObject)
+                        applyVersion3Changes(it.asJsonObject)
+                        applyVersion4Changes(it.asJsonObject)
+                        applyVersion5Changes(it.asJsonObject)
+                        applyVersion6Changes(it.asJsonObject)
+                    }
+                    chatTabJson.version = ChatTabsJson.VERSION
+                    tabFile.writeText(GSON.toJson(chatTabJson))
+                }
+                2 -> {
+                    // ver 3 adds ignore_
+                    chatTabJson.tabs.forEach {
+                        applyVersion3Changes(it.asJsonObject)
+                        applyVersion4Changes(it.asJsonObject)
+                        applyVersion5Changes(it.asJsonObject)
+                        applyVersion6Changes(it.asJsonObject)
+                    }
+                    chatTabJson.version = ChatTabsJson.VERSION
+                    tabFile.writeText(GSON.toJson(chatTabJson))
+                }
+                3 -> {
+                    // ver 4 adds color options
+                    chatTabJson.tabs.forEach {
+                        applyVersion4Changes(it.asJsonObject)
+                        applyVersion5Changes(it.asJsonObject)
+                        applyVersion6Changes(it.asJsonObject)
+                    }
+                    chatTabJson.version = ChatTabsJson.VERSION
+                    tabFile.writeText(GSON.toJson(chatTabJson))
+                }
+                4 -> {
+                    // ver 5 adds lowercase
+                    chatTabJson.tabs.forEach {
+                        applyVersion5Changes(it.asJsonObject)
+                        applyVersion6Changes(it.asJsonObject)
+                    }
+                    chatTabJson.version = ChatTabsJson.VERSION
+                    tabFile.writeText(GSON.toJson(chatTabJson))
+                }
+                5 -> {
+                    // ver 6 changes pm regex
+                    chatTabJson.tabs.forEach {
+                        applyVersion6Changes(it.asJsonObject)
+                    }
+                    chatTabJson.version = ChatTabsJson.VERSION
+                    tabFile.writeText(GSON.toJson(chatTabJson))
+                }
+            }
+            chatTabJson.tabs.forEach {
+                val chatTab = GSON.fromJson(it.toString(), ChatTab::class.java)
+                if (chatTab.enabled) {
+                    tabs.add(chatTab)
+                }
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            tabFile.delete()
+            generateNewFile()
+        }
     }
 
     private fun applyVersion2Changes(json: JsonObject) {

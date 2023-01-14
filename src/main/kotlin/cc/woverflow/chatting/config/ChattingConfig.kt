@@ -20,7 +20,7 @@ object ChattingConfig : Config(
     Mod(
         Chatting.NAME,
         ModType.UTIL_QOL,
-        VigilanceMigrator(File(Chatting.modDir, Chatting.ID + ".toml").toPath().toString())
+        VigilanceMigrator(File(Chatting.oldModDir, Chatting.ID + ".toml").toPath().toString())
     ), "chatting.json"
 ) {
 

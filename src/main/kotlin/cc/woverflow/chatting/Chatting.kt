@@ -67,12 +67,7 @@ object Chatting {
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
-    val modDir = File(File(Minecraft.getMinecraft().mcDataDir, "W-OVERFLOW"), NAME)
-
-    @Mod.EventHandler
-    fun onFMLPreInitialization(event: FMLPreInitializationEvent) {
-        if (!modDir.exists()) modDir.mkdirs()
-    }
+    val oldModDir = File(File(Minecraft.getMinecraft().mcDataDir, "W-OVERFLOW"), NAME)
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {

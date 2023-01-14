@@ -1,12 +1,14 @@
 package cc.woverflow.chatting.chat
 
+import cc.polyfrost.oneconfig.config.core.ConfigUtils
 import cc.woverflow.chatting.Chatting
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.io.File
 
 object ChatShortcuts {
-    private val shortcutsFile = File(Chatting.modDir, "chatshortcuts.json")
+    private val oldShortcutsFile = File(Chatting.oldModDir, "chatshortcuts.json")
+    private val shortcutsFile = ConfigUtils.getProfileFile("chatshortcuts.json")
     private val PARSER = JsonParser()
 
     private var initialized = false
@@ -31,9 +33,13 @@ object ChatShortcuts {
         }
         if (!shortcutsFile.exists()) {
             shortcutsFile.createNewFile()
-            shortcutsFile.writeText(
+            if (oldShortcutsFile.exists()) {
+                shortcutsFile.writeText(
+                    oldShortcutsFile.readText()
+                )
+            } else {
                 JsonObject().toString()
-            )
+            }
         } else {
             val jsonObj = PARSER.parse(shortcutsFile.readText()).asJsonObject
             for (shortcut in jsonObj.entrySet()) {

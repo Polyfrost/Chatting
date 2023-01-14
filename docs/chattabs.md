@@ -2,7 +2,7 @@
 
 ## Syntax
 
-The file for Chat Tabs is in `{MINECRAFT DIRECTORY}/W-OVERFLOW/Chatting/chattabs.json`. The default file will look
+The file for Chat Tabs is in `{MINECRAFT DIRECTORY}/OneConfig/profiles/{PROFILE}/chattabs.json`. However, Chatting versions below 1.4.2-beta5 use `{MINECRAFT DIRECTORY}/W-OVERFLOW/Chatting/chattabs.json`. The default file will look
 something like this:
 
 ```json
@@ -104,11 +104,10 @@ something like this:
     {
       "enabled": true,
       "name": "PM",
-      "unformatted": true,
+      "unformatted": false,
       "lowercase": false,
-      "starts": [
-        "To ",
-        "From "
+      "regex": [
+        "^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>§7.*)(?:§r)?$"
       ],
       "color": 14737632,
       "hovered_color": 16777120,
@@ -116,7 +115,7 @@ something like this:
       "prefix": "/r "
     }
   ],
-  "version": 5
+  "version": 6
 }
 ```
 
@@ -230,6 +229,10 @@ This can be used to automatically send messages in a specific channel in servers
 The `lowercase` property makes the message trigger lowercase.
 
 ## Chat Tabs JSON Changelogs
+
+### Version 6 (Chatting 1.4.2 beta5)
+- Changed PM tab to use regex instead of starts and sets `unformatted` to false
+- Changed directory of Chat Tabs JSON to `{MINECRAFT DIRECTORY}/OneConfig/profiles/{PROFILE}/chattabs.json`
 
 ### Version 5 (Chatting 1.4.0 [04363f5])
 - The `prefix` property is no longer a required property.
