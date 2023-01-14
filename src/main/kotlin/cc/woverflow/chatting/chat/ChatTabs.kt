@@ -26,6 +26,7 @@ object ChatTabs {
             return returnValue
         }
     }
+    var hasCancelledAnimation = false
     private var initialized = false
 
     private val tabFile = ConfigUtils.getProfileFile("chattabs.json")

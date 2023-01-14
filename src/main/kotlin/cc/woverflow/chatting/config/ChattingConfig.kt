@@ -32,7 +32,7 @@ object ChattingConfig : Config(
     @Switch(
         name = "Remove Scroll Bar", category = "General"
     )
-    var removeScrollBar = false
+    var removeScrollBar = true
 
     @Color(
         name = "Chat Background Color", category = "General", allowAlpha = false
@@ -58,6 +58,12 @@ object ChattingConfig : Config(
         name = "Inform Outdated Mods", category = "General"
     )
     var informForAlternatives = true
+
+    @Switch(
+        name = "Smooth Chat Messages",
+        category = "Animations"
+    )
+    var smoothChat = true
 
     @Switch(
         name = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads"
@@ -123,7 +129,7 @@ object ChattingConfig : Config(
     @Switch(
         name = "Custom Chat Height", category = "Chat Window"
     )
-    var customChatHeight = true
+    var customChatHeight = false
 
     @Slider(
         min = 180F, max = 2160F, name = "Focused Height (px)", category = "Chat Window"
