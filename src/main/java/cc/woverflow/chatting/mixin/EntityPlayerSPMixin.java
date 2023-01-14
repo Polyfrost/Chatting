@@ -1,21 +1,36 @@
 package cc.woverflow.chatting.mixin;
 
+import cc.woverflow.chatting.chat.ChatTab;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.client.C01PacketChatMessage;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(EntityPlayerSP.class)
+@Mixin(value = EntityPlayerSP.class, priority = 0)
 public class EntityPlayerSPMixin {
-    @ModifyVariable(method = "sendChatMessage", at = @At("HEAD"), ordinal = 0, argsOnly = true)
-    private String handleSentMessages(String value) {
-        if (value.startsWith("/")) return value;
-        if (ChattingConfig.INSTANCE.getChatTabs() && ChatTabs.INSTANCE.getCurrentTab() != null && ChatTabs.INSTANCE.getCurrentTab().getPrefix() != null && !ChatTabs.INSTANCE.getCurrentTab().getPrefix().isEmpty()) {
-            return ChatTabs.INSTANCE.getCurrentTab().getPrefix() + value;
+    @Shadow @Final public NetHandlerPlayClient sendQueue;
+
+    @Redirect(method = "sendChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/NetHandlerPlayClient;addToSendQueue(Lnet/minecraft/network/Packet;)V"))
+    private void handleSentMessages(NetHandlerPlayClient instance, Packet<?> packet, String value) {
+        if (value.startsWith("/")) {
+            sendQueue.addToSendQueue(packet);
+            return;
+        }
+        if (ChattingConfig.INSTANCE.getChatTabs() && !ChatTabs.INSTANCE.getCurrentTabs().isEmpty()) {
+            for (ChatTab tab : ChatTabs.INSTANCE.getTabs()) {
+                if (tab.getPrefix() != null && !tab.getPrefix().isEmpty()) {
+                    sendQueue.addToSendQueue(new C01PacketChatMessage(tab.getPrefix() + value));
+                }
+            }
         } else {
-            return value;
+            sendQueue.addToSendQueue(packet);
         }
     }
 }

@@ -16,15 +16,16 @@ object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
     private val PARSER = JsonParser()
     val tabs = arrayListOf<ChatTab>()
-    var currentTab: ChatTab? = null
-        set(value) {
-            if (value != null) {
-                field = value
-                if (Minecraft.getMinecraft().theWorld != null) {
-                    Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
-                }
+    var currentTabs: ArrayList<ChatTab?> = object : ArrayList<ChatTab?>() {
+        override fun add(element: ChatTab?): Boolean {
+            if (element == null) return false
+            val returnValue = super.add(element)
+            if (Minecraft.getMinecraft().theWorld != null && returnValue) {
+                Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
             }
+            return returnValue
         }
+    }
     private var initialized = false
 
     private val tabFile = ConfigUtils.getProfileFile("chattabs.json")
@@ -49,7 +50,8 @@ object ChatTabs {
         tabs.forEach {
             it.initialize()
         }
-        currentTab = tabs[0]
+        currentTabs.clear()
+        currentTabs.add(tabs[0])
     }
 
     private fun handleFile() {
@@ -171,7 +173,13 @@ object ChatTabs {
     }
 
     fun shouldRender(message: IChatComponent): Boolean {
-        return currentTab?.shouldRender(message) ?: true
+        if (currentTabs.isEmpty()) return true
+        for (tab in currentTabs) {
+            if (tab?.shouldRender(message) == true) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun generateNewFile() {

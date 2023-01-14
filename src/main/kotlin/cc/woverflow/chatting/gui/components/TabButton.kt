@@ -1,5 +1,6 @@
 package cc.woverflow.chatting.gui.components
 
+import cc.polyfrost.oneconfig.libs.universal.UKeyboard
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
@@ -21,11 +22,20 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
     }) {
 
     override fun onMousePress() {
-        ChatTabs.currentTab = chatTab
+        if (UKeyboard.isShiftKeyDown()) {
+            if (ChatTabs.currentTabs.contains(chatTab)) {
+                ChatTabs.currentTabs.remove(chatTab)
+            } else {
+                ChatTabs.currentTabs.add(chatTab)
+            }
+        } else {
+            ChatTabs.currentTabs.clear()
+            ChatTabs.currentTabs.add(chatTab)
+        }
     }
 
     override fun isEnabled(): Boolean {
-        return chatTab != ChatTabs.currentTab
+        return ChatTabs.currentTabs.contains(chatTab)
     }
 
     companion object {

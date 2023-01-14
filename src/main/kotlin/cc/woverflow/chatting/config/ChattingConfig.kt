@@ -222,9 +222,11 @@ object ChattingConfig : Config(
                     prefix = ""
                 )
                 dummy.initialize()
-                ChatTabs.currentTab = dummy
+                ChatTabs.currentTabs.clear()
+                ChatTabs.currentTabs.add(dummy)
             } else {
-                ChatTabs.currentTab = ChatTabs.tabs[0]
+                ChatTabs.currentTabs.clear()
+                ChatTabs.currentTabs.add(ChatTabs.tabs[0])
             }
         }
         addListener("chatShortcuts") {
