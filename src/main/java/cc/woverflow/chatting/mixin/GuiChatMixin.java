@@ -8,10 +8,12 @@ import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.ClearButton;
 import cc.woverflow.chatting.gui.components.ScreenshotButton;
 import cc.woverflow.chatting.gui.components.SearchButton;
+import cc.woverflow.chatting.hook.ChatLineHook;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -85,7 +87,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
+        if (hook.isHovering() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
             GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
             GlStateManager.disableLighting();
         }
@@ -101,15 +103,23 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.shouldCopy() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
-            Transferable message = hook.getChattingChatComponent(Mouse.getY());
-            if (message == null) return;
-            try {
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(message, null);
-            } catch (Exception e) {
-                e.printStackTrace();
+        if (hook.isHovering()) {
+            if (((hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
+                Transferable message = hook.getChattingChatComponent(Mouse.getY());
+                if (message == null) return;
+                try {
+                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(message, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if ((hook.getRight() + ModCompatHooks.getXOffset() + 13) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 23 > x) {
+                ChatLine chatLine = hook.getHoveredLine(Mouse.getY());
+                if (chatLine == null) return;
+                ((GuiNewChatAccessor) Minecraft.getMinecraft().ingameGUI.getChatGUI()).getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
+                ((GuiNewChatAccessor) Minecraft.getMinecraft().ingameGUI.getChatGUI()).getChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
             }
         }
+
     }
 
     @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)

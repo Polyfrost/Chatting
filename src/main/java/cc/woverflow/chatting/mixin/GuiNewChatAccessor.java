@@ -13,5 +13,8 @@ public interface GuiNewChatAccessor {
     List<ChatLine> getDrawnChatLines();
 
     @Accessor
+    List<ChatLine> getChatLines();
+
+    @Accessor
     int getScrollPos();
 }

@@ -12,4 +12,6 @@ public interface ChatLineHook {
     NetworkPlayerInfo getPlayerInfo();
 
     void updatePlayerInfo();
+
+    long getUniqueId();
 }

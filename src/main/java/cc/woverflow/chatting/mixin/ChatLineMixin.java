@@ -29,9 +29,13 @@ public class ChatLineMixin implements ChatLineHook {
     private NetworkPlayerInfo playerInfo;
     private NetworkPlayerInfo detectedPlayerInfo;
     private static NetworkPlayerInfo lastPlayerInfo;
+    private static long lastUniqueId = 0;
+    private long uniqueId = 0;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {
+        lastUniqueId++;
+        uniqueId = lastUniqueId;
         chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
         if (netHandler == null) return;
@@ -101,5 +105,10 @@ public class ChatLineMixin implements ChatLineHook {
         } else {
             playerInfo = detectedPlayerInfo;
         }
+    }
+
+    @Override
+    public long getUniqueId() {
+        return uniqueId;
     }
 }

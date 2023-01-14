@@ -1,20 +1,18 @@
 package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import cc.polyfrost.oneconfig.libs.universal.UMouse;
+import cc.polyfrost.oneconfig.utils.Notifications;
 import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
-import cc.woverflow.chatting.hook.ChatLineHook;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
 import cc.woverflow.chatting.utils.ModCompatHooks;
 import cc.woverflow.chatting.utils.RenderUtils;
-import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
@@ -42,7 +40,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique
     private int chatting$right = 0;
     @Unique
-    private boolean chatting$shouldCopy;
+    private boolean chatting$isHovering;
     @Unique
     private boolean chatting$chatCheck;
     @Unique
@@ -79,6 +77,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Unique
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
+    @Unique
+    private static final ResourceLocation DELETE = new ResourceLocation("chatting:delete.png");
 
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"), cancellable = true)
     private void handlePrintChatMessage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
@@ -106,6 +106,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
      */
+
+    @Unique
+    private ChatLine chatting$drawingLine = null;
+
+    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;getChatComponent()Lnet/minecraft/util/IChatComponent;"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    private void captureChatLine(int updateCounter, CallbackInfo ci, int i, boolean bl, int j, int k, float f, float g, int l, int m, ChatLine chatLine, int n, double d, int o, int p, int q) {
+        chatting$drawingLine = chatLine;
+    }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
@@ -138,19 +146,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             int right = args.get(2);
             int bottom = args.get(3);
             if (isInBounds(left, top, right, bottom, getChatScale())) {
-                chatting$shouldCopy = true;
+                chatting$isHovering = true;
                 lineInBounds = true;
                 args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getHoveredChatBackgroundColor(), args.get(4)));
             }
         }
-    }
-
-    @Unique
-    private ChatLine chatting$drawingLine = null;
-
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;getChatComponent()Lnet/minecraft/util/IChatComponent;"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void captureChatLine(int updateCounter, CallbackInfo ci, int i, boolean bl, int j, int k, float f, float g, int l, int m, ChatLine chatLine, int n, double d, int o, int p, int q) {
-        chatting$drawingLine = chatLine;
     }
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
@@ -161,8 +161,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             int top = (int) ((float) args.get(2) - 1);
             int right = MathHelper.ceiling_float_int((float)getChatWidth() / f) + 4;
             int bottom = (int) ((float) args.get(2) + 8);
-            if ((chatting$shouldCopy && lineInBounds) || isInBounds(left, top, right, bottom, f)) {
-                chatting$shouldCopy = true;
+            if ((chatting$isHovering && lineInBounds) || isInBounds(left, top, right, bottom, f)) {
+                chatting$isHovering = true;
                 drawCopyChatBox(right, top);
             }
         }
@@ -174,7 +174,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int mouseY = MathHelper.floor_double(UMouse.getScaledY()) - 27 + ModCompatHooks.getYOffset() - ModCompatHooks.getChatPosition();
         mouseX = MathHelper.floor_float((float) mouseX / chatScale);
         mouseY = -(MathHelper.floor_float((float) mouseY / chatScale)); //WHY DO I NEED TO DO THIS
-        return mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 11 + ModCompatHooks.getXOffset()) && mouseY >= top;
+        return mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 23 + ModCompatHooks.getXOffset()) && mouseY >= top;
     }
 
     private int changeChatBackgroundColor(OneColor color, int alphaColor) {
@@ -227,8 +227,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Inject(method = "drawChat", at = @At("RETURN"))
     private void checkStuff(int j2, CallbackInfo ci) {
-        if (!chatting$chatCheck && chatting$shouldCopy) {
-            chatting$shouldCopy = false;
+        if (!chatting$chatCheck && chatting$isHovering) {
+            chatting$isHovering = false;
         }
     }
 
@@ -244,8 +244,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @Override
-    public boolean shouldCopy() {
-        return chatting$shouldCopy;
+    public boolean isHovering() {
+        return chatting$isHovering;
     }
 
     private void handleChatTabMessage(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
@@ -285,12 +285,21 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         drawRect(right + 1, top, right + 10, top + 9, (((right + ModCompatHooks.getXOffset() + 3) <= (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale()) && (right + ModCompatHooks.getXOffset()) + 13 > (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale())) ? CleanButton.Companion.getHoveredColor() : CleanButton.Companion.getColor()));
         GlStateManager.disableAlpha();
         GlStateManager.disableRescaleNormal();
+        mc.getTextureManager().bindTexture(DELETE);
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(516, 0.1f);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(770, 771);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        Gui.drawModalRectWithCustomSizedTexture(right + 11, top, 0f, 0f, 9, 9, 9, 9);
+        drawRect(right + 11, top, right + 20, top + 9, (((right + ModCompatHooks.getXOffset() + 13) <= (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale()) && (right + ModCompatHooks.getXOffset()) + 23 > (UMouse.getScaledX() / mc.ingameGUI.getChatGUI().getChatScale())) ? CleanButton.Companion.getHoveredColor() : CleanButton.Companion.getColor()));
         GlStateManager.disableLighting();
         GlStateManager.popMatrix();
     }
 
     @Override
-    public Transferable getChattingChatComponent(int mouseY) {
+    public ChatLine getHoveredLine(int mouseY) {
         if (this.getChatOpen()) {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
@@ -305,22 +314,32 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                     int i1 = k / this.mc.fontRendererObj.FONT_HEIGHT + this.scrollPos;
 
                     if (i1 >= 0 && i1 < this.drawnChatLines.size()) {
-                        ChatLine subLine = this.drawnChatLines.get(i1);
-                        ChatLine fullLine = this.getFullMessage(subLine);
-                        if (GuiScreen.isShiftKeyDown()) {
-                            if (fullLine != null) {
-                                BufferedImage image = Chatting.INSTANCE.screenshotLine(fullLine);
-                                if (image != null) RenderUtils.copyToClipboard(image);
-                            }
-                            return null;
-                        }
-                        ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : fullLine;
-                        String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
-                        return new StringSelection(GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message));
+                        return this.drawnChatLines.get(i1);
                     }
 
                 }
             }
+        }
+        return null;
+    }
+
+    @Override
+    public Transferable getChattingChatComponent(int mouseY) {
+        ChatLine subLine = getHoveredLine(mouseY);
+        if (subLine != null) {
+            ChatLine fullLine = this.getFullMessage(subLine);
+            if (GuiScreen.isShiftKeyDown()) {
+                if (fullLine != null) {
+                    BufferedImage image = Chatting.INSTANCE.screenshotLine(fullLine);
+                    if (image != null) RenderUtils.copyToClipboard(image);
+                }
+                return null;
+            }
+            ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : fullLine;
+            String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
+            String actualMessage = GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message);
+            Notifications.INSTANCE.send("Chatting", line == null ? "Could not find chat message." : "Copied following text: " + actualMessage);
+            return new StringSelection(actualMessage);
         }
         return null;
     }

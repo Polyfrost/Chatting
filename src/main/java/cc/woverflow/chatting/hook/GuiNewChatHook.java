@@ -7,7 +7,9 @@ import java.awt.datatransfer.Transferable;
 public interface GuiNewChatHook {
     int getRight();
 
-    boolean shouldCopy();
+    boolean isHovering();
+
+    ChatLine getHoveredLine(int mouseY);
 
     Transferable getChattingChatComponent(int mouseY);
 
