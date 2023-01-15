@@ -24,7 +24,7 @@ public class EntityPlayerSPMixin {
             return;
         }
         if (ChattingConfig.INSTANCE.getChatTabs() && !ChatTabs.INSTANCE.getCurrentTabs().isEmpty()) {
-            for (ChatTab tab : ChatTabs.INSTANCE.getTabs()) {
+            for (ChatTab tab : ChatTabs.INSTANCE.getCurrentTabs()) {
                 if (tab.getPrefix() != null && !tab.getPrefix().isEmpty()) {
                     sendQueue.addToSendQueue(new C01PacketChatMessage(tab.getPrefix() + value));
                 }

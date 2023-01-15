@@ -1,5 +1,6 @@
 package cc.woverflow.chatting.mixin;
 
+import cc.polyfrost.oneconfig.utils.MathUtils;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
@@ -7,7 +8,6 @@ import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -40,7 +40,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
 
     private void updatePercentage(long diff) {
         if (chatting$percentComplete < 1) chatting$percentComplete += 0.004f * diff;
-        chatting$percentComplete = MathHelper.clamp_float(chatting$percentComplete, 0, 1);
+        chatting$percentComplete = MathUtils.clamp(chatting$percentComplete, 0, 1);
     }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
@@ -50,7 +50,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
         chatting$prevMillis = current;
         updatePercentage(diff);
         float t = chatting$percentComplete;
-        chatting$animationPercent = MathHelper.clamp_float(1 - (--t) * t * t * t, 0, 1);
+        chatting$animationPercent = MathUtils.clamp(1 - (--t) * t * t * t, 0, 1);
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;pushMatrix()V", ordinal = 0, shift = At.Shift.AFTER))

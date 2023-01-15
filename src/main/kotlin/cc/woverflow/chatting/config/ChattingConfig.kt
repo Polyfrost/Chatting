@@ -29,11 +29,6 @@ object ChattingConfig : Config(
     )
     var textRenderType = 1
 
-    @Switch(
-        name = "Remove Scroll Bar", category = "General"
-    )
-    var removeScrollBar = true
-
     @Color(
         name = "Chat Background Color", category = "General", allowAlpha = false
     )
@@ -61,9 +56,21 @@ object ChattingConfig : Config(
 
     @Switch(
         name = "Smooth Chat Messages",
-        category = "Animations"
+        category = "Animations", subcategory = "Messages"
     )
     var smoothChat = true
+
+    @Switch(
+        name = "Smooth Chat Scrolling",
+        category = "Animations", subcategory = "Scrolling"
+    )
+    var smoothScrolling = true
+
+    @Switch(
+        name = "Remove Scroll Bar",
+        category = "Animations", subcategory = "Scrolling"
+    )
+    var removeScrollBar = true
 
     @Switch(
         name = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads"

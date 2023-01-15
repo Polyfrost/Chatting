@@ -15,7 +15,7 @@
         "GuiNewChatMixin_ChatHeight",
         "GuiNewChatMixin_ChatSearching",
         "GuiNewChatMixin_ChatTabs",
-        "GuiNewChatMixin_RemoveScrollBar",
+        "GuiNewChatMixin_Scrolling",
         "GuiNewChatMixin_SmoothMessages",
         "GuiNewChatMixin_TextRendering",
         "GuiUtilsMixin"
