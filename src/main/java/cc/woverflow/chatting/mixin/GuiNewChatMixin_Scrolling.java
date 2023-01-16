@@ -2,6 +2,8 @@ package cc.woverflow.chatting.mixin;
 
 import cc.polyfrost.oneconfig.gui.animations.EaseOutQuad;
 import cc.polyfrost.oneconfig.utils.MathUtils;
+import cc.woverflow.chatting.Chatting;
+import cc.woverflow.chatting.chat.ChatScrollingHook;
 import cc.woverflow.chatting.config.ChattingConfig;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.Gui;
@@ -38,9 +40,10 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
                 }
                 chatting$scrollingAnimation = null;
             } else {
-                scrollPos = (int) chatting$scrollingAnimation.get();
+                scrollPos = (int) chatting$scrollingAnimation.get(Chatting.INSTANCE.getDeltaTicks());
             }
         }
+        Chatting.INSTANCE.setDeltaTicks(0);
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))
@@ -59,9 +62,10 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
 
     @Inject(method = "scroll", at = @At("HEAD"), cancellable = true)
     private void injectScroll(int amount, CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getSmoothScrolling() && amount > 1) {
+        if (ChattingConfig.INSTANCE.getSmoothScrolling() && amount != 0 && ChatScrollingHook.INSTANCE.getShouldSmooth()) {
             ci.cancel();
-            int result = (int) MathUtils.clamp(scrollPos + amount, 0, drawnChatLines.size() - getLineCount() - 1);
+            ChatScrollingHook.INSTANCE.setShouldSmooth(false);
+            int result = (int) MathUtils.clamp(scrollPos + amount, 0, Math.max(drawnChatLines.size() - getLineCount() - 1, 0));
             chatting$scrollingAnimation = new EaseOutQuad(150, scrollPos, result, false);
         }
     }

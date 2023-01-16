@@ -1,9 +1,6 @@
 package cc.woverflow.chatting.mixin;
 
-import cc.woverflow.chatting.chat.ChatSearchingManager;
-import cc.woverflow.chatting.chat.ChatShortcuts;
-import cc.woverflow.chatting.chat.ChatTab;
-import cc.woverflow.chatting.chat.ChatTabs;
+import cc.woverflow.chatting.chat.*;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.ClearButton;
 import cc.woverflow.chatting.gui.components.ScreenshotButton;
@@ -130,5 +127,10 @@ public abstract class GuiChatMixin extends GuiScreen {
             }
         }
         return original;
+    }
+
+    @Inject(method = "handleMouseInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;scroll(I)V"))
+    private void handleMouseInput(CallbackInfo ci) {
+        ChatScrollingHook.INSTANCE.setShouldSmooth(true);
     }
 }

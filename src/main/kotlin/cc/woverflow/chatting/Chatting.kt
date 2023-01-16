@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
 import cc.polyfrost.oneconfig.utils.Notifications
+import cc.polyfrost.oneconfig.utils.gui.GuiUtils
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatSpamBlock
@@ -33,6 +34,7 @@ import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent
 import org.lwjgl.input.Keyboard
 import java.awt.image.BufferedImage
 import java.io.File
@@ -62,6 +64,8 @@ object Chatting {
         private set
     var isHychat = false
         private set
+
+    var deltaTicks = 0f
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -140,6 +144,13 @@ object Chatting {
                     skytilsClass.getMethod("markDirty").invoke(instance)
                     skytilsClass.getMethod("writeData").invoke(instance)
                 })
+        }
+    }
+
+    @SubscribeEvent
+    fun onRenderTick(event: RenderTickEvent) {
+        if (event.phase == TickEvent.Phase.START) {
+            deltaTicks += GuiUtils.getDeltaTime()
         }
     }
 
