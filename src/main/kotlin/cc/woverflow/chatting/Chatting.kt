@@ -155,6 +155,13 @@ object Chatting {
     }
 
     @SubscribeEvent
+    fun onRenderTickEnd(event: RenderTickEvent) {
+        if (event.phase == TickEvent.Phase.END) {
+            deltaTicks = 0f
+        }
+    }
+
+    @SubscribeEvent
     fun onTickEvent(event: TickEvent.ClientTickEvent) {
         if (event.phase == TickEvent.Phase.START && Minecraft.getMinecraft().theWorld != null && Minecraft.getMinecraft().thePlayer != null && (Minecraft.getMinecraft().currentScreen == null || Minecraft.getMinecraft().currentScreen is GuiChat)) {
             if (doTheThing) {

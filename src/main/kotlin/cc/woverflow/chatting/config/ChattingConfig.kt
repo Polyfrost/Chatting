@@ -60,11 +60,25 @@ object ChattingConfig : Config(
     )
     var smoothChat = true
 
+    @Slider(
+        name = "Message Animation Speed",
+        category = "Animations", subcategory = "Messages",
+        min = 0.0f, max = 1.0f
+    )
+    var messageSpeed = 0.5f
+
     @Switch(
         name = "Smooth Chat Scrolling",
         category = "Animations", subcategory = "Scrolling"
     )
     var smoothScrolling = true
+
+    @Slider(
+        name = "Scrolling Animation Speed",
+        category = "Animations", subcategory = "Scrolling",
+        min = 0.0f, max = 1.0f
+    )
+    var scrollingSpeed = 0.15f
 
     @Switch(
         name = "Remove Scroll Bar",

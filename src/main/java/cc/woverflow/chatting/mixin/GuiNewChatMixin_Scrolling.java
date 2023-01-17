@@ -43,7 +43,6 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
                 scrollPos = (int) chatting$scrollingAnimation.get(Chatting.INSTANCE.getDeltaTicks());
             }
         }
-        Chatting.INSTANCE.setDeltaTicks(0);
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))
@@ -66,7 +65,7 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
             ci.cancel();
             ChatScrollingHook.INSTANCE.setShouldSmooth(false);
             int result = (int) MathUtils.clamp(scrollPos + amount, 0, Math.max(drawnChatLines.size() - getLineCount() - 1, 0));
-            chatting$scrollingAnimation = new EaseOutQuad(150, scrollPos, result, false);
+            chatting$scrollingAnimation = new EaseOutQuad((int) (ChattingConfig.INSTANCE.getScrollingSpeed() * 1000), scrollPos, result, false);
         }
     }
 }

@@ -24,10 +24,15 @@ public class EntityPlayerSPMixin {
             return;
         }
         if (ChattingConfig.INSTANCE.getChatTabs() && !ChatTabs.INSTANCE.getCurrentTabs().isEmpty()) {
+            boolean sent = false;
             for (ChatTab tab : ChatTabs.INSTANCE.getCurrentTabs()) {
                 if (tab.getPrefix() != null && !tab.getPrefix().isEmpty()) {
                     sendQueue.addToSendQueue(new C01PacketChatMessage(tab.getPrefix() + value));
+                    sent = true;
                 }
+            }
+            if (!sent) {
+                sendQueue.addToSendQueue(packet);
             }
         } else {
             sendQueue.addToSendQueue(packet);

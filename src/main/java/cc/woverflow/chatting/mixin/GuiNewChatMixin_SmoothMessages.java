@@ -1,9 +1,10 @@
 package cc.woverflow.chatting.mixin;
 
-import cc.polyfrost.oneconfig.utils.MathUtils;
+import cc.woverflow.chatting.Chatting;
 import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
+import cc.woverflow.chatting.utils.EaseOutQuart;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.EnumChatFormatting;
@@ -20,6 +21,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Taken from BetterChat under LGPL 3.0
+ * <a href="https://github.com/LlamaLad7/Better-Chat/blob/1.8.9/LICENSE">https://github.com/LlamaLad7/Better-Chat/blob/1.8.9/LICENSE</a>
+ */
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_SmoothMessages {
     @Shadow
@@ -27,30 +32,25 @@ public abstract class GuiNewChatMixin_SmoothMessages {
 
     @Shadow
     public abstract float getChatScale();
-
-    private float chatting$percentComplete; //be nice and allow other mods to access this :)
     @Unique
     private int chatting$newLines;
-    @Unique
-    private long chatting$prevMillis = System.currentTimeMillis();
-    @Unique
+
+    private EaseOutQuart chatting$easeOutQuart;
     private float chatting$animationPercent;
     @Unique
     private int chatting$lineBeingDrawn;
 
-    private void updatePercentage(long diff) {
-        if (chatting$percentComplete < 1) chatting$percentComplete += 0.004f * diff;
-        chatting$percentComplete = MathUtils.clamp(chatting$percentComplete, 0, 1);
-    }
-
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void modifyChatRendering(CallbackInfo ci) {
-        long current = System.currentTimeMillis();
-        long diff = current - chatting$prevMillis;
-        chatting$prevMillis = current;
-        updatePercentage(diff);
-        float t = chatting$percentComplete;
-        chatting$animationPercent = MathUtils.clamp(1 - (--t) * t * t * t, 0, 1);
+        if (chatting$easeOutQuart != null) {
+            if (chatting$easeOutQuart.isFinished()) {
+                chatting$easeOutQuart = null;
+            } else {
+                chatting$animationPercent = chatting$easeOutQuart.get(Chatting.INSTANCE.getDeltaTicks());
+            }
+        } else {
+            chatting$animationPercent = 1;
+        }
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;pushMatrix()V", ordinal = 0, shift = At.Shift.AFTER))
@@ -88,7 +88,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
             ChatTabs.INSTANCE.setHasCancelledAnimation(false);
             return;
         }
-        chatting$percentComplete = 0;
+        chatting$easeOutQuart = new EaseOutQuart(ChattingConfig.INSTANCE.getMessageSpeed() * 1000f, 0f, 1f, false);
     }
 
     @ModifyVariable(method = "setChatLine", at = @At("STORE"), ordinal = 0)
