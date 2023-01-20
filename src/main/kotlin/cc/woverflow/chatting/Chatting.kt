@@ -113,6 +113,13 @@ object Chatting {
                     }
                 }
             }
+            if (isBetterChat) {
+                Notifications.INSTANCE.send(
+                    NAME,
+                    "BetterChat can be removed as it is replaced by Chatting. Click here to open your mods folder to delete the BetterChat file.", Runnable {
+                        UDesktop.open(File("./mods"))
+                    })
+            }
         }
     }
 

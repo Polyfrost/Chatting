@@ -14,6 +14,7 @@ import cc.woverflow.chatting.chat.ChatTab
 import cc.woverflow.chatting.chat.ChatTabs
 import cc.woverflow.chatting.gui.components.TabButton
 import cc.woverflow.chatting.hook.ChatLineHook
+import cc.woverflow.chatting.utils.ModCompatHooks
 import java.io.File
 
 object ChattingConfig : Config(
@@ -222,6 +223,15 @@ object ChattingConfig : Config(
         initialize()
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
+        addDependency("hypixelOnlyChatTabs", "chatTabs")
+        addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
+        addDependency("focusedHeight", "customChatHeight")
+        addDependency("unfocusedHeight", "customChatHeight")
+        addDependency("scrollingSpeed", "smoothScrolling")
+        addDependency("messageSpeed", "smoothChat")
+        addDependency("smoothChat", "BetterChat Smooth Chat") {
+            return@addDependency !ModCompatHooks.betterChatSmoothMessages
+        }
         addListener("hideChatHeadOnConsecutiveMessages") {
             ChatLineHook.chatLines.map { it.get() as ChatLineHook? }.forEach { it?.updatePlayerInfo() }
         }

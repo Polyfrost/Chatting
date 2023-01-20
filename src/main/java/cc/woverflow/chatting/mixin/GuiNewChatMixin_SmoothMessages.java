@@ -5,6 +5,7 @@ import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.chat.ChatTabs;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.utils.EaseOutQuart;
+import cc.woverflow.chatting.utils.ModCompatHooks;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.EnumChatFormatting;
@@ -82,6 +83,9 @@ public abstract class GuiNewChatMixin_SmoothMessages {
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"))
     private void resetPercentage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
         if (!EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.getUnformattedText()).toLowerCase(Locale.ENGLISH).contains(ChatSearchingManager.INSTANCE.getLastSearch().toLowerCase(Locale.ENGLISH))) {
+            return;
+        }
+        if (ModCompatHooks.getBetterChatSmoothMessages()) {
             return;
         }
         if (ChatTabs.INSTANCE.getHasCancelledAnimation()) {

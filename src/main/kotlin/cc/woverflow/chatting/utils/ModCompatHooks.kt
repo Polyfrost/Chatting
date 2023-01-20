@@ -33,6 +33,10 @@ object ModCompatHooks {
         get() = if (isPatcher && PatcherConfig.chatPosition) 12 else 0
 
     @JvmStatic
+    val betterChatSmoothMessages
+        get() = if (isBetterChat) BetterChat.getSettings().smooth else false
+
+    @JvmStatic
     val extendedChatLength
         get() = if (isPatcher) 32667 else 0
 
