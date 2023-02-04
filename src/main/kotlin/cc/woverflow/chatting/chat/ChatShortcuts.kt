@@ -31,20 +31,24 @@ object ChatShortcuts {
         } else {
             initialized = true
         }
-        if (!shortcutsFile.exists()) {
-            shortcutsFile.createNewFile()
-            if (oldShortcutsFile.exists()) {
-                shortcutsFile.writeText(
-                    oldShortcutsFile.readText()
-                )
-            } else {
-                JsonObject().toString()
+        if (shortcutsFile.exists()) {
+            try {
+                val jsonObj = PARSER.parse(shortcutsFile.readText()).asJsonObject
+                for (shortcut in jsonObj.entrySet()) {
+                    shortcuts.add(shortcut.key to shortcut.value.asString)
+                }
+                return
+            } catch (_: Throwable) {
+                shortcutsFile.renameTo(File(shortcutsFile.parentFile, "chatshortcuts.json.bak"))
             }
+        }
+        shortcutsFile.createNewFile()
+        if (oldShortcutsFile.exists()) {
+            shortcutsFile.writeText(
+                oldShortcutsFile.readText()
+            )
         } else {
-            val jsonObj = PARSER.parse(shortcutsFile.readText()).asJsonObject
-            for (shortcut in jsonObj.entrySet()) {
-                shortcuts.add(shortcut.key to shortcut.value.asString)
-            }
+            shortcutsFile.writeText(JsonObject().toString())
         }
     }
 
