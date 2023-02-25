@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(value = GuiNewChat.class, priority = Integer.MIN_VALUE)
+@Mixin(value = GuiNewChat.class, priority = 990)
 public class GuiNewChatMixin_TextRendering {
     @Unique
     private ChatLine chatting$drawingLine = null;
