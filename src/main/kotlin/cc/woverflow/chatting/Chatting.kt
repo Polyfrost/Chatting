@@ -40,6 +40,8 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
 
 
 @Mod(
