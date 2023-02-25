@@ -243,7 +243,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ChatLine fullLine = this.getFullMessage(subLine);
             if (GuiScreen.isShiftKeyDown()) {
                 if (fullLine != null) {
-                    BufferedImage image = Chatting.INSTANCE.screenshotLine(fullLine);
+                    BufferedImage image = Chatting.INSTANCE.screenshotLine(subLine);
                     if (image != null) RenderUtils.copyToClipboard(image);
                 }
                 return null;
