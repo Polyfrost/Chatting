@@ -22,7 +22,7 @@ public class GuiNewChatMixin_TextRendering {
         chatting$drawingLine = chatLine;
     }
 
-    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
+    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"), remap = false)
     private int redirectDrawString(FontRenderer instance, String text, float x, float y, int color) {
         return ModCompatHooks.redirectDrawString(text, x, y, color, chatting$drawingLine, false);
     }
