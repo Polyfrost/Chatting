@@ -2,9 +2,9 @@ package cc.woverflow.chatting
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop
 import cc.polyfrost.oneconfig.libs.universal.UResolution
+import cc.polyfrost.oneconfig.utils.Notifications
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
-import cc.polyfrost.oneconfig.utils.Notifications
 import cc.polyfrost.oneconfig.utils.gui.GuiUtils
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
@@ -41,6 +41,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
 
 
 @Mod(
@@ -116,7 +117,8 @@ object Chatting {
             if (isBetterChat) {
                 Notifications.INSTANCE.send(
                     NAME,
-                    "BetterChat can be removed as it is replaced by Chatting. Click here to open your mods folder to delete the BetterChat file.", Runnable {
+                    "BetterChat can be removed as it is replaced by Chatting. Click here to open your mods folder to delete the BetterChat file.",
+                    Runnable {
                         UDesktop.open(File("./mods"))
                     })
             }
@@ -214,7 +216,7 @@ object Chatting {
     fun screenshotChat(scrollPos: Int) {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
-        val chatLines = HashMap<String, ChatLine>()
+        val chatLines = LinkedHashMap<String, ChatLine>()
         ChatSearchingManager.filterMessages(
             ChatSearchingManager.lastSearch,
             (chat as GuiNewChatAccessor).drawnChatLines
