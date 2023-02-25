@@ -33,6 +33,7 @@ loom {
     }
     runConfigs {
         client {
+            vmArgs.remove("-XstartOnFirstThread")
             ideConfigGenerated = true
         }
     }
@@ -106,6 +107,6 @@ jar {
             'ForceLoadAsMod': true,
             'MixinConfigs': "mixins.${mod_id}.json",
             "TweakOrder": "0",
-            'TweakClass': "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
+            "TweakClass": "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
     )
 }
