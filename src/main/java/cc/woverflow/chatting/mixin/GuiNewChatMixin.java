@@ -28,7 +28,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-@Mixin(value = GuiNewChat.class, priority = Integer.MIN_VALUE)
+@Mixin(value = GuiNewChat.class, priority = 990)
 public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique
     private int chatting$right = 0;
@@ -243,7 +243,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ChatLine fullLine = this.getFullMessage(subLine);
             if (GuiScreen.isShiftKeyDown()) {
                 if (fullLine != null) {
-                    BufferedImage image = Chatting.INSTANCE.screenshotLine(fullLine);
+                    BufferedImage image = Chatting.INSTANCE.screenshotLine(subLine);
                     if (image != null) RenderUtils.copyToClipboard(image);
                 }
                 return null;
