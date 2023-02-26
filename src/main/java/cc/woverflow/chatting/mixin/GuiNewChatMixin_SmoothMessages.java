@@ -69,7 +69,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
         return line;
     }
 
-    @ModifyArg(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"), index = 3)
+    @ModifyArg(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int modifyTextOpacity(int original) {
         if (ChattingConfig.INSTANCE.getSmoothChat() && chatting$lineBeingDrawn <= chatting$newLines) {
             int opacity = (original >> 24) & 0xFF;
