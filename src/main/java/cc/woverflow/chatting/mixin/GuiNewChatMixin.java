@@ -4,6 +4,7 @@ import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.polyfrost.oneconfig.utils.Notifications;
 import cc.woverflow.chatting.Chatting;
+import cc.woverflow.chatting.chat.ChatSearchingManager;
 import cc.woverflow.chatting.config.ChattingConfig;
 import cc.woverflow.chatting.gui.components.CleanButton;
 import cc.woverflow.chatting.hook.GuiNewChatHook;
@@ -227,7 +228,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                     int i1 = k / this.mc.fontRendererObj.FONT_HEIGHT + this.scrollPos;
 
                     if (i1 >= 0 && i1 < this.drawnChatLines.size()) {
-                        return this.drawnChatLines.get(i1);
+                        List<ChatLine> m = ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), this.drawnChatLines);
+                        return m != null ? m.get(i1) : null;
                     }
 
                 }
