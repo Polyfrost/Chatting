@@ -40,7 +40,7 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
                 }
                 chatting$scrollingAnimation = null;
             } else {
-                scrollPos = (int) chatting$scrollingAnimation.get(Chatting.INSTANCE.getDeltaTicks());
+                scrollPos = (int) chatting$scrollingAnimation.get(Chatting.INSTANCE.getDeltaTime());
             }
         }
     }

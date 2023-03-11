@@ -1,11 +1,11 @@
 package cc.woverflow.chatting
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop
+import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.utils.Notifications
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
-import cc.polyfrost.oneconfig.utils.gui.GuiUtils
 import cc.woverflow.chatting.chat.ChatSearchingManager
 import cc.woverflow.chatting.chat.ChatShortcuts
 import cc.woverflow.chatting.chat.ChatSpamBlock
@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraft.util.MathHelper
+import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
@@ -34,14 +35,11 @@ import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent
 import org.lwjgl.input.Keyboard
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.HashMap
-import kotlin.collections.LinkedHashMap
 
 
 @Mod(
@@ -66,7 +64,8 @@ object Chatting {
     var isHychat = false
         private set
 
-    var deltaTicks = 0f
+    private var time = -1L
+    var deltaTime = 17L
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -157,16 +156,15 @@ object Chatting {
     }
 
     @SubscribeEvent
-    fun onRenderTick(event: RenderTickEvent) {
-        if (event.phase == TickEvent.Phase.START) {
-            deltaTicks += GuiUtils.getDeltaTime()
-        }
-    }
-
-    @SubscribeEvent
-    fun onRenderTickEnd(event: RenderTickEvent) {
-        if (event.phase == TickEvent.Phase.END) {
-            deltaTicks = 0f
+    fun onRenderTick(event: RenderGameOverlayEvent.Pre) {
+        if (event.type == RenderGameOverlayEvent.ElementType.ALL) {
+            if (time == -1L) {
+                time = UMinecraft.getTime()
+            } else {
+                val currentTime = UMinecraft.getTime()
+                deltaTime = currentTime - time
+                time = currentTime
+            }
         }
     }
 
