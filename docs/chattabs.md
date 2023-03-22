@@ -28,8 +28,10 @@ something like this:
         "§eThe party was transferred to §r",
         "§eKicked §r"
       ],
+      "contains": [
+        "§r§ehas invited you to join their party!"
+      ],
       "ends": [
-        "§r§ehas invited you to join their party!",
         "§r§eto the party! They have §r§c60 §r§eseconds to accept.§r",
         "§r§ehas disbanded the party!§r",
         "§r§ehas disconnected, they have §r§c5 §r§eminutes to rejoin before they are removed from the party.§r",
@@ -143,8 +145,11 @@ that you may want to use.
     "§eThe party was transferred to §r",
     "§eKicked §r"
   ],
+  "contains": [
+    "§r§ehas invited you to join their party!"
+  ],
   "ends": [
-    "§r§ehas invited you to join their party!",
+    "§r§eto the party! They have §r§c60 §r§eseconds to accept.§r",
     ...
     "§r§e because they were offline.§r"
   ],
@@ -203,6 +208,8 @@ AFTER
 The `starts` property allows you to only allow a message if it starts with a string in the `starts` property. For
 example, if a message which contents were "Hello!", it would not be allowed, as it does not start anything in
 the `starts` property.
+
+The `contains` property allows you to only allow a message if it contains a string in the `contains` property.
 
 The `ends` property does a similar function, except only allowing a message if it **ends** with anything in the `ends`
 property rather than if it starts with anything.

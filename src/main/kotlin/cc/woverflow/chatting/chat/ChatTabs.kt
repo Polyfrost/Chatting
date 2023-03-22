@@ -171,6 +171,25 @@ object ChatTabs {
                 json.addProperty("unformatted", false)
             }
         }
+        if (json.has("ends")) {
+            val ends = json["ends"].asJsonArray
+            var detected = false
+            ends.iterator().let {
+                while (it.hasNext()) {
+                    when (it.next().asString) {
+                        "§r§ehas invited you to join their party!", -> {
+                            detected = true
+                            it.remove()
+                        }
+                    }
+                }
+            }
+            if (detected) {
+                json.add("contains", JsonArray().apply {
+                    add(JsonPrimitive("§r§ehas invited you to join their party!"))
+                })
+            }
+        }
     }
 
     fun shouldRender(message: IChatComponent): Boolean {
@@ -219,9 +238,8 @@ object ChatTabs {
             unformatted = false,
             lowercase = false,
             startsWith = listOf("§r§9Party §8> ", "§r§9P §8> ", "§eThe party was transferred to §r", "§eKicked §r"),
-            contains = null,
+            contains = listOf("§r§ehas invited you to join their party!"),
             endsWith = listOf(
-                "§r§ehas invited you to join their party!",
                 "§r§eto the party! They have §r§c60 §r§eseconds to accept.§r",
                 "§r§ehas disbanded the party!§r",
                 "§r§ehas disconnected, they have §r§c5 §r§eminutes to rejoin before they are removed from the party.§r",
