@@ -165,7 +165,7 @@ object ChatTabs {
             }
             if (detected) {
                 json.add("regex", JsonArray().apply {
-                    add(JsonPrimitive("^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>§7.*)(?:§r)?\$"))
+                    add(JsonPrimitive("^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>.*)(?:§r)?\$"))
                 })
                 json.remove("unformatted")
                 json.addProperty("unformatted", false)
@@ -311,7 +311,7 @@ object ChatTabs {
             contains = null,
             endsWith = null,
             equals = null,
-            uncompiledRegex = listOf("^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>§7.*)(?:§r)?\$"),
+            uncompiledRegex = listOf("^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>.*)(?:§r)?\$"),
             ignoreStartsWith = null,
             ignoreContains = null,
             ignoreEndsWith = null,
