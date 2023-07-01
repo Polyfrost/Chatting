@@ -92,7 +92,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
             ChatTabs.INSTANCE.setHasCancelledAnimation(false);
             return;
         }
-        chatting$easeOutQuart = new EaseOutQuart(ChattingConfig.INSTANCE.getMessageSpeed() * 1000f, 0f, 1f, false);
+        chatting$easeOutQuart = new EaseOutQuart((1.0f - ChattingConfig.INSTANCE.getMessageSpeed()) * 1000f, 0f, 1f, false);
     }
 
     @ModifyVariable(method = "setChatLine", at = @At("STORE"), ordinal = 0)

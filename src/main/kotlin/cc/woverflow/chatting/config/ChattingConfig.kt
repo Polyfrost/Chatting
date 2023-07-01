@@ -27,69 +27,80 @@ object ChattingConfig : Config(
 ) {
 
     @Dropdown(
-        name = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"]
+        name = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"],
+        description = "Specifies how text should be rendered in the chat. Full Shadow displays a shadow on all sides of the text, while Shadow only displays a shadow on the right and bottom sides of the text."
     )
     var textRenderType = 1
 
     @Color(
-        name = "Chat Background Color", category = "General", allowAlpha = false
+        name = "Chat Background Color", category = "General",
+        description = "The color of the chat background."
     )
     var chatBackgroundColor = OneColor(0, 0, 0, 128)
 
     @Color(
-        name = "Copy Chat Message Background Color", category = "General", allowAlpha = false
+        name = "Copy Chat Message Background Color", category = "General",
+        description = "The color of the chat background when hovering over a message."
     )
     var hoveredChatBackgroundColor = OneColor(80, 80, 80, 128)
 
     @Switch(
-        name = "Right Click to Copy Chat Message", category = "General"
+        name = "Right Click to Copy Chat Message", category = "General",
+        description = "Enable right clicking on a chat message to copy it."
     )
     var rightClickCopy = false
 
     @Switch(
-        name = "Compact Input Box", category = "General"
+        name = "Compact Input Box", category = "General",
+        description = "Make the chat input box the same width as the chat box."
     )
     var compactInputBox = false
 
     @Switch(
-        name = "Inform Outdated Mods", category = "General"
+        name = "Inform Outdated Mods", category = "General",
+        description = "Inform the user when a mod can be replaced by Chatting."
     )
     var informForAlternatives = true
 
     @Switch(
         name = "Smooth Chat Messages",
-        category = "Animations", subcategory = "Messages"
+        category = "Animations", subcategory = "Messages",
+        description = "Smoothly animate chat messages when they appear."
     )
     var smoothChat = true
 
     @Slider(
         name = "Message Animation Speed",
         category = "Animations", subcategory = "Messages",
-        min = 0.0f, max = 1.0f
+        min = 0.0f, max = 1.0f,
+        description = "The speed at which chat messages animate."
     )
     var messageSpeed = 0.5f
 
     @Switch(
         name = "Smooth Chat Scrolling",
-        category = "Animations", subcategory = "Scrolling"
+        category = "Animations", subcategory = "Scrolling",
+        description = "Smoothly animate scrolling when scrolling through the chat."
     )
     var smoothScrolling = true
 
     @Slider(
         name = "Scrolling Animation Speed",
         category = "Animations", subcategory = "Scrolling",
-        min = 0.0f, max = 1.0f
+        min = 0.0f, max = 1.0f,
+        description = "The speed at which scrolling animates."
     )
     var scrollingSpeed = 0.15f
 
     @Switch(
         name = "Remove Scroll Bar",
-        category = "Animations", subcategory = "Scrolling"
+        category = "Animations", subcategory = "Scrolling",
+        description = "Removes the vanilla scroll bar from the chat."
     )
     var removeScrollBar = true
 
     @Switch(
-        name = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads"
+        name = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads",
     )
     var showChatHeads = true
 
@@ -150,32 +161,38 @@ object ChattingConfig : Config(
     var hideSpam = false
 
     @Switch(
-        name = "Custom Chat Height", category = "Chat Window"
+        name = "Custom Chat Height", category = "Chat Window",
+        description = "Set a custom height for the chat window. Allows for more customization than the vanilla chat height options."
     )
     var customChatHeight = false
 
     @Slider(
-        min = 180F, max = 2160F, name = "Focused Height (px)", category = "Chat Window"
+        min = 180F, max = 2160F, name = "Focused Height (px)", category = "Chat Window",
+        description = "The height of the chat window when focused."
     )
     var focusedHeight = 180
 
     @Slider(
-        min = 180F, max = 2160F, name = "Unfocused Height (px)", category = "Chat Window"
+        min = 180F, max = 2160F, name = "Unfocused Height (px)", category = "Chat Window",
+        description = "The height of the chat window when unfocused."
     )
     var unfocusedHeight = 180
 
     @Dropdown(
-        name = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"]
+        name = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"],
+        description = "What to do when taking a screenshot."
     )
     var copyMode = 0
 
     @Checkbox(
-        name = "Chat Searching", category = "Searching"
+        name = "Chat Searching", category = "Searching",
+        description = "Enable searching through chat messages."
     )
     var chatSearch = true
 
     @Switch(
-        name = "Chat Tabs", category = "Tabs"
+        name = "Chat Tabs", category = "Tabs",
+        description = "Allow filtering chat messages by a tab."
     )
     var chatTabs = true
         get() {
@@ -188,7 +205,8 @@ object ChattingConfig : Config(
         }
 
     @Checkbox(
-        name = "Enable Tabs Only on Hypixel", category = "Tabs"
+        name = "Enable Tabs Only on Hypixel", category = "Tabs",
+        description = "Only enable chat tabs on Hypixel"
     )
     var hypixelOnlyChatTabs = true
 
@@ -211,12 +229,14 @@ object ChattingConfig : Config(
     var hypixelOnlyChatShortcuts = true
 
     @Switch(
-        name = "Remove Tooltip Background", category = "Tooltips"
+        name = "Remove Tooltip Background", category = "Tooltips",
+        description = "Removes the background from tooltips."
     )
     var removeTooltipBackground = false
 
     @Dropdown(
-        name = "Tooltip Text Render Type", category = "Tooltips", options = ["No Shadow", "Shadow", "Full Shadow"]
+        name = "Tooltip Text Render Type", category = "Tooltips", options = ["No Shadow", "Shadow", "Full Shadow"],
+        description = "The type of shadow to render on tooltips."
     )
     var tooltipTextRenderType = 1
 
