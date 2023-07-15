@@ -141,7 +141,7 @@ object Chatting {
                     skytilsClass.getMethod("writeData").invoke(instance)
                 })
         }
-        val copyChat = skytilsClass.getDeclaredField("chatTabs")
+        val copyChat = skytilsClass.getDeclaredField("copyChat")
         copyChat.isAccessible = true
         if (copyChat.getBoolean(instance)) {
             Notifications.INSTANCE.send(
