@@ -34,7 +34,6 @@ loom {
     runConfigs {
         client {
             vmArgs.remove("-XstartOnFirstThread")
-            ideConfigGenerated = true
         }
     }
     forge {

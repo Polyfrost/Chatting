@@ -101,7 +101,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
     private void captureDrawRect(Args args) {
-        args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getChatBackgroundColor(), args.get(4)));
+        args.set(4, ChattingConfig.INSTANCE.getChatBackgroundColor().getRGB());
         if (mc.currentScreen instanceof GuiChat) {
             int left = args.get(0);
             int top = args.get(1);
@@ -110,7 +110,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (isInBounds(left, top, right, bottom, getChatScale())) {
                 chatting$isHovering = true;
                 lineInBounds = true;
-                args.set(4, changeChatBackgroundColor(ChattingConfig.INSTANCE.getHoveredChatBackgroundColor(), args.get(4)));
+                args.set(4, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getRGB());
             }
         }
     }
@@ -137,13 +137,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         mouseX = MathHelper.floor_float((float) mouseX / chatScale);
         mouseY = -(MathHelper.floor_float((float) mouseY / chatScale)); //WHY DO I NEED TO DO THIS
         return mouseX >= (left + ModCompatHooks.getXOffset()) && mouseY < bottom && mouseX < (right + 23 + ModCompatHooks.getXOffset()) && mouseY >= top;
-    }
-
-    private int changeChatBackgroundColor(OneColor color, int alphaColor) {
-        return (((alphaColor >> 24) & 0xFF) << 24) |
-                ((color.getRed() & 0xFF) << 16) |
-                ((color.getGreen() & 0xFF) << 8) |
-                ((color.getBlue() & 0xFF));
     }
 
     @ModifyVariable(method = "drawChat", at = @At("STORE"), ordinal = 7)
