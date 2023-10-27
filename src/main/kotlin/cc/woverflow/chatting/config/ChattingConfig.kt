@@ -56,6 +56,12 @@ object ChattingConfig : Config(
     )
     var compactInputBox = false
 
+    @Color(
+        name = "Input Box Background Color", category = "General",
+        description = "The color of the chat input box background."
+    )
+    var inputBoxBackgroundColor = OneColor(0, 0, 0, 128)
+
     @Switch(
         name = "Inform Outdated Mods", category = "General",
         description = "Inform the user when a mod can be replaced by Chatting."
