@@ -32,7 +32,7 @@ open class CleanButton(
             j = 16777120
         }
         j
-    }
+    },
 ) :
     GuiButton(buttonId, x.invoke(), 0, widthIn, heightIn, name) {
 
@@ -68,7 +68,7 @@ open class CleanButton(
                     yPosition,
                     xPosition + width,
                     yPosition + height,
-                    (if (hovered) ChattingConfig.chatButtonHoveredBackgroundColor else ChattingConfig.chatButtonBackgroundColor).rgb
+                    getBackgroundColor(hovered)
                 )
             }
             mouseDragged(mc, mouseX, mouseY)
@@ -97,6 +97,7 @@ open class CleanButton(
         }
     }
 
-    companion object {
-    }
+    private fun getBackgroundColor(hovered: Boolean) =
+        if (hovered) ChattingConfig.chatButtonHoveredBackgroundColor.rgb
+        else ChattingConfig.chatButtonBackgroundColor.rgb
 }
