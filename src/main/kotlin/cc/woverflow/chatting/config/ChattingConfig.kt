@@ -62,6 +62,18 @@ object ChattingConfig : Config(
     )
     var inputBoxBackgroundColor = OneColor(0, 0, 0, 128)
 
+    @Color(
+        name = "Chat Button Background Color", category = "General",
+        description = "The color of the chat button background."
+    )
+    var chatButtonBackgroundColor = OneColor(0, 0, 0, 128)
+
+    @Color(
+        name = "Chat Button Hovered Background Color", category = "General",
+        description = "The color of the chat button background when hovered."
+    )
+    var chatButtonHoveredBackgroundColor = OneColor(255, 255, 255, 128)
+
     @Switch(
         name = "Inform Outdated Mods", category = "General",
         description = "Inform the user when a mod can be replaced by Chatting."

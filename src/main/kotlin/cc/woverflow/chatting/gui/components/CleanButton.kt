@@ -2,12 +2,12 @@ package cc.woverflow.chatting.gui.components
 
 import cc.polyfrost.oneconfig.renderer.TextRenderer
 import cc.woverflow.chatting.Chatting
+import cc.woverflow.chatting.config.ChattingConfig
 import cc.woverflow.chatting.hook.GuiNewChatHook
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
-import java.awt.Color
 
 /**
  * Taken from ChatShortcuts under MIT License
@@ -68,7 +68,7 @@ open class CleanButton(
                     yPosition,
                     xPosition + width,
                     yPosition + height,
-                    if (hovered) hoveredColor else color
+                    (if (hovered) ChattingConfig.chatButtonHoveredBackgroundColor else ChattingConfig.chatButtonBackgroundColor).rgb
                 )
             }
             mouseDragged(mc, mouseX, mouseY)
@@ -98,7 +98,5 @@ open class CleanButton(
     }
 
     companion object {
-        val hoveredColor = Color(255, 255, 255, 128).rgb
-        val color = Color(0, 0, 0, 128).rgb
     }
 }
