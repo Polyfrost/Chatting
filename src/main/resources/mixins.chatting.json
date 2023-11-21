@@ -1,23 +1,23 @@
 {
     "compatibilityLevel": "JAVA_8",
     "minVersion": "0.7",
-    "package": "cc.woverflow.chatting.mixin",
+    "package": "org.polyfrost.chatting.mixin",
     "refmap": "mixins.${id}.refmap.json",
     "verbose": true,
     "client": [
-        "ChatLineMixin",
-        "ClientCommandHandlerMixin",
-        "EntityPlayerSPMixin",
-        "GuiChatMixin",
-        "GuiNewChatAccessor",
-        "GuiNewChatMapMixin",
-        "GuiNewChatMixin",
-        "GuiNewChatMixin_ChatHeight",
-        "GuiNewChatMixin_ChatSearching",
-        "GuiNewChatMixin_ChatTabs",
-        "GuiNewChatMixin_Scrolling",
-        "GuiNewChatMixin_SmoothMessages",
-        "GuiNewChatMixin_TextRendering",
-        "GuiUtilsMixin"
+      "ChatLineMixin",
+      "ClientCommandHandlerMixin",
+      "EntityPlayerSPMixin",
+      "GuiChatMixin",
+      "GuiNewChatAccessor",
+      "GuiNewChatMapMixin",
+      "GuiNewChatMixin",
+      "GuiNewChatMixin_ChatHeight",
+      "GuiNewChatMixin_ChatSearching",
+      "GuiNewChatMixin_ChatTabs",
+      "GuiNewChatMixin_Scrolling",
+      "GuiNewChatMixin_SmoothMessages",
+      "GuiNewChatMixin_TextRendering",
+      "GuiUtilsMixin"
     ]
 }
