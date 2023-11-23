@@ -119,8 +119,8 @@ public abstract class GuiChatMixin extends GuiScreen {
             } else if ((hook.getRight() + ModCompatHooks.getXOffset() + 13) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 23 > x) {
                 ChatLine chatLine = hook.getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
-                ((GuiNewChatAccessor) Minecraft.getMinecraft().ingameGUI.getChatGUI()).getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
-                ((GuiNewChatAccessor) Minecraft.getMinecraft().ingameGUI.getChatGUI()).getChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
+                ModCompatHooks.getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
+                ModCompatHooks.getChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
             }
         }
 

@@ -17,6 +17,7 @@ import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiNewChatHook
+import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 
 // This exists because mixin doesn't like dummy classes
 object ModCompatHooks {
@@ -43,6 +44,14 @@ object ModCompatHooks {
     @JvmStatic
     val fontRenderer: FontRenderer
         get() = Minecraft.getMinecraft().fontRendererObj
+
+    @JvmStatic
+    val chatLines: List<ChatLine>
+        get() = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).chatLines
+
+    @JvmStatic
+    val drawnChatLines: List<ChatLine>
+        get() = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines
 
     @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {
