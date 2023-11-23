@@ -8,8 +8,14 @@ import java.util.HashSet;
 
 public interface ChatLineHook {
     HashSet<WeakReference<ChatLine>> chatLines = new HashSet<>();
-    boolean hasDetected();
+    boolean isDetected();
+    void setDetected(boolean detected);
     NetworkPlayerInfo getPlayerInfo();
+    void setPlayerInfo(NetworkPlayerInfo playerInfo);
+    NetworkPlayerInfo getDetectedPlayerInfo();
+    void setDetectedPlayerInfo(NetworkPlayerInfo detectedPlayerInfo);
+    boolean isFirstDetection();
+    void setFirstDetection(boolean firstDetection);
 
     void updatePlayerInfo();
 

@@ -58,7 +58,7 @@ object ModCompatHooks {
         var actualX = x
         if (showChatHeads && !screenshot) {
             val hook = chatLine as ChatLineHook
-            if (hook.hasDetected() || offsetNonPlayerMessages) {
+            if (hook.isDetected || offsetNonPlayerMessages) {
                 actualX += 10f
             }
             val networkPlayerInfo = hook.playerInfo
