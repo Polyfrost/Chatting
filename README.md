@@ -1,5 +1,5 @@
 # Chatting
- ![OneConfig Supported](https://i.imgur.com/pFqMYWp.png)
+![Compact Powered by OneConfig](https://polyfrost.org/img/compact_vector.svg)
 ![Dev Workflow Status](https://img.shields.io/github/v/release/Polyfrost/Chatting.svg?style=for-the-badge&color=1452cc&label=release)
 
 Chatting completely revamps the Minecraft chat with many quality-of-life improvements while remaining unintrusive, and functional.
