@@ -38,11 +38,11 @@ public abstract class GuiChatMixin extends GuiScreen {
 
     /**
      * Gets the modifier key name depending on the operating system
-     * @return "OPT" if macOS, otherwise, "ALT"
+     * @return "OPTION" if macOS, otherwise, "ALT"
      */
     @Unique
     private static String chatting$getModifierKey() {
-        return (SystemUtils.IS_OS_MAC) ? "OPT" : "ALT";
+        return (SystemUtils.IS_OS_MAC) ? "OPTION" : "ALT";
     }
 
     @Unique
