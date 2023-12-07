@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+import cc.polyfrost.oneconfig.libs.universal.UDesktop;
 import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -35,6 +36,15 @@ import java.util.List;
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin extends GuiScreen {
 
+    /**
+     * Gets the modifier key name depending on the operating system
+     * @return "OPTION" if macOS, otherwise, "ALT"
+     */
+    @Unique
+    private static String chatting$getModifierKey() {
+        return (UDesktop.isMac()) ? "OPTION" : "ALT";
+    }
+
     @Unique
     private static final List<String> COPY_TOOLTIP = Lists.newArrayList(
             "\u00A7e\u00A7lCopy To Clipboard",
@@ -43,7 +53,7 @@ public abstract class GuiChatMixin extends GuiScreen {
             "\u00A7b\u00A7lSHIFT CLICK\u00A7r \u00A78- \u00A77Screenshot Line",
             "",
             "\u00A7e\u00A7lModifiers",
-            "\u00A7b\u00A7lALT\u00A7r \u00A78- \u00A77Formatting Codes");
+            "\u00A7b\u00A7l"+ chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes");
 
     private SearchButton searchButton;
 
