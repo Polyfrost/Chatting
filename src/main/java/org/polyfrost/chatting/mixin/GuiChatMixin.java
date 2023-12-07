@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
+import cc.polyfrost.oneconfig.libs.universal.UDesktop;
 import cc.polyfrost.oneconfig.libs.universal.UResolution;
-import org.apache.commons.lang3.SystemUtils;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.ClearButton;
@@ -42,7 +42,7 @@ public abstract class GuiChatMixin extends GuiScreen {
      */
     @Unique
     private static String chatting$getModifierKey() {
-        return (SystemUtils.IS_OS_MAC) ? "OPTION" : "ALT";
+        return (UDesktop.isMac()) ? "OPTION" : "ALT";
     }
 
     @Unique
