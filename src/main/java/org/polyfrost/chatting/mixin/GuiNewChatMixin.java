@@ -3,7 +3,13 @@ package org.polyfrost.chatting.mixin;
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
 import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import cc.polyfrost.oneconfig.utils.Notifications;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -11,12 +17,6 @@ import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.polyfrost.chatting.utils.RenderUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.awt.datatransfer.StringSelection;
@@ -65,19 +66,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
     @Unique
     private static final ResourceLocation DELETE = new ResourceLocation("chatting:delete.png");
-
-    /*?
-    @Unique
-    private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-    @ModifyArg(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;<init>(ILnet/minecraft/util/IChatComponent;I)V"))
-    private IChatComponent handleAddDrawnLine(IChatComponent iChatComponent) {
-        if (!ChattingConfig.INSTANCE.getShowTimestamp()) return iChatComponent;
-        String time = " §7["+ sdf.format(new Date(System.currentTimeMillis())) + "]§r";
-        iChatComponent.appendSibling(new ChatComponentText(time));
-        return iChatComponent;
-    }
-
-     */
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
@@ -172,10 +160,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique
     private int chatting$lastMouseY = 0;
 
-    @Inject(method = "getChatComponent", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;"))
-    private void storeMouseXAndY(int mouseX, int mouseY, CallbackInfoReturnable<IChatComponent> cir) {
+    @Unique
+    private ChatLine chatting$currentComponent;
+
+    @Inject(method = "getChatComponent", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;"), locals = LocalCapture.CAPTURE_FAILHARD)
+    private void storeMouseXAndY(int mouseX, int mouseY, CallbackInfoReturnable<IChatComponent> cir, ScaledResolution scaledResolution, int i, float f, int j, int k, int l, int m) {
         chatting$lastMouseX = mouseX;
         chatting$lastMouseY = mouseY;
+        chatting$currentComponent = drawnChatLines.get(m);
     }
 
     @ModifyVariable(method = "getChatComponent", at = @At("STORE"), ordinal = 0)
@@ -201,6 +193,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             cir.setReturnValue(null);
             chatting$cancelChatComponent = false;
         }
+    }
+
+    @ModifyVariable(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;getChatComponent()Lnet/minecraft/util/IChatComponent;"), index = 11)
+    private int fixOffsetForGetChatComponent(int value) {
+        return ModCompatHooks.getStartOffset(value, chatting$currentComponent);
     }
 
     @Override
