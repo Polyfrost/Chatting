@@ -14,6 +14,7 @@ public class GuiUtilRenderComponentsMixin {
         if (ChattingConfig.INSTANCE.getShowChatHeads() && (ChattingConfig.INSTANCE.getOffsetNonPlayerMessages() || ChatHeadHooks.INSTANCE.detect(text, null))) {
             return fontRenderer.getStringWidth(text) + 10;
         }
+        // TODO: time thingy?
         return fontRenderer.getStringWidth(text);
     }
 }

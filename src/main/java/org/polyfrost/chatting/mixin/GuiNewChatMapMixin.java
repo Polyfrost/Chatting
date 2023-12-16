@@ -3,6 +3,7 @@ package org.polyfrost.chatting.mixin;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.util.IChatComponent;
+import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import tv.twitch.chat.Chat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +52,9 @@ public abstract class GuiNewChatMapMixin implements GuiNewChatHook {
     private void handleLineAdded(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         if (!displayOnly) {
             ChatLine masterLine = chatLines.get(0);
+            ChatLineHook masterHook = (ChatLineHook) masterLine;
+            masterHook.setTimestamp(System.currentTimeMillis());
+            masterHook.getChildren().addAll(tempDrawnLines);
             for (ChatLine tempDrawnLine : tempDrawnLines) drawnToFull.put(tempDrawnLine, masterLine);
         }else {
             lastTempLine = null;

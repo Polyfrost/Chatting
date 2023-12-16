@@ -17,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(ChatLine.class)
 public class ChatLineMixin implements ChatLineHook {
@@ -26,6 +28,23 @@ public class ChatLineMixin implements ChatLineHook {
     private NetworkPlayerInfo detectedPlayerInfo;
     private static long lastUniqueId = 0;
     private long uniqueId = 0;
+    private long timestamp;
+    private List<ChatLine> children = new ArrayList<>();
+
+    @Override
+    public List<ChatLine> getChildren() {
+        return children;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    @Override
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {

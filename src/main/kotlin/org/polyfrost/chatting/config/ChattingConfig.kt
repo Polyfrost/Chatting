@@ -136,24 +136,19 @@ object ChattingConfig : Config(
     )
     var hideChatHeadOnConsecutiveMessages = true
 
-    /*/
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Show Timestamp",
         description = "Show message timestamp.",
         category = "General"
     )
     var showTimestamp = false
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Timestamp Only On Hover",
         description = "Show timestamp only on mouse hover.",
         category = "General"
     )
     var showTimestampHover = true
-
-     */
 
     @Info(
         text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" + "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" + "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",

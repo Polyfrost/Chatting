@@ -2,13 +2,6 @@ package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop;
 import cc.polyfrost.oneconfig.libs.universal.UResolution;
-import org.polyfrost.chatting.chat.*;
-import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.gui.components.ClearButton;
-import org.polyfrost.chatting.gui.components.ScreenshotButton;
-import org.polyfrost.chatting.gui.components.SearchButton;
-import org.polyfrost.chatting.hook.ChatLineHook;
-import org.polyfrost.chatting.hook.GuiNewChatHook;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
@@ -19,8 +12,13 @@ import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Mouse;
-import org.polyfrost.chatting.chat.ChatSearchingManager;
-import org.polyfrost.chatting.chat.ChatShortcuts;
+import org.polyfrost.chatting.chat.*;
+import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.gui.components.ClearButton;
+import org.polyfrost.chatting.gui.components.ScreenshotButton;
+import org.polyfrost.chatting.gui.components.SearchButton;
+import org.polyfrost.chatting.hook.ChatLineHook;
+import org.polyfrost.chatting.hook.GuiNewChatHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -72,6 +70,11 @@ public abstract class GuiChatMixin extends GuiScreen {
         }
     }
 
+    @Inject(method = "onGuiClosed", at = @At("HEAD"))
+    private void onGuiClosedHook(CallbackInfo ci) {
+        ModCompatHooks.setHoveredText(null);
+    }
+
     @Inject(method = "updateScreen", at = @At("HEAD"))
     private void updateScreen(CallbackInfo ci) {
         if (ChattingConfig.INSTANCE.getChatSearch() && searchButton.isEnabled()) {
@@ -95,6 +98,8 @@ public abstract class GuiChatMixin extends GuiScreen {
     @Inject(method = "drawScreen", at = @At("HEAD"))
     private void onDrawScreen(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
+        ChatLine hoveredLine = hook.getHoveredLine(Mouse.getY());
+        ModCompatHooks.setHoveredText(hoveredLine);
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
         if (hook.isHovering() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
