@@ -1,13 +1,10 @@
 package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UMouse;
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import cc.polyfrost.oneconfig.utils.Notifications;
-import net.minecraft.util.IChatComponent;
 import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.polyfrost.chatting.utils.RenderUtils;
@@ -23,7 +20,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.awt.datatransfer.StringSelection;
@@ -162,44 +158,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private void checkStuff(int j2, CallbackInfo ci) {
         if (!chatting$chatCheck && chatting$isHovering) {
             chatting$isHovering = false;
-        }
-    }
-
-    @Unique
-    private boolean chatting$cancelChatComponent = false;
-    @Unique
-    private int chatting$lastMouseX = 0;
-    @Unique
-    private int chatting$lastMouseY = 0;
-
-    @Inject(method = "getChatComponent", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;"))
-    private void storeMouseXAndY(int mouseX, int mouseY, CallbackInfoReturnable<IChatComponent> cir) {
-        chatting$lastMouseX = mouseX;
-        chatting$lastMouseY = mouseY;
-    }
-
-    @ModifyVariable(method = "getChatComponent", at = @At("STORE"), ordinal = 0)
-    private ChatLine storeChatLine(ChatLine line) {
-        if (ChattingConfig.INSTANCE.getShowChatHeads() && !((ChatLineHook) line).isDetected() && !ChattingConfig.INSTANCE.getOffsetNonPlayerMessages()) {
-            int i = (int) UResolution.getScaleFactor();
-            float f = this.getChatScale();
-            int j = chatting$lastMouseX / i - 3;
-            int k = chatting$lastMouseY / i - 27;
-            j = MathHelper.floor_float((float)j / f);
-            k = MathHelper.floor_float((float)k / f);
-            int l = Math.min(this.getLineCount(), this.drawnChatLines.size());
-            if (j > MathHelper.floor_float((float)this.getChatWidth() / this.getChatScale()) && k < this.mc.fontRendererObj.FONT_HEIGHT * l + l) {
-                chatting$cancelChatComponent = true;
-            }
-        }
-        return line;
-    }
-
-    @Inject(method = "getChatComponent", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", shift = At.Shift.AFTER), cancellable = true)
-    private void cancelChatComponent(int mouseX, int mouseY, CallbackInfoReturnable<IChatComponent> cir) {
-        if (chatting$cancelChatComponent) {
-            cir.setReturnValue(null);
-            chatting$cancelChatComponent = false;
         }
     }
 

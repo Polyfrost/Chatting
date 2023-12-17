@@ -1,7 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop;
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.ClearButton;
@@ -113,15 +112,6 @@ public abstract class GuiChatMixin extends GuiScreen {
         return ChattingConfig.INSTANCE.getInputBoxBackgroundColor().getRGB();
     }
 
-    @ModifyArg(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatComponent(II)Lnet/minecraft/util/IChatComponent;"), index = 0)
-    private int modifyChatComponentX(int x) {
-        if (ChattingConfig.INSTANCE.getShowChatHeads()) {
-            return x - (10 * (int) UResolution.getScaleFactor());
-        } else {
-            return x;
-        }
-    }
-
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void mouseClicked(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
@@ -144,15 +134,6 @@ public abstract class GuiChatMixin extends GuiScreen {
             }
         }
 
-    }
-
-    @ModifyArg(method = "mouseClicked", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatComponent(II)Lnet/minecraft/util/IChatComponent;"), index = 0)
-    private int modifyChatComponentX2(int x) {
-        if (ChattingConfig.INSTANCE.getShowChatHeads()) {
-            return x - (10 * (int) UResolution.getScaleFactor());
-        } else {
-            return x;
-        }
     }
 
     @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)
