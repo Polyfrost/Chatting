@@ -9,9 +9,10 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
+import org.polyfrost.chatting.config.ChattingConfig
 
 class ClearButton :
-    CleanButton(13379014, { UResolution.scaledWidth - 28 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
+    CleanButton(13379014, { if (ChattingConfig.chatSearch) UResolution.scaledWidth - 28 else UResolution.scaledWidth - 14 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
         { RenderType.NONE }) {
 
     var times = 0

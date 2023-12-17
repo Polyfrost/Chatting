@@ -9,9 +9,12 @@ import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
+import org.polyfrost.chatting.config.ChattingConfig
 
 class ScreenshotButton :
-    CleanButton(448318, { UResolution.scaledWidth - 42 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
+    CleanButton(448318, {
+        if (ChattingConfig.chatSearch && ChattingConfig.chatDeleteHistory) UResolution.scaledWidth - 42 else if (ChattingConfig.chatSearch || ChattingConfig.chatDeleteHistory) UResolution.scaledWidth - 28 else UResolution.scaledWidth - 14
+                        }, { UResolution.scaledHeight - 27 }, 12, 12, "",
         { RenderType.NONE }) {
 
     override fun onMousePress() {

@@ -5,17 +5,17 @@ import net.minecraft.client.gui.ChatLine;
 import java.awt.datatransfer.Transferable;
 
 public interface GuiNewChatHook {
-    int getRight();
+    int chatting$getRight();
 
-    boolean isHovering();
+    boolean chatting$isHovering();
 
-    ChatLine getHoveredLine(int mouseY);
+    ChatLine chatting$getHoveredLine(int mouseY);
 
-    Transferable getChattingChatComponent(int mouseY);
+    Transferable chatting$getChattingChatComponent(int mouseY);
 
-    default ChatLine getFullMessage(ChatLine line) {
+    default ChatLine chatting$getFullMessage(ChatLine line) {
         throw new AssertionError("getFullMessage not overridden on GuiNewChat");
     }
 
-    int getTextOpacity();
+    int chatting$getTextOpacity();
 }

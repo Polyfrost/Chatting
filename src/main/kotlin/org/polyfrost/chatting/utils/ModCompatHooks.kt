@@ -58,10 +58,10 @@ object ModCompatHooks {
         var actualX = x
         if (showChatHeads && !screenshot) {
             val hook = chatLine as ChatLineHook
-            if (hook.hasDetected() || offsetNonPlayerMessages) {
+            if (hook.`chatting$hasDetected`() || offsetNonPlayerMessages) {
                 actualX += 10f
             }
-            val networkPlayerInfo = hook.playerInfo
+            val networkPlayerInfo = hook.`chatting$getPlayerInfo`()
             if (networkPlayerInfo != null) {
                 GlStateManager.enableBlend()
                 GlStateManager.enableAlpha()
@@ -102,7 +102,7 @@ object ModCompatHooks {
                 actualX,
                 y,
                 color,
-                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).textOpacity)
+                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).`chatting$getTextOpacity`())
             else -> fontRenderer.drawString(text, actualX, y, color, true)
         }
     }

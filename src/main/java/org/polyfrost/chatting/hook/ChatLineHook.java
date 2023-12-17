@@ -7,11 +7,11 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 
 public interface ChatLineHook {
-    HashSet<WeakReference<ChatLine>> chatLines = new HashSet<>();
-    boolean hasDetected();
-    NetworkPlayerInfo getPlayerInfo();
+    HashSet<WeakReference<ChatLine>> chatting$chatLines = new HashSet<>();
+    boolean chatting$hasDetected();
+    NetworkPlayerInfo chatting$getPlayerInfo();
 
-    void updatePlayerInfo();
+    void chatting$updatePlayerInfo();
 
-    long getUniqueId();
+    long chatting$getUniqueId();
 }

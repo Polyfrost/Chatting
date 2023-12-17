@@ -3,10 +3,12 @@ package org.polyfrost.chatting.mixin;
 import cc.polyfrost.oneconfig.libs.universal.UDesktop;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.gui.components.CleanButton;
 import org.polyfrost.chatting.gui.components.ClearButton;
 import org.polyfrost.chatting.gui.components.ScreenshotButton;
 import org.polyfrost.chatting.gui.components.SearchButton;
 import org.polyfrost.chatting.hook.ChatLineHook;
+import org.polyfrost.chatting.hook.GuiChatHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
@@ -33,7 +35,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.List;
 
 @Mixin(GuiChat.class)
-public abstract class GuiChatMixin extends GuiScreen {
+public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     /**
      * Gets the modifier key name depending on the operating system
@@ -55,20 +57,12 @@ public abstract class GuiChatMixin extends GuiScreen {
             "\u00A7b\u00A7l"+ chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes");
 
     private SearchButton searchButton;
+    private ScreenshotButton screenshotButton;
+    private ClearButton clearButton;
 
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getChatSearch()) {
-            searchButton = new SearchButton();
-            buttonList.add(searchButton);
-        }
-        buttonList.add(new ScreenshotButton());
-        buttonList.add(new ClearButton());
-        if (ChattingConfig.INSTANCE.getChatTabs()) {
-            for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
-                buttonList.add(chatTab.getButton());
-            }
-        }
+        chatting$initButtons();
     }
 
     @Inject(method = "updateScreen", at = @At("HEAD"))
@@ -93,12 +87,14 @@ public abstract class GuiChatMixin extends GuiScreen {
 
     @Inject(method = "drawScreen", at = @At("HEAD"))
     private void onDrawScreen(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
-        GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
-        float f = mc.ingameGUI.getChatGUI().getChatScale();
-        int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.isHovering() && (hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
-            GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
-            GlStateManager.disableLighting();
+        if (ChattingConfig.INSTANCE.getChatCopy()) {
+            GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
+            float f = mc.ingameGUI.getChatGUI().getChatScale();
+            int x = MathHelper.floor_float((float) mouseX / f);
+            if (hook.chatting$isHovering() && (hook.chatting$getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.chatting$getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
+                GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
+                GlStateManager.disableLighting();
+            }
         }
     }
 
@@ -117,23 +113,22 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
         float f = mc.ingameGUI.getChatGUI().getChatScale();
         int x = MathHelper.floor_float((float) mouseX / f);
-        if (hook.isHovering()) {
-            if (((hook.getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 13 > x) || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
-                Transferable message = hook.getChattingChatComponent(Mouse.getY());
+        if (hook.chatting$isHovering()) {
+            if (ChattingConfig.INSTANCE.getChatCopy() && (((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.chatting$getRight() + ModCompatHooks.getXOffset()) + 13 > x) || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy()))) {
+                Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
                 if (message == null) return;
                 try {
                     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(message, null);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if ((hook.getRight() + ModCompatHooks.getXOffset() + 13) <= x && (hook.getRight() + ModCompatHooks.getXOffset()) + 23 > x) {
-                ChatLine chatLine = hook.getHoveredLine(Mouse.getY());
+            } else if (ChattingConfig.INSTANCE.getChatDelete() && ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 13) <= x && (hook.chatting$getRight() + ModCompatHooks.getXOffset()) + 23 > x)) {
+                ChatLine chatLine = hook.chatting$getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
-                ModCompatHooks.getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
-                ModCompatHooks.getChatLines().removeIf(line -> ((ChatLineHook) line).getUniqueId() == ((ChatLineHook) chatLine).getUniqueId());
+                ModCompatHooks.getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId());
+                ModCompatHooks.getChatLines().removeIf(line -> ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId());
             }
         }
-
     }
 
     @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)
@@ -149,5 +144,32 @@ public abstract class GuiChatMixin extends GuiScreen {
     @Inject(method = "handleMouseInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;scroll(I)V"))
     private void handleMouseInput(CallbackInfo ci) {
         ChatScrollingHook.INSTANCE.setShouldSmooth(true);
+    }
+
+    @Unique
+    private void chatting$initButtons() {
+        searchButton = new SearchButton();
+        if (ChattingConfig.INSTANCE.getChatSearch()) {
+            buttonList.add(searchButton);
+        }
+        screenshotButton = new ScreenshotButton();
+        if (ChattingConfig.INSTANCE.getChatScreenshot()) {
+            buttonList.add(screenshotButton);
+        }
+        clearButton = new ClearButton();
+        if (ChattingConfig.INSTANCE.getChatDeleteHistory()) {
+            buttonList.add(clearButton);
+        }
+        if (ChattingConfig.INSTANCE.getChatTabs()) {
+            for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {
+                buttonList.add(chatTab.getButton());
+            }
+        }
+    }
+
+    @Override
+    public void chatting$triggerButtonReset() {
+        buttonList.removeIf(button -> button instanceof CleanButton);
+        chatting$initButtons();
     }
 }

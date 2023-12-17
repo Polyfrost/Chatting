@@ -7,6 +7,7 @@ import cc.polyfrost.oneconfig.config.data.InfoType
 import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
 import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
+import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatShortcuts
@@ -14,6 +15,7 @@ import org.polyfrost.chatting.chat.ChatTab
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.chatting.hook.ChatLineHook
+import org.polyfrost.chatting.hook.GuiChatHook
 import org.polyfrost.chatting.utils.ModCompatHooks
 import java.io.File
 
@@ -39,16 +41,10 @@ object ChattingConfig : Config(
     var chatBackgroundColor = OneColor(0, 0, 0, 128)
 
     @Color(
-        name = "Copy Chat Message Background Color", category = "General",
+        name = "Hover Message Background Color", category = "General",
         description = "The color of the chat background when hovering over a message."
     )
     var hoveredChatBackgroundColor = OneColor(80, 80, 80, 128)
-
-    @Switch(
-        name = "Right Click to Copy Chat Message", category = "General",
-        description = "Enable right clicking on a chat message to copy it."
-    )
-    var rightClickCopy = false
 
     @Switch(
         name = "Compact Input Box", category = "General",
@@ -61,18 +57,6 @@ object ChattingConfig : Config(
         description = "The color of the chat input box background."
     )
     var inputBoxBackgroundColor = OneColor(0, 0, 0, 128)
-
-    @Color(
-        name = "Chat Button Background Color", category = "General",
-        description = "The color of the chat button background."
-    )
-    var chatButtonBackgroundColor = OneColor(0, 0, 0, 128)
-
-    @Color(
-        name = "Chat Button Hovered Background Color", category = "General",
-        description = "The color of the chat button background when hovered."
-    )
-    var chatButtonHoveredBackgroundColor = OneColor(255, 255, 255, 128)
 
     @Switch(
         name = "Inform Outdated Mods", category = "General",
@@ -116,6 +100,54 @@ object ChattingConfig : Config(
         description = "Removes the vanilla scroll bar from the chat."
     )
     var removeScrollBar = true
+
+    @Color(
+        name = "Chat Button Background Color", category = "Buttons",
+        description = "The color of the chat button background."
+    )
+    var chatButtonBackgroundColor = OneColor(0, 0, 0, 128)
+
+    @Color(
+        name = "Chat Button Hovered Background Color", category = "Buttons",
+        description = "The color of the chat button background when hovered."
+    )
+    var chatButtonHoveredBackgroundColor = OneColor(255, 255, 255, 128)
+
+    @Switch(
+        name = "Chat Copying Button", category = "Buttons",
+        description = "Enable copying chat messages via a button."
+    )
+    var chatCopy = true
+
+    @Switch(
+        name = "Right Click to Copy Chat Message", category = "Buttons",
+        description = "Enable right clicking on a chat message to copy it."
+    )
+    var rightClickCopy = false
+
+    @Switch(
+        name = "Delete Chat Message Button", category = "Buttons",
+        description = "Enable deleting individual chat messages via a button."
+    )
+    var chatDelete = true
+
+    @Switch(
+        name = "Delete Chat History Button", category = "Buttons",
+        description = "Enable deleting chat history via a button."
+    )
+    var chatDeleteHistory = true
+
+    @Switch(
+        name = "Chat Screenshot Button", category = "Buttons",
+        description = "Enable taking a screenshot of the chat via a button."
+    )
+    var chatScreenshot = true
+
+    @Switch(
+        name = "Chat Searching", category = "Buttons",
+        description = "Enable searching through chat messages."
+    )
+    var chatSearch = true
 
     @Switch(
         name = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads",
@@ -202,12 +234,6 @@ object ChattingConfig : Config(
     )
     var copyMode = 0
 
-    @Checkbox(
-        name = "Chat Searching", category = "Searching",
-        description = "Enable searching through chat messages."
-    )
-    var chatSearch = true
-
     @Switch(
         name = "Chat Tabs", category = "Tabs",
         description = "Allow filtering chat messages by a tab."
@@ -272,7 +298,7 @@ object ChattingConfig : Config(
             return@addDependency !ModCompatHooks.betterChatSmoothMessages
         }
         addListener("hideChatHeadOnConsecutiveMessages") {
-            ChatLineHook.chatLines.map { it.get() as ChatLineHook? }.forEach { it?.updatePlayerInfo() }
+            ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }
         }
         addListener("chatTabs") {
             ChatTabs.initialize()
@@ -308,6 +334,19 @@ object ChattingConfig : Config(
         addListener("chatShortcuts") {
             ChatShortcuts.initialize()
         }
+        listOf(
+            "chatSearch",
+            "chatScreenshot",
+            "chatDeleteHistory",
+            "chatTabs"
+        ).forEach {
+            addListener(it) {
+            UMinecraft.getMinecraft().currentScreen?.let { screen ->
+                if (screen is GuiChatHook) {
+                    screen.`chatting$triggerButtonReset`()
+                }
+            }
+        } }
         // addDependency("showTimestampHover", "showTimestamp")
     }
 }

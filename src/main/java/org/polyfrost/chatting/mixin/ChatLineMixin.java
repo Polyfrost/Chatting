@@ -36,7 +36,7 @@ public class ChatLineMixin implements ChatLineHook {
     private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {
         lastUniqueId++;
         uniqueId = lastUniqueId;
-        chatLines.add(new WeakReference<>((ChatLine) (Object) this));
+        chatting$chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
         if (netHandler == null) return;
         Map<String, NetworkPlayerInfo> nicknameCache = new HashMap<>();
@@ -89,17 +89,17 @@ public class ChatLineMixin implements ChatLineHook {
     }
 
     @Override
-    public boolean hasDetected() {
+    public boolean chatting$hasDetected() {
         return detected;
     }
 
     @Override
-    public NetworkPlayerInfo getPlayerInfo() {
+    public NetworkPlayerInfo chatting$getPlayerInfo() {
         return playerInfo;
     }
 
     @Override
-    public void updatePlayerInfo() {
+    public void chatting$updatePlayerInfo() {
         if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages() && !first) {
             playerInfo = null;
         } else {
@@ -108,7 +108,7 @@ public class ChatLineMixin implements ChatLineHook {
     }
 
     @Override
-    public long getUniqueId() {
+    public long chatting$getUniqueId() {
         return uniqueId;
     }
 }

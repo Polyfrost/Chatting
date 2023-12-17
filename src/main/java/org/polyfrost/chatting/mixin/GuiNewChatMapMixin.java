@@ -72,7 +72,7 @@ public abstract class GuiNewChatMapMixin implements GuiNewChatHook {
     }
 
     @Override
-    public ChatLine getFullMessage(ChatLine line) {
+    public ChatLine chatting$getFullMessage(ChatLine line) {
         return drawnToFull.getOrDefault(line, null);
     }
 }
