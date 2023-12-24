@@ -89,9 +89,12 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         chatting$chatCheck = false;
     }
 
+    @Unique
+    private int chatting$updateCounter;
+
     @ModifyVariable(method = "drawChat", at = @At("HEAD"), argsOnly = true)
     private int setUpdateCounterWhenYes(int updateCounter) {
-        return Chatting.INSTANCE.getDoTheThing() ? 0 : updateCounter;
+        return (chatting$updateCounter = Chatting.INSTANCE.getDoTheThing() ? 0 : updateCounter);
     }
 
     @ModifyVariable(method = "drawChat", at = @At("STORE"), index = 2)
@@ -179,8 +182,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @ModifyVariable(method = "drawChat", at = @At("STORE"), ordinal = 0)
-    private double modifyYeah(double value, int updateCounter) {
-        chatting$textOpacity = chatting$getOpacity(updateCounter);
+    private double modifyYeah(double value) {
+        chatting$textOpacity = chatting$getOpacity(chatting$updateCounter);
         if (chatting$textOpacity == Integer.MIN_VALUE) {
             chatting$textOpacity = 0;
         }
