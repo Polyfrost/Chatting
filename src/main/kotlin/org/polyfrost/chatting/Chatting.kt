@@ -125,7 +125,7 @@ object Chatting {
     }
 
     private fun skytilsCompat(skytilsClass: Class<*>) {
-        val instance = skytilsClass.getDeclaredField("INSTANCE")
+        val instance = skytilsClass.getDeclaredField("INSTANCE").get(null)
         val chatTabs = skytilsClass.getDeclaredField("chatTabs")
         chatTabs.isAccessible = true
         if (chatTabs.getBoolean(instance)) {
