@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop;
+import net.minecraft.client.gui.GuiTextField;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.CleanButton;
@@ -24,6 +25,7 @@ import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,7 +38,7 @@ import java.util.List;
 
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
-
+    @Shadow protected GuiTextField inputField;
     /**
      * Gets the modifier key name depending on the operating system
      * @return "OPTION" if macOS, otherwise, "ALT"
@@ -63,6 +65,9 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         chatting$initButtons();
+        if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
+            inputField.setText(DraftHooks.INSTANCE.getDraft());
+        }
     }
 
     @Inject(method = "updateScreen", at = @At("HEAD"))
@@ -140,6 +145,21 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         }
         return original;
     }
+
+    @Inject(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"))
+    private void clearDraft(CallbackInfo ci) {
+        if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
+            inputField.setText("");
+        }
+    }
+
+    @Inject(method = "onGuiClosed", at = @At("HEAD"))
+    private void saveDraft(CallbackInfo ci) {
+        if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
+            DraftHooks.INSTANCE.setDraft(inputField.getText());
+        }
+    }
+
 
     @Inject(method = "handleMouseInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;scroll(I)V"))
     private void handleMouseInput(CallbackInfo ci) {

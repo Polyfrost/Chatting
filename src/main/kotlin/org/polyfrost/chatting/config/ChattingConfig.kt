@@ -9,10 +9,12 @@ import cc.polyfrost.oneconfig.config.data.ModType
 import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
+import club.sk1er.patcher.config.PatcherConfig
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatShortcuts
 import org.polyfrost.chatting.chat.ChatTab
 import org.polyfrost.chatting.chat.ChatTabs
+import org.polyfrost.chatting.chat.DraftHooks
 import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiChatHook
@@ -63,6 +65,12 @@ object ChattingConfig : Config(
         description = "Inform the user when a mod can be replaced by Chatting."
     )
     var informForAlternatives = true
+
+    @Switch(
+        name = "Input Field Draft", category = "General",
+        description = "Drafts the text you wrote in the input field after closing the chat and back it up when opening the chat again."
+    )
+    var inputFieldDraft = true
 
     @Switch(
         name = "Smooth Chat Messages",
@@ -295,7 +303,13 @@ object ChattingConfig : Config(
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
         addDependency("smoothChat", "BetterChat Smooth Chat") {
-            return@addDependency !ModCompatHooks.betterChatSmoothMessages
+            !ModCompatHooks.betterChatSmoothMessages
+        }
+        addDependency("inputBoxBackgroundColor",  "Patcher's Transparent Chat Input Field. Please turn it off to use this feature.") {
+            !Chatting.isPatcher || !PatcherConfig.transparentChatInputField
+        }
+        addListener("inputFieldDraft") {
+            DraftHooks.resetDraft()
         }
         addListener("hideChatHeadOnConsecutiveMessages") {
             ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }
