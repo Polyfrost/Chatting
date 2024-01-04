@@ -11,10 +11,10 @@ import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import club.sk1er.patcher.config.PatcherConfig
 import org.polyfrost.chatting.Chatting
+import org.polyfrost.chatting.chat.ChatHooks
 import org.polyfrost.chatting.chat.ChatShortcuts
 import org.polyfrost.chatting.chat.ChatTab
 import org.polyfrost.chatting.chat.ChatTabs
-import org.polyfrost.chatting.chat.DraftHooks
 import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiChatHook
@@ -262,6 +262,15 @@ object ChattingConfig : Config(
     )
     var hypixelOnlyChatTabs = true
 
+    @Info(
+        category = "Tabs",
+        type = InfoType.INFO,
+        text = "You can use shift to select multiple tabs, as well as ctrl + tab to switch to the next tab",
+        size = 2
+    )
+    @Transient
+    var ignored2 = true
+
     @Switch(
         name = "Chat Shortcuts", category = "Shortcuts"
     )
@@ -309,7 +318,7 @@ object ChattingConfig : Config(
             !Chatting.isPatcher || !PatcherConfig.transparentChatInputField
         }
         addListener("inputFieldDraft") {
-            DraftHooks.resetDraft()
+            ChatHooks.resetDraft()
         }
         addListener("hideChatHeadOnConsecutiveMessages") {
             ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }

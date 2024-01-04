@@ -1,8 +1,24 @@
 package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop;
+import cc.polyfrost.oneconfig.libs.universal.UKeyboard;
+import com.google.common.collect.Lists;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ChatLine;
+import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import org.polyfrost.chatting.chat.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.MathHelper;
+import net.minecraftforge.fml.client.config.GuiUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.lwjgl.input.Mouse;
+import org.polyfrost.chatting.chat.ChatHooks;
+import org.polyfrost.chatting.chat.ChatScrollingHook;
+import org.polyfrost.chatting.chat.ChatSearchingManager;
+import org.polyfrost.chatting.chat.ChatShortcuts;
+import org.polyfrost.chatting.chat.ChatTab;
+import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.CleanButton;
 import org.polyfrost.chatting.gui.components.ClearButton;
@@ -11,18 +27,6 @@ import org.polyfrost.chatting.gui.components.SearchButton;
 import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hook.GuiChatHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
-import com.google.common.collect.Lists;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ChatLine;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.MathHelper;
-import net.minecraftforge.fml.client.config.GuiUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.lwjgl.input.Mouse;
-import org.polyfrost.chatting.chat.ChatSearchingManager;
-import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,9 +42,12 @@ import java.util.List;
 
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
-    @Shadow protected GuiTextField inputField;
+    @Shadow
+    protected GuiTextField inputField;
+
     /**
      * Gets the modifier key name depending on the operating system
+     *
      * @return "OPTION" if macOS, otherwise, "ALT"
      */
     @Unique
@@ -50,13 +57,13 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Unique
     private static final List<String> COPY_TOOLTIP = Lists.newArrayList(
-            "\u00A7e\u00A7lCopy To Clipboard",
-            "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
-            "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line",
-            "\u00A7b\u00A7lSHIFT CLICK\u00A7r \u00A78- \u00A77Screenshot Line",
-            "",
-            "\u00A7e\u00A7lModifiers",
-            "\u00A7b\u00A7l"+ chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes");
+        "\u00A7e\u00A7lCopy To Clipboard",
+        "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
+        "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line",
+        "\u00A7b\u00A7lSHIFT CLICK\u00A7r \u00A78- \u00A77Screenshot Line",
+        "",
+        "\u00A7e\u00A7lModifiers",
+        "\u00A7b\u00A7l" + chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes");
 
     private SearchButton searchButton;
     private ScreenshotButton screenshotButton;
@@ -66,7 +73,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     private void init(CallbackInfo ci) {
         chatting$initButtons();
         if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
-            inputField.setText(DraftHooks.INSTANCE.getDraft());
+            inputField.setText(ChatHooks.INSTANCE.getDraft());
         }
     }
 
@@ -87,6 +94,9 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             }
             searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
             ChatSearchingManager.INSTANCE.setLastSearch(searchButton.getInputField().getText());
+        } else if (isCtrlKeyDown() && keyCode == UKeyboard.KEY_TAB) {
+            ci.cancel();
+            ChatHooks.INSTANCE.switchTab();
         }
     }
 
@@ -156,7 +166,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Inject(method = "onGuiClosed", at = @At("HEAD"))
     private void saveDraft(CallbackInfo ci) {
         if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
-            DraftHooks.INSTANCE.setDraft(inputField.getText());
+            ChatHooks.INSTANCE.setDraft(inputField.getText());
         }
     }
 

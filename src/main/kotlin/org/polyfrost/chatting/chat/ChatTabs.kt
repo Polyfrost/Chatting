@@ -16,9 +16,8 @@ object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
     private val PARSER = JsonParser()
     val tabs = arrayListOf<ChatTab>()
-    var currentTabs: ArrayList<ChatTab?> = object : ArrayList<ChatTab?>() {
-        override fun add(element: ChatTab?): Boolean {
-            if (element == null) return false
+    var currentTabs: ArrayList<ChatTab> = object : ArrayList<ChatTab>() {
+        override fun add(element: ChatTab): Boolean {
             val returnValue = super.add(element)
             if (Minecraft.getMinecraft().theWorld != null && returnValue) {
                 Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
@@ -195,7 +194,7 @@ object ChatTabs {
     fun shouldRender(message: IChatComponent): Boolean {
         if (currentTabs.isEmpty()) return true
         for (tab in currentTabs) {
-            if (tab?.shouldRender(message) == true) {
+            if (tab.shouldRender(message)) {
                 return true
             }
         }
