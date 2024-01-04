@@ -70,7 +70,7 @@ object ChattingConfig : Config(
         name = "Input Field Draft", category = "General",
         description = "Drafts the text you wrote in the input field after closing the chat and back it up when opening the chat again."
     )
-    var inputFieldDraft = true
+    var inputFieldDraft = false
 
     @Switch(
         name = "Smooth Chat Messages",
