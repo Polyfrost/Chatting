@@ -4,21 +4,13 @@ import cc.polyfrost.oneconfig.libs.universal.UDesktop;
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ChatLine;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Mouse;
-import org.polyfrost.chatting.chat.ChatHooks;
-import org.polyfrost.chatting.chat.ChatScrollingHook;
-import org.polyfrost.chatting.chat.ChatSearchingManager;
-import org.polyfrost.chatting.chat.ChatShortcuts;
-import org.polyfrost.chatting.chat.ChatTab;
-import org.polyfrost.chatting.chat.ChatTabs;
+import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.CleanButton;
 import org.polyfrost.chatting.gui.components.ClearButton;
@@ -44,6 +36,8 @@ import java.util.List;
 public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Shadow
     protected GuiTextField inputField;
+
+    @Shadow public abstract void drawScreen(int mouseX, int mouseY, float partialTicks);
 
     /**
      * Gets the modifier key name depending on the operating system
@@ -104,9 +98,11 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     private void onDrawScreen(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         if (ChattingConfig.INSTANCE.getChatCopy()) {
             GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
-            float f = mc.ingameGUI.getChatGUI().getChatScale();
-            int x = MathHelper.floor_float((float) mouseX / f);
-            if (hook.chatting$isHovering() && (hook.chatting$getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.chatting$getRight() + ModCompatHooks.getXOffset()) + 13 > x) {
+            ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
+            int scale = new ScaledResolution(mc).getScaleFactor();
+            int x = Mouse.getX();
+            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1) * hud.getScale() + (int) hud.position.getX());
+            if (hook.chatting$isHovering() && x >= right * scale && x < (right + 9 * hud.getScale()) * scale) {
                 GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
                 GlStateManager.disableLighting();
             }
@@ -126,10 +122,12 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void mouseClicked(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
         GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
-        float f = mc.ingameGUI.getChatGUI().getChatScale();
-        int x = MathHelper.floor_float((float) mouseX / f);
+        ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
+        int scale = new ScaledResolution(mc).getScaleFactor();
+        int x = Mouse.getX();
         if (hook.chatting$isHovering()) {
-            if (ChattingConfig.INSTANCE.getChatCopy() && (((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 3) <= x && (hook.chatting$getRight() + ModCompatHooks.getXOffset()) + 13 > x) || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy()))) {
+            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1) * hud.getScale() + (int) hud.position.getX()) * scale;
+            if (ChattingConfig.INSTANCE.getChatCopy() && x >= right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
                 Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
                 if (message == null) return;
                 try {
@@ -137,7 +135,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (ChattingConfig.INSTANCE.getChatDelete() && ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 13) <= x && (hook.chatting$getRight() + ModCompatHooks.getXOffset()) + 23 > x)) {
+            } else if (ChattingConfig.INSTANCE.getChatDelete() && x >= right + 10 * hud.getScale() * scale && x < right + 19 * hud.getScale() * scale) {
                 ChatLine chatLine = hook.chatting$getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
                 ModCompatHooks.getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId());

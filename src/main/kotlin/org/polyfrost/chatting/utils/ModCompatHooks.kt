@@ -31,7 +31,8 @@ object ModCompatHooks {
 
     @JvmStatic
     val chatPosition
-        get() = if (isPatcher && PatcherConfig.chatPosition) 12 else 0
+        get() = 0
+//        get() = if (isPatcher && PatcherConfig.chatPosition) 12 else 0
 
     @JvmStatic
     val betterChatSmoothMessages

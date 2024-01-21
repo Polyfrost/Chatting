@@ -11,10 +11,7 @@ import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import club.sk1er.patcher.config.PatcherConfig
 import org.polyfrost.chatting.Chatting
-import org.polyfrost.chatting.chat.ChatHooks
-import org.polyfrost.chatting.chat.ChatShortcuts
-import org.polyfrost.chatting.chat.ChatTab
-import org.polyfrost.chatting.chat.ChatTabs
+import org.polyfrost.chatting.chat.*
 import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiChatHook
@@ -235,6 +232,11 @@ object ChattingConfig : Config(
         description = "The height of the chat window when unfocused."
     )
     var unfocusedHeight = 180
+
+    @HUD(
+        name = "Chat Window", category = "Chat Window"
+    )
+    var chatWindow = ChatWindow()
 
     @Dropdown(
         name = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"],
