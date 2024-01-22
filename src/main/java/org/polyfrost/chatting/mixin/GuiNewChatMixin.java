@@ -121,6 +121,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (isHovered(left, top, right - left, 9)) {
                 chatting$isHovering = true;
                 chatting$lineInBounds = true;
+            }
+            if (isHovered(left, top, right - left, 9) || isHovered(right + 1, top, 9, 9) || isHovered(right + 11, top, 9, 9)) {
                 args.set(4, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getRGB());
             }
         }
@@ -161,7 +163,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             int left = 0;
             int top = (int) ((float) args.get(2) - 1);
             int right = MathHelper.ceiling_float_int((float)getChatWidth()) + 4;
-            int bottom = (int) ((float) args.get(2) + 8);
             if ((chatting$isHovering && chatting$lineInBounds) || isHovered(left, top, right + 20, 9)) {
                 chatting$isHovering = true;
                 drawCopyChatBox(right, top);

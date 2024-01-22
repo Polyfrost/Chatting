@@ -102,7 +102,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             int scale = new ScaledResolution(mc).getScaleFactor();
             int x = Mouse.getX();
             int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1) * hud.getScale() + (int) hud.position.getX());
-            if (hook.chatting$isHovering() && x >= right * scale && x < (right + 9 * hud.getScale()) * scale) {
+            if (hook.chatting$isHovering() && x > right * scale && x <= (right + 9 * hud.getScale()) * scale) {
                 GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
                 GlStateManager.disableLighting();
             }
@@ -127,7 +127,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         int x = Mouse.getX();
         if (hook.chatting$isHovering()) {
             int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1) * hud.getScale() + (int) hud.position.getX()) * scale;
-            if (ChattingConfig.INSTANCE.getChatCopy() && x >= right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
+            if (ChattingConfig.INSTANCE.getChatCopy() && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
                 Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
                 if (message == null) return;
                 try {
@@ -135,7 +135,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (ChattingConfig.INSTANCE.getChatDelete() && x >= right + 10 * hud.getScale() * scale && x < right + 19 * hud.getScale() * scale) {
+            } else if (ChattingConfig.INSTANCE.getChatDelete() && x > right + 10 * hud.getScale() * scale && x < right + 19 * hud.getScale() * scale) {
                 ChatLine chatLine = hook.chatting$getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
                 ModCompatHooks.getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId());
