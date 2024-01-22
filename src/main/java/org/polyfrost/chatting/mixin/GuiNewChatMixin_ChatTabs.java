@@ -36,8 +36,8 @@ public abstract class GuiNewChatMixin_ChatTabs {
 
     private void handleChatTabMessage(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         if (ChattingConfig.INSTANCE.getChatTabs()) {
+            ChatTabs.INSTANCE.setHasCancelledAnimation(!ChatTabs.INSTANCE.shouldRender(chatComponent));
             if (!ChatTabs.INSTANCE.shouldRender(chatComponent)) {
-                ChatTabs.INSTANCE.setHasCancelledAnimation(true);
                 if (chatLineId != 0) {
                     deleteChatLine(chatLineId);
                 }
