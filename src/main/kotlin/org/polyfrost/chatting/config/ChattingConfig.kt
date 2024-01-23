@@ -34,12 +34,6 @@ object ChattingConfig : Config(
     var textRenderType = 1
 
     @Color(
-        name = "Chat Background Color", category = "General",
-        description = "The color of the chat background."
-    )
-    var chatBackgroundColor = OneColor(0, 0, 0, 128)
-
-    @Color(
         name = "Hover Message Background Color", category = "General",
         description = "The color of the chat background when hovering over a message."
     )
@@ -56,6 +50,17 @@ object ChattingConfig : Config(
         description = "The color of the chat input box background."
     )
     var inputBoxBackgroundColor = OneColor(0, 0, 0, 128)
+
+    @Checkbox(
+        name = "Message Fade"
+    )
+    var fade = true
+
+    @Slider(
+        name = "Time Before Fade",
+        min = 0f, max = 20f
+    )
+    var fadeTime = 10f
 
     @Switch(
         name = "Inform Outdated Mods", category = "General",
@@ -305,6 +310,7 @@ object ChattingConfig : Config(
 
     init {
         initialize()
+        addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
         addDependency("hypixelOnlyChatTabs", "chatTabs")

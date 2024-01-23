@@ -101,8 +101,8 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
             int scale = new ScaledResolution(mc).getScaleFactor();
             int x = Mouse.getX();
-            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1) * hud.getScale() + (int) hud.position.getX());
-            if (hook.chatting$isHovering() && x > right * scale && x <= (right + 9 * hud.getScale()) * scale) {
+            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX());
+            if (hook.chatting$isHovering() && x > right * scale && x < (right + 9 * hud.getScale()) * scale) {
                 GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
                 GlStateManager.disableLighting();
             }
@@ -126,7 +126,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         int scale = new ScaledResolution(mc).getScaleFactor();
         int x = Mouse.getX();
         if (hook.chatting$isHovering()) {
-            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1) * hud.getScale() + (int) hud.position.getX()) * scale;
+            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX()) * scale;
             if (ChattingConfig.INSTANCE.getChatCopy() && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
                 Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
                 if (message == null) return;

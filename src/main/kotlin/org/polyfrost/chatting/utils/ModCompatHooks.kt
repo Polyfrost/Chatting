@@ -31,8 +31,7 @@ object ModCompatHooks {
 
     @JvmStatic
     val chatPosition
-        get() = 0
-//        get() = if (isPatcher && PatcherConfig.chatPosition) 12 else 0
+        get() = if (isPatcher && PatcherConfig.chatPosition) 12 else 0
 
     @JvmStatic
     val betterChatSmoothMessages
@@ -53,6 +52,10 @@ object ModCompatHooks {
     @JvmStatic
     val drawnChatLines: List<ChatLine>
         get() = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines
+
+    @JvmStatic
+    val chatHeadOffset
+        get() = if (showChatHeads) 10 else 0
 
     @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {
