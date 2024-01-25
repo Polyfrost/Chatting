@@ -30,6 +30,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import static net.minecraft.client.gui.GuiNewChat.calculateChatboxHeight;
+
 @Mixin(value = GuiNewChat.class, priority = 990)
 public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique
@@ -84,12 +86,48 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
      */
 
+    @Unique
+    private boolean lastOpen, closing;
+
+    @Unique
+    private long time;
+
+    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
+    private void drawClosing(int updateCounter, CallbackInfo ci) {
+        ChattingConfig config = ChattingConfig.INSTANCE;
+
+        if (closing) {
+            int height = (config.getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(getChatOpen()) : calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused));
+            for (int m = 0; m < this.drawnChatLines.size() && m < height / 9; ++m) {
+                ChatLine chatLine = this.drawnChatLines.get(m);
+                if (chatLine != null) {
+                    int n = updateCounter - chatLine.getUpdatedCounter() + 200 - (int) (config.getFadeTime() * 20);
+                    if (n >= 200 && !getChatOpen()) {
+                        int q = m * 9;
+                        String string = chatLine.getChatComponent().getFormattedText();
+                        GlStateManager.enableBlend();
+                        ModCompatHooks.redirectDrawString(string, 0, -q - 8, 16777215 + (255 << 24), chatLine, false);
+                        GlStateManager.disableAlpha();
+                        GlStateManager.disableBlend();
+                    }
+                }
+            }
+        }
+    }
+
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
         if (Chatting.INSTANCE.getKeybind().isPressed()) {
             Chatting.INSTANCE.setDoTheThing(true);
         }
         chatting$chatCheck = false;
+        if (lastOpen != getChatOpen()) {
+            if (lastOpen) time = Minecraft.getSystemTime();
+            lastOpen = getChatOpen();
+        }
+        ChattingConfig config = ChattingConfig.INSTANCE;
+        long duration = config.getSmoothBG() ? (long) config.getBgDuration() : 0;
+        closing = (Minecraft.getSystemTime() - time + 50L <= duration);
     }
 
     @Unique
@@ -103,7 +141,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @ModifyVariable(method = "drawChat", at = @At("STORE"), index = 2)
     private int setChatLimitWhenYes(int linesToDraw) {
         return Chatting.INSTANCE.getDoTheThing()
-                ? GuiNewChat.calculateChatboxHeight(mc.gameSettings.chatHeightFocused) / 9
+                ? calculateChatboxHeight(mc.gameSettings.chatHeightFocused) / 9
                 : linesToDraw;
     }
 
@@ -127,7 +165,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         ChatWindow hud = config.getChatWindow();
         int mcScale = new ScaledResolution(mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        int height = (int) hud.getHeightAnimation().get();
+        int height = (int) hud.getAnimationHeight();
         GL11.glScissor((int) hud.position.getX() * mcScale, mc.displayHeight - (int) hud.position.getBottomY() * mcScale, (int) (hud.position.getWidth() + (getChatOpen() ? 20 : 0) * hud.getScale()) * mcScale, height * mcScale);
     }
 
@@ -229,7 +267,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (chatting$textOpacity == Integer.MIN_VALUE) {
             chatting$textOpacity = 0;
         }
-        return value;
+        return closing ? 255 : value;
     }
     /*/
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;scale(FFF)V"))

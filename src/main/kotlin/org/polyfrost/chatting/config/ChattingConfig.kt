@@ -90,6 +90,21 @@ object ChattingConfig : Config(
     var messageSpeed = 0.5f
 
     @Switch(
+        name = "Smooth Chat Background",
+        category = "Animations", subcategory = "Background",
+        description = "Smoothly animate chat background."
+    )
+    var smoothBG = true
+
+    @Slider(
+        name = "Background Animation Duration",
+        category = "Animations", subcategory = "Background",
+        min = 50f, max = 1000f,
+        description = "The speed at which chat background animate."
+    )
+    var bgDuration = 400f
+
+    @Switch(
         name = "Smooth Chat Scrolling",
         category = "Animations", subcategory = "Scrolling",
         description = "Smoothly animate scrolling when scrolling through the chat."
@@ -319,6 +334,7 @@ object ChattingConfig : Config(
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
+        addDependency("bgDuration", "smoothBG")
         addDependency("smoothChat", "BetterChat Smooth Chat") {
             !ModCompatHooks.betterChatSmoothMessages
         }

@@ -9,8 +9,7 @@ import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.utils.dsl.*
 import net.minecraft.client.gui.*
 import net.minecraft.util.ChatComponentText
-import org.polyfrost.chatting.config.ChattingConfig.messageSpeed
-import org.polyfrost.chatting.config.ChattingConfig.showChatHeads
+import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
 
@@ -34,6 +33,9 @@ class ChatWindow : BasicHud(true) {
     @Exclude
     var height = 0
 
+    @Exclude
+    var animationHeight = 0f
+
     override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
         if (!example) return
         nanoVG(true){
@@ -51,14 +53,25 @@ class ChatWindow : BasicHud(true) {
 
     fun drawBG() {
         val currentWidth = widthAnimation.get()
-        val currentHeight = heightAnimation.get()
+        animationHeight = heightAnimation.get()
         val widthEnd = position.width + (if (mc.ingameGUI.chatGUI.chatOpen) 20 else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
-        widthAnimation = EaseOutQuart((1.0f - messageSpeed) * 1000f, currentWidth, widthEnd, false)
-        heightAnimation = EaseOutQuart((1.0f - messageSpeed) * 1000f, currentHeight, heightEnd, false)
-        if (currentHeight <= 0.3f || !background || HudCore.editing) return
+        val duration = ChattingConfig.bgDuration
+        if (widthEnd != widthAnimation.end) {
+            widthAnimation = if (ChattingConfig.smoothBG)
+                EaseOutQuart(duration, currentWidth, widthEnd, false)
+            else
+                DummyAnimation(widthEnd)
+        }
+        if (heightEnd != heightAnimation.end) {
+            heightAnimation = if (ChattingConfig.smoothBG)
+                EaseOutQuart(duration, animationHeight, heightEnd, false)
+            else
+                DummyAnimation(heightEnd)
+        }
+        if (animationHeight <= 0.3f || !background || HudCore.editing) return
         nanoVG(true) {
-            drawBackground(position.x, position.bottomY - currentHeight, currentWidth, currentHeight, scale)
+            drawBackground(position.x, position.bottomY - animationHeight, currentWidth, animationHeight, scale)
         }
     }
 
