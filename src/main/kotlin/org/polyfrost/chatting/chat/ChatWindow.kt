@@ -8,6 +8,7 @@ import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.utils.dsl.*
 import net.minecraft.client.gui.*
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
@@ -57,6 +58,8 @@ class ChatWindow : BasicHud(true) {
         val widthEnd = position.width + (if (mc.ingameGUI.chatGUI.chatOpen) 20 else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
         val duration = ChattingConfig.bgDuration
+        GlStateManager.enableAlpha()
+        GlStateManager.enableBlend()
         if (widthEnd != widthAnimation.end) {
             widthAnimation = if (ChattingConfig.smoothBG)
                 EaseOutQuart(duration, currentWidth, widthEnd, false)
@@ -73,6 +76,8 @@ class ChatWindow : BasicHud(true) {
         nanoVG(true) {
             drawBackground(position.x, position.bottomY - animationHeight, currentWidth, animationHeight, scale)
         }
+        GlStateManager.disableBlend()
+        GlStateManager.disableAlpha()
     }
 
     fun getAlphaBG(): Int {
