@@ -37,7 +37,11 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Shadow
     protected GuiTextField inputField;
 
-    @Shadow public abstract void drawScreen(int mouseX, int mouseY, float partialTicks);
+    @Shadow
+    public abstract void drawScreen(int mouseX, int mouseY, float partialTicks);
+
+    @Shadow
+    private String defaultInputFieldText;
 
     /**
      * Gets the modifier key name depending on the operating system
@@ -67,7 +71,8 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     private void init(CallbackInfo ci) {
         chatting$initButtons();
         if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
-            inputField.setText(ChatHooks.INSTANCE.getDraft());
+            String command = (ChatHooks.INSTANCE.getCommandDraft().startsWith("/") ? "" : "/") + ChatHooks.INSTANCE.getCommandDraft();
+            inputField.setText(inputField.getText().equals("/") ? command : ChatHooks.INSTANCE.getDraft());
         }
     }
 
@@ -157,14 +162,19 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Inject(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"))
     private void clearDraft(CallbackInfo ci) {
         if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
-            inputField.setText("");
+            inputField.setText(inputField.getText().startsWith("/") ? "/" : "");
         }
     }
 
     @Inject(method = "onGuiClosed", at = @At("HEAD"))
     private void saveDraft(CallbackInfo ci) {
         if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
-            ChatHooks.INSTANCE.setDraft(inputField.getText());
+            if (inputField.getText().startsWith("/")) {
+                ChatHooks.INSTANCE.setCommandDraft(inputField.getText());
+            } else {
+                if (inputField.getText().isEmpty() && defaultInputFieldText.equals("/")) return;
+                ChatHooks.INSTANCE.setDraft(inputField.getText());
+            }
         }
     }
 

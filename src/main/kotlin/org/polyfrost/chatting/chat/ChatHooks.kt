@@ -3,8 +3,11 @@ package org.polyfrost.chatting.chat
 object ChatHooks {
     var draft = ""
 
+    var commandDraft = ""
+
     fun resetDraft() {
         draft = ""
+        commandDraft = ""
     }
 
     fun switchTab() {
