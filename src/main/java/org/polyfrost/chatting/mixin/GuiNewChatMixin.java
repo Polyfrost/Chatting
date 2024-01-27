@@ -244,6 +244,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         chatting$lineInBounds = false;
     }
 
+    @Redirect(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F"))
+    private float wrap(GuiNewChat instance) {
+        return 1f;
+    }
+
     private boolean isHovered(int x, int y, int width, int height) {
         ChatWindow hud = chatting$config().getChatWindow();
         ScaledResolution scaleResolution = new ScaledResolution(mc);

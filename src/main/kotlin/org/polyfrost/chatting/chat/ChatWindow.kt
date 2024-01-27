@@ -35,6 +35,9 @@ class ChatWindow : BasicHud(true) {
     var height = 0
 
     @Exclude
+    var animationWidth = 0f
+
+    @Exclude
     var animationHeight = 0f
 
     override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
@@ -53,7 +56,7 @@ class ChatWindow : BasicHud(true) {
     }
 
     fun drawBG() {
-        val currentWidth = widthAnimation.get()
+        animationWidth = widthAnimation.get()
         animationHeight = heightAnimation.get()
         val widthEnd = position.width + (if (mc.ingameGUI.chatGUI.chatOpen) 20 else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
@@ -62,7 +65,7 @@ class ChatWindow : BasicHud(true) {
         GlStateManager.enableBlend()
         if (widthEnd != widthAnimation.end) {
             widthAnimation = if (ChattingConfig.smoothBG)
-                EaseOutQuart(duration, currentWidth, widthEnd, false)
+                EaseOutQuart(duration, animationWidth, widthEnd, false)
             else
                 DummyAnimation(widthEnd)
         }
@@ -74,7 +77,7 @@ class ChatWindow : BasicHud(true) {
         }
         if (animationHeight <= 0.3f || !background || HudCore.editing) return
         nanoVG(true) {
-            drawBackground(position.x, position.bottomY - animationHeight, currentWidth, animationHeight, scale)
+            drawBackground(position.x, position.bottomY - animationHeight, animationWidth, animationHeight, scale)
         }
         GlStateManager.disableBlend()
         GlStateManager.disableAlpha()

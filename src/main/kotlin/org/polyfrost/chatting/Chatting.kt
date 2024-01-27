@@ -179,13 +179,7 @@ object Chatting {
     }
 
     fun getChatHeight(opened: Boolean): Int {
-        var height = if (opened) ChattingConfig.focusedHeight else ChattingConfig.unfocusedHeight
-        height = (height * Minecraft.getMinecraft().gameSettings.chatScale).toInt()
-        val chatY = ModCompatHooks.yOffset
-        if (height + chatY + 27 > (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale).toInt() - 27 - chatY) {
-            height = (UResolution.scaledHeight / Minecraft.getMinecraft().gameSettings.chatScale).toInt() - 27 - chatY
-        }
-        return height
+        return if (opened) ChattingConfig.focusedHeight else ChattingConfig.unfocusedHeight
     }
 
     fun screenshotLine(line: ChatLine): BufferedImage? {
