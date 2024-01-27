@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.gui.components
 
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.renderer.TextRenderer
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
@@ -17,7 +18,6 @@ import org.polyfrost.chatting.hook.GuiNewChatHook
 open class CleanButton(
     buttonId: Int,
     private val x: () -> Int,
-    private val y: () -> Int,
     widthIn: Int,
     heightIn: Int,
     name: String,
@@ -44,6 +44,10 @@ open class CleanButton(
 
     }
 
+    open fun setPositionY() {
+        yPosition = UResolution.scaledHeight - 27 + if (ChattingConfig.compactInputBox) 14 else 0
+    }
+
     override fun mousePressed(mc: Minecraft, mouseX: Int, mouseY: Int): Boolean {
         val isPressed =
             visible && mouseX >= xPosition && mouseY >= yPosition && mouseX < xPosition + width && mouseY < yPosition + height
@@ -56,7 +60,7 @@ open class CleanButton(
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
         enabled = isEnabled()
         xPosition = x()
-        yPosition = y()
+        setPositionY()
         if (visible) {
             val fontrenderer = mc.fontRendererObj
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)

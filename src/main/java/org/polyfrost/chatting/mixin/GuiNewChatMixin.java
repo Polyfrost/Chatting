@@ -309,9 +309,12 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             GlStateManager.alphaFunc(516, 0.1f);
             GlStateManager.enableBlend();
             GlStateManager.blendFunc(770, 771);
-            GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
             chatting$right = right;
-
+            if (chatting$config().getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, 1.0f);
+                drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
+            }
+            GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
             drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
             int color = isHovered(posLeft, top, posRight - posLeft, 9) ? chatting$config().getChatButtonHoveredBackgroundColor().getRGB() : chatting$config().getChatButtonBackgroundColor().getRGB();
             drawRect(posLeft, top, posRight, top + 9, color);
@@ -327,6 +330,10 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             GlStateManager.alphaFunc(516, 0.1f);
             GlStateManager.enableBlend();
             GlStateManager.blendFunc(770, 771);
+            if (chatting$config().getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, 1f);
+                drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
+            }
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
             drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
             int color = isHovered(posLeft, top, posRight - posLeft, 9) ? chatting$config().getChatButtonHoveredBackgroundColor().getRGB() : chatting$config().getChatButtonBackgroundColor().getRGB();

@@ -139,6 +139,12 @@ object ChattingConfig : Config(
     var chatButtonHoveredBackgroundColor = OneColor(255, 255, 255, 128)
 
     @Switch(
+        name = "Button Shadow", category = "Buttons",
+        description = "Enable button shadow."
+    )
+    var buttonShadow = true
+
+    @Switch(
         name = "Chat Copying Button", category = "Buttons",
         description = "Enable copying chat messages via a button."
     )

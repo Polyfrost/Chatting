@@ -8,9 +8,10 @@ import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiTextField
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
+import org.polyfrost.chatting.config.ChattingConfig
 
-class SearchButton :
-    CleanButton(3993935, { UResolution.scaledWidth - 14 }, { UResolution.scaledHeight - 27 }, 12, 12, "",
+class SearchButton() :
+    CleanButton(3993935, { UResolution.scaledWidth - 14 }, 12, 12, "",
         { RenderType.NONE }) {
     val inputField = SearchTextField()
     private var chatBox = false
@@ -28,10 +29,15 @@ class SearchButton :
     }
 
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
+
         inputField.drawTextBox()
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
             mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "search.png"))
+            if (ChattingConfig.buttonShadow) {
+                GlStateManager.color(0f, 0f, 0f, 1f)
+                Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
+            }
             if (isEnabled()) {
                 GlStateManager.color(224f / 255f, 224f / 255f, 224f / 255f)
             } else if (mouseX >= xPosition && mouseX <= xPosition + 10 && mouseY >= yPosition && mouseY <= yPosition + 10) {

@@ -14,7 +14,7 @@ import org.polyfrost.chatting.config.ChattingConfig
 class ScreenshotButton :
     CleanButton(448318, {
         if (ChattingConfig.chatSearch && ChattingConfig.chatDeleteHistory) UResolution.scaledWidth - 42 else if (ChattingConfig.chatSearch || ChattingConfig.chatDeleteHistory) UResolution.scaledWidth - 28 else UResolution.scaledWidth - 14
-                        }, { UResolution.scaledHeight - 27 }, 12, 12, "",
+                        }, 12, 12, "",
         { RenderType.NONE }) {
 
     override fun onMousePress() {
@@ -27,12 +27,16 @@ class ScreenshotButton :
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
+            mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "screenshot.png"))
+            if (ChattingConfig.buttonShadow) {
+                GlStateManager.color(0f, 0f, 0f, 1f)
+                Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
+            }
             if (hovered) {
                 GlStateManager.color(1f, 1f, 160f / 255f)
             } else {
                 GlStateManager.color(1f, 1f, 1f)
             }
-            mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "screenshot.png"))
             Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
         }
     }

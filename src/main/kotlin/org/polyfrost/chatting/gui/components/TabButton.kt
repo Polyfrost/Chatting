@@ -7,9 +7,7 @@ import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.config.ChattingConfig
 
 class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val chatTab: ChatTab) :
-    CleanButton(buttonId, { x }, {
-        UResolution.scaledHeight - 26
-    }, widthIn, heightIn, chatTab.name, { RenderType.values()[ChattingConfig.textRenderType] }, { packedFGColour: Int, enabled: Boolean, hovered: Boolean ->
+    CleanButton(buttonId, { x }, widthIn, heightIn, chatTab.name, { RenderType.values()[ChattingConfig.textRenderType] }, { packedFGColour: Int, enabled: Boolean, hovered: Boolean ->
         var j = chatTab.color ?: color
         if (packedFGColour != 0) {
             j = packedFGColour
@@ -32,6 +30,10 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
             ChatTabs.currentTabs.clear()
             ChatTabs.currentTabs.add(chatTab)
         }
+    }
+
+    override fun setPositionY() {
+        yPosition = UResolution.scaledHeight - 26
     }
 
     override fun isEnabled(): Boolean {
