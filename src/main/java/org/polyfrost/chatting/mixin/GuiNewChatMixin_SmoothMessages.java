@@ -47,7 +47,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
             if (chatting$easeOutQuart.isFinished()) {
                 chatting$easeOutQuart = null;
             } else {
-                chatting$animationPercent = chatting$easeOutQuart.get(Chatting.INSTANCE.getDeltaTime());
+                chatting$animationPercent = chatting$easeOutQuart.get();
             }
         } else {
             chatting$animationPercent = 1;
