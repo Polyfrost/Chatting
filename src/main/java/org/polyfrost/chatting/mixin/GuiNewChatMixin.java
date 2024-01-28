@@ -103,7 +103,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                         int q = m * 9;
                         String string = chatLine.getChatComponent().getFormattedText();
                         GlStateManager.enableBlend();
-                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (chatting$getOpacity(0) << 24), chatLine, false);
+                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (chatting$getOpacity(0, chatLine) << 24), chatLine, false);
                         GlStateManager.disableAlpha();
                         GlStateManager.disableBlend();
                     }
@@ -149,9 +149,20 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Inject(method = "drawChat", at = @At(value = "HEAD"))
     private void startCaptureHeight(int updateCounter, CallbackInfo ci) {
+        int i = this.getLineCount();
+        totalLines = 0;
+        List<ChatLine> list = ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), drawnChatLines);
+        if (!list.isEmpty()) {
+            for (int m = 0; m + this.scrollPos < list.size() && m < i; ++m) {
+                ChatLine chatLine = list.get(m + this.scrollPos);
+                int o = chatting$getOpacity(updateCounter, chatLine);
+                if (o > 3) {
+                    totalLines++;
+                }
+            }
+        }
         chatting$config().getChatWindow().setHeight(totalLines * 9);
         chatting$config().getChatWindow().drawBG();
-        totalLines = 0;
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;pushMatrix()V", shift = At.Shift.AFTER))
@@ -166,12 +177,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
     private void disableScissor(int updateCounter, CallbackInfo ci) {
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
-    }
-
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V"))
-    private void captureHeight(int updateCounter, CallbackInfo ci) {
-        totalLines++;
-
     }
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
@@ -203,18 +208,18 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @Unique
-    private int chatting$getOpacity(int updateCounter) {
-        if (chatting$chatLine != null) {
+    private int chatting$getOpacity(int updateCounter, ChatLine chatLine) {
+        if (chatLine != null) {
             float f = this.mc.gameSettings.chatOpacity * 0.9F + 0.1F;
-            int n = updateCounter - chatting$chatLine.getUpdatedCounter();
-            if (n < 200 || getChatOpen()) {
+            int n = updateCounter - chatLine.getUpdatedCounter() + 200 - (int) (chatting$config().getFadeTime() * 20);
+            if (n < 200 || !chatting$config().getFade() || getChatOpen()) {
                 double d = (double) n / 200.0;
                 d = 1.0 - d;
                 d *= 10.0;
                 d = MathHelper.clamp_double(d, 0.0, 1.0);
                 d *= d;
                 int o = (int) (255 * d);
-                if (getChatOpen()) {
+                if (!chatting$config().getFade() || getChatOpen()) {
                     o = 255;
                 }
                 o = (int) ((float) o * f);
@@ -261,7 +266,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyVariable(method = "drawChat", at = @At("STORE"), ordinal = 0)
     private double modifyYeah(double value) {
-        chatting$textOpacity = chatting$getOpacity(chatting$updateCounter);
+        chatting$textOpacity = chatting$getOpacity(chatting$updateCounter, chatting$chatLine);
         if (chatting$textOpacity == Integer.MIN_VALUE) {
             chatting$textOpacity = 0;
         }
