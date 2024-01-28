@@ -14,7 +14,7 @@ import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
 
-class ChatWindow : BasicHud(true, 0f, 1080 - 27f - 45f) {
+class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
 
     @Exclude
     private val exampleList: List<ChatLine> = listOf(
@@ -30,6 +30,9 @@ class ChatWindow : BasicHud(true, 0f, 1080 - 27f - 45f) {
 
     @Exclude
     var heightAnimation: Animation = DummyAnimation(0f)
+
+    @Exclude
+    var width = 0f
 
     @Exclude
     var height = 0
@@ -58,16 +61,16 @@ class ChatWindow : BasicHud(true, 0f, 1080 - 27f - 45f) {
     fun drawBG() {
         animationWidth = widthAnimation.get()
         animationHeight = heightAnimation.get()
-        val widthEnd = position.width + (if (mc.ingameGUI.chatGUI.chatOpen) 20 else 0) * scale
+        width = position.width + (if (mc.ingameGUI.chatGUI.chatOpen) ModCompatHooks.chatButtonOffset else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
         val duration = ChattingConfig.bgDuration
         GlStateManager.enableAlpha()
         GlStateManager.enableBlend()
-        if (widthEnd != widthAnimation.end) {
+        if (width != widthAnimation.end) {
             if (ChattingConfig.smoothBG)
-                widthAnimation = EaseOutQuart(duration, animationWidth, widthEnd, false)
+                widthAnimation = EaseOutQuart(duration, animationWidth, width, false)
             else
-                animationWidth = widthEnd
+                animationWidth = width
         }
         if (heightEnd != heightAnimation.end) {
             if (ChattingConfig.smoothBG)

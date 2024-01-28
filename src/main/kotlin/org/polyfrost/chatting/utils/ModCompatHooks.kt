@@ -15,6 +15,7 @@ import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
+import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiNewChatHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
@@ -56,6 +57,10 @@ object ModCompatHooks {
     @JvmStatic
     val chatHeadOffset
         get() = if (showChatHeads) 10 else 0
+
+    @JvmStatic
+    val chatButtonOffset
+        get() = if (ChattingConfig.chatCopy) 10 else 0 + if (ChattingConfig.chatDelete) 10 else 0
 
     @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {
