@@ -7,7 +7,7 @@ object ChatHooks {
 
     var commandDraft = ""
 
-    var input = ""
+    var inputBoxRight = 0
 
     var inputRight = 0
 
