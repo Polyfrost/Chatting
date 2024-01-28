@@ -1,13 +1,25 @@
 package org.polyfrost.chatting.chat
 
+import net.minecraft.client.gui.GuiTextField
+
 object ChatHooks {
     var draft = ""
 
     var commandDraft = ""
 
+    var input = ""
+
+    var inputRight = 0
+
+    var textField: GuiTextField? = null
+
     fun resetDraft() {
         draft = ""
         commandDraft = ""
+    }
+
+    fun checkField(field: Any): Boolean {
+        return field == textField
     }
 
     fun switchTab() {

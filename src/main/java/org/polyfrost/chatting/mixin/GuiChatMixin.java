@@ -74,6 +74,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             String command = (ChatHooks.INSTANCE.getCommandDraft().startsWith("/") ? "" : "/") + ChatHooks.INSTANCE.getCommandDraft();
             inputField.setText(inputField.getText().equals("/") ? command : ChatHooks.INSTANCE.getDraft());
         }
+        ChatHooks.INSTANCE.setTextField(inputField);
     }
 
     @Inject(method = "updateScreen", at = @At("HEAD"))
@@ -117,7 +118,9 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @ModifyArg(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"), index = 2)
     private int modifyRight(int right) {
         ChattingConfig config = ChattingConfig.INSTANCE;
-        return config.getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth(), fontRendererObj.getStringWidth(inputField.getText()) + 2 + (inputField.getText().length() < 100 ? 8 : 2)) + 2 : right;
+        int stringWidth = fontRendererObj.getStringWidth(ChatHooks.INSTANCE.getInput());
+        ChatHooks.INSTANCE.setInputRight(config.getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth(), stringWidth + 2 + (inputField.getText().length() < 100 ? 8 : 2)) + 2 : right);
+        return ChatHooks.INSTANCE.getInputRight();
     }
 
     @ModifyArg(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"), index = 4)

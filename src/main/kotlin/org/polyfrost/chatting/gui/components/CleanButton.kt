@@ -8,6 +8,7 @@ import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
+import org.polyfrost.chatting.chat.ChatHooks
 import org.polyfrost.chatting.hook.GuiNewChatHook
 
 /**
@@ -45,7 +46,7 @@ open class CleanButton(
     }
 
     open fun setPositionY() {
-        yPosition = UResolution.scaledHeight - 27 + if (ChattingConfig.compactInputBox) 13 else 0
+        yPosition = UResolution.scaledHeight - 27 + if (ChattingConfig.compactInputBox && xPosition - ChatHooks.inputRight >= 1) 13 else 0
     }
 
     override fun mousePressed(mc: Minecraft, mouseX: Int, mouseY: Int): Boolean {
