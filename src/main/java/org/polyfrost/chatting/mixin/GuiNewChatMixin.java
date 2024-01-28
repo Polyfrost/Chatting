@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 import static net.minecraft.client.gui.GuiNewChat.calculateChatboxHeight;
+import static net.minecraft.client.gui.GuiNewChat.calculateChatboxWidth;
 
 @Mixin(value = GuiNewChat.class, priority = 990)
 public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
@@ -96,14 +97,13 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             for (int m = 0; m < this.drawnChatLines.size() && m < height / 9; ++m) {
                 ChatLine chatLine = this.drawnChatLines.get(m);
                 if (chatLine != null) {
-                    int n = updateCounter - chatLine.getUpdatedCounter() + 200 - (int) (chatting$config().getFadeTime() * 20);
                     int unFocusHeight = (chatting$config().getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(false) : calculateChatboxHeight(this.mc.gameSettings.chatHeightUnfocused));
-                    boolean shouldShow = (chatting$config().getFade() && n >= 200) || m >= unFocusHeight / 9;
+                    boolean shouldShow = (chatting$config().getFade() && m >= totalLines) || m >= unFocusHeight / 9;
                     if (!getChatOpen() && shouldShow) {
                         int q = m * 9;
                         String string = chatLine.getChatComponent().getFormattedText();
                         GlStateManager.enableBlend();
-                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (255 << 24), chatLine, false);
+                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (chatting$getOpacity(0) << 24), chatLine, false);
                         GlStateManager.disableAlpha();
                         GlStateManager.disableBlend();
                     }
@@ -208,15 +208,14 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             float f = this.mc.gameSettings.chatOpacity * 0.9F + 0.1F;
             int n = updateCounter - chatting$chatLine.getUpdatedCounter();
             if (n < 200 || getChatOpen()) {
-                int backgroundAlpha = chatting$config().getChatWindow().getAlphaBG() * 2;
                 double d = (double) n / 200.0;
                 d = 1.0 - d;
                 d *= 10.0;
                 d = MathHelper.clamp_double(d, 0.0, 1.0);
                 d *= d;
-                int o = (int) (backgroundAlpha * d);
+                int o = (int) (255 * d);
                 if (getChatOpen()) {
-                    o = backgroundAlpha;
+                    o = 255;
                 }
                 o = (int) ((float) o * f);
                 if (o <= 3) {
@@ -244,9 +243,9 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         chatting$lineInBounds = false;
     }
 
-    @Redirect(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F"))
-    private float wrap(GuiNewChat instance) {
-        return 1f;
+    @ModifyVariable(method = "setChatLine", at = @At(value = "STORE"), ordinal = 2)
+    private int wrap(int value) {
+        return calculateChatboxWidth(mc.gameSettings.chatWidth);
     }
 
     private boolean isHovered(int x, int y, int width, int height) {
@@ -266,7 +265,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (chatting$textOpacity == Integer.MIN_VALUE) {
             chatting$textOpacity = 0;
         }
-        return closing ? 255 : value;
+        return closing ? 1 : value;
     }
     /*/
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;scale(FFF)V"))

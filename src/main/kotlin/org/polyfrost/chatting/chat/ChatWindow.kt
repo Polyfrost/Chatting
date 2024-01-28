@@ -14,7 +14,7 @@ import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
 
-class ChatWindow : BasicHud(true) {
+class ChatWindow : BasicHud(true, 0f, 1080 - 27f - 45f) {
 
     @Exclude
     private val exampleList: List<ChatLine> = listOf(
@@ -64,16 +64,16 @@ class ChatWindow : BasicHud(true) {
         GlStateManager.enableAlpha()
         GlStateManager.enableBlend()
         if (widthEnd != widthAnimation.end) {
-            widthAnimation = if (ChattingConfig.smoothBG)
-                EaseOutQuart(duration, animationWidth, widthEnd, false)
+            if (ChattingConfig.smoothBG)
+                widthAnimation = EaseOutQuart(duration, animationWidth, widthEnd, false)
             else
-                DummyAnimation(widthEnd)
+                animationWidth = widthEnd
         }
         if (heightEnd != heightAnimation.end) {
-            heightAnimation = if (ChattingConfig.smoothBG)
-                EaseOutQuart(duration, animationHeight, heightEnd, false)
+            if (ChattingConfig.smoothBG)
+                heightAnimation = EaseOutQuart(duration, animationHeight, heightEnd, false)
             else
-                DummyAnimation(heightEnd)
+                animationHeight = heightEnd
         }
         if (animationHeight <= 0.3f || !background || HudCore.editing) return
         nanoVG(true) {
