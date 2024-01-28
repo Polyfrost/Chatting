@@ -60,7 +60,7 @@ object ModCompatHooks {
 
     @JvmStatic
     val chatButtonOffset
-        get() = if (ChattingConfig.chatCopy) 10 else 0 + if (ChattingConfig.chatDelete) 10 else 0
+        get() = (if (ChattingConfig.chatCopy) 10 else 0) + (if (ChattingConfig.chatDelete) 10 else 0)
 
     @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {

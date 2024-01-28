@@ -140,7 +140,8 @@ object ChattingConfig : Config(
 
     @Switch(
         name = "Button Shadow", category = "Buttons",
-        description = "Enable button shadow."
+        description = "Enable button shadow.",
+        size = 2
     )
     var buttonShadow = true
 
