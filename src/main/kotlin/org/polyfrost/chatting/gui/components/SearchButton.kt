@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.gui.components
 
+import cc.polyfrost.oneconfig.config.core.OneColor
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatSearchingManager
@@ -33,19 +34,21 @@ class SearchButton() :
         inputField.drawTextBox()
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
+            GlStateManager.pushMatrix()
+            GlStateManager.enableBlend()
+            GlStateManager.enableAlpha()
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
             mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "search.png"))
+            val color = if (isEnabled()) OneColor(200, 200, 200, 255) else if (hovered) ChattingConfig.chatButtonHoveredColor else ChattingConfig.chatButtonColor
             if (ChattingConfig.buttonShadow) {
-                GlStateManager.color(0f, 0f, 0f, 1f)
+                GlStateManager.color(0f, 0f, 0f, color.alpha / 255f)
                 Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
             }
-            if (isEnabled()) {
-                GlStateManager.color(224f / 255f, 224f / 255f, 224f / 255f)
-            } else if (mouseX >= xPosition && mouseX <= xPosition + 10 && mouseY >= yPosition && mouseY <= yPosition + 10) {
-                GlStateManager.color(1f, 1f, 160f / 255f)
-            } else {
-                GlStateManager.color(1f, 1f, 1f)
-            }
+            GlStateManager.color(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
             Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
+            GlStateManager.disableAlpha()
+            GlStateManager.disableBlend()
+            GlStateManager.popMatrix()
         }
     }
 

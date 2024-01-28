@@ -27,17 +27,21 @@ class ScreenshotButton :
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
+            GlStateManager.pushMatrix()
+            GlStateManager.enableBlend()
+            GlStateManager.enableAlpha()
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
             mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "screenshot.png"))
+            val color = if (hovered) ChattingConfig.chatButtonHoveredColor else ChattingConfig.chatButtonColor
             if (ChattingConfig.buttonShadow) {
-                GlStateManager.color(0f, 0f, 0f, 1f)
+                GlStateManager.color(0f, 0f, 0f, color.alpha / 255f)
                 Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
             }
-            if (hovered) {
-                GlStateManager.color(1f, 1f, 160f / 255f)
-            } else {
-                GlStateManager.color(1f, 1f, 1f)
-            }
+            GlStateManager.color(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
             Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
+            GlStateManager.disableAlpha()
+            GlStateManager.disableBlend()
+            GlStateManager.popMatrix()
         }
     }
 }

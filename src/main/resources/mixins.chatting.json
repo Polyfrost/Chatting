@@ -22,5 +22,8 @@
     "GuiNewChatMixin_TextRendering",
     "GuiTextFieldMixin",
     "GuiUtilsMixin"
+  ],
+  "mixins": [
+    "InventoryPlayerMixin"
   ]
 }

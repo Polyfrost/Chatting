@@ -63,6 +63,10 @@ object ModCompatHooks {
         get() = (if (ChattingConfig.chatCopy) 10 else 0) + (if (ChattingConfig.chatDelete) 10 else 0)
 
     @JvmStatic
+    val chatInputLimit
+        get() = if (isPatcher && PatcherConfig.extendedChatLength) 256 else 100
+
+    @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {
         var actualX = x
         if (showChatHeads && !screenshot) {

@@ -3,10 +3,12 @@ package org.polyfrost.chatting.config
 import cc.polyfrost.oneconfig.config.Config
 import cc.polyfrost.oneconfig.config.annotations.*
 import cc.polyfrost.oneconfig.config.core.OneColor
+import cc.polyfrost.oneconfig.config.core.OneKeyBind
 import cc.polyfrost.oneconfig.config.data.InfoType
 import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
 import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
+import cc.polyfrost.oneconfig.libs.universal.UKeyboard
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import club.sk1er.patcher.config.PatcherConfig
@@ -74,6 +76,18 @@ object ChattingConfig : Config(
     )
     var inputFieldDraft = false
 
+    @KeyBind(
+        name = "Chat Peak"
+    )
+    var chatPeakBind = OneKeyBind(UKeyboard.KEY_Z)
+
+    @DualOption(
+        name = "Peak Mode",
+        left = "Held",
+        right = "Toggle"
+    )
+    var peakMode = true
+
     @Switch(
         name = "Smooth Chat Messages",
         category = "Animations", subcategory = "Messages",
@@ -125,6 +139,18 @@ object ChattingConfig : Config(
         description = "Removes the vanilla scroll bar from the chat."
     )
     var removeScrollBar = true
+
+    @Color(
+        name = "Chat Button Color", category = "Buttons",
+        description = "The color of the chat button."
+    )
+    var chatButtonColor = OneColor(255, 255, 255, 255)
+
+    @Color(
+        name = "Chat Button Hovered Color", category = "Buttons",
+        description = "The color of the chat button when hovered."
+    )
+    var chatButtonHoveredColor = OneColor(255, 255, 160, 255)
 
     @Color(
         name = "Chat Button Background Color", category = "Buttons",
@@ -347,6 +373,9 @@ object ChattingConfig : Config(
         }
         addDependency("inputBoxBackgroundColor",  "Patcher's Transparent Chat Input Field. Please turn it off to use this feature.") {
             !Chatting.isPatcher || !PatcherConfig.transparentChatInputField
+        }
+        addListener("peakMode") {
+            Chatting.peaking = false
         }
         addListener("inputFieldDraft") {
             ChatHooks.resetDraft()

@@ -2,20 +2,10 @@ package org.polyfrost.chatting
 
 import cc.polyfrost.oneconfig.libs.universal.UDesktop
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
-import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.utils.Notifications
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
-import org.polyfrost.chatting.chat.ChatSearchingManager
-import org.polyfrost.chatting.chat.ChatShortcuts
-import org.polyfrost.chatting.chat.ChatSpamBlock
-import org.polyfrost.chatting.chat.ChatTabs
-import org.polyfrost.chatting.command.ChattingCommand
-import org.polyfrost.chatting.config.ChattingConfig
-import org.polyfrost.chatting.utils.ModCompatHooks
-import org.polyfrost.chatting.utils.copyToClipboard
-import org.polyfrost.chatting.utils.createBindFramebuffer
-import org.polyfrost.chatting.utils.screenshot
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
@@ -32,10 +22,17 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
+import org.lwjgl.input.Mouse
+import org.polyfrost.chatting.chat.ChatScrollingHook.shouldSmooth
+import org.polyfrost.chatting.chat.*
+import org.polyfrost.chatting.command.ChattingCommand
+import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
+import org.polyfrost.chatting.utils.*
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -66,6 +63,8 @@ object Chatting {
 
     private var time = -1L
     var deltaTime = 17L
+    private var lastPressed = false;
+    var peaking = false
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -174,6 +173,36 @@ object Chatting {
             if (doTheThing) {
                 screenshotChat()
                 doTheThing = false
+            }
+
+            if (mc.currentScreen is GuiChat) peaking = false
+
+            if (peaking) {
+                var i = Mouse.getDWheel().coerceIn(-1..1)
+
+                if (i != 0) {
+
+                    if (!GuiScreen.isShiftKeyDown()) {
+                        i *= 7
+                    }
+
+                    shouldSmooth = true
+                    mc.ingameGUI.chatGUI.scroll(i)
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    fun peak(e: KeyInputEvent) {
+        val key = ChattingConfig.chatPeakBind
+        if (key.isActive != lastPressed) {
+            lastPressed = key.isActive
+            if (key.isActive) {
+                peaking = !peaking
+                if (!peaking) mc.ingameGUI.chatGUI.resetScroll()
+            } else if (!ChattingConfig.peakMode) {
+                peaking = false
             }
         }
     }

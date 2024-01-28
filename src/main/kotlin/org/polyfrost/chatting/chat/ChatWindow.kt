@@ -7,12 +7,13 @@ import cc.polyfrost.oneconfig.internal.hud.HudCore
 import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.utils.dsl.*
+import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ChatComponentText
+import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
-import org.polyfrost.chatting.utils.EaseOutQuart
-import org.polyfrost.chatting.utils.ModCompatHooks
+import org.polyfrost.chatting.utils.*
 
 class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
 
@@ -58,10 +59,15 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
 
     }
 
+    override fun drawBackground(x: Float, y: Float, width: Float, height: Float, scale: Float) {
+        if (Chatting.isPatcher && PatcherConfig.transparentChat) return
+        super.drawBackground(x, y, width, height, scale)
+    }
+
     fun drawBG() {
         animationWidth = widthAnimation.get()
         animationHeight = heightAnimation.get()
-        width = position.width + (if (mc.ingameGUI.chatGUI.chatOpen) ModCompatHooks.chatButtonOffset else 0) * scale
+        width = position.width + (if (mc.ingameGUI.chatGUI.chatOpen && !Chatting.peaking) ModCompatHooks.chatButtonOffset else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
         val duration = ChattingConfig.bgDuration
         GlStateManager.enableAlpha()
