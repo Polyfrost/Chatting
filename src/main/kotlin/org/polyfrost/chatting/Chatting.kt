@@ -209,7 +209,7 @@ object Chatting {
     }
 
     fun getChatHeight(opened: Boolean): Int {
-        return if (opened) ChattingConfig.focusedHeight else ChattingConfig.unfocusedHeight
+        return if (opened) ChattingConfig.chatWindow.focusedHeight else ChattingConfig.chatWindow.unfocusedHeight
     }
 
     fun screenshotLine(line: ChatLine): BufferedImage? {
@@ -244,7 +244,7 @@ object Chatting {
             (chat as GuiNewChatAccessor).drawnChatLines
         )?.let { drawnLines ->
             val chatHeight =
-                if (ChattingConfig.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
+                if (ChattingConfig.chatWindow.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
                     Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9
                 )
             for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {

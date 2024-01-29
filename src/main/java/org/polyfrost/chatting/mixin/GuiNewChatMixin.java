@@ -94,11 +94,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         ChatWindow hud = chatting$config().getChatWindow();
 
         if (closing && hud.getAnimationHeight() - (hud.getHeight() + hud.getPaddingY() * 2) * hud.getScale() > 9 * hud.getScale()) {
-            int height = (chatting$config().getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(true) : calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused));
+            int height = (chatting$config().getChatWindow().getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(true) : calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused));
             for (int m = 0; m < this.drawnChatLines.size() && m < height / 9; ++m) {
                 ChatLine chatLine = this.drawnChatLines.get(m);
                 if (chatLine != null) {
-                    int unFocusHeight = (chatting$config().getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(false) : calculateChatboxHeight(this.mc.gameSettings.chatHeightUnfocused));
+                    int unFocusHeight = (chatting$config().getChatWindow().getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(false) : calculateChatboxHeight(this.mc.gameSettings.chatHeightUnfocused));
                     boolean shouldShow = (chatting$config().getFade() && m >= totalLines) || m >= unFocusHeight / 9;
                     if (!getChatOpen() && shouldShow) {
                         int q = m * 9;

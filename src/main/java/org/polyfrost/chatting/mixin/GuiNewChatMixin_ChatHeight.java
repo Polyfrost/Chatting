@@ -15,7 +15,7 @@ public abstract class GuiNewChatMixin_ChatHeight {
 
     @Inject(method = "getChatHeight", at = @At("HEAD"), cancellable = true)
     private void customHeight_getChatHeight(CallbackInfoReturnable<Integer> cir) {
-        if (ChattingConfig.INSTANCE.getCustomChatHeight())
+        if (ChattingConfig.INSTANCE.getChatWindow().getCustomChatHeight())
             cir.setReturnValue(Chatting.INSTANCE.getChatHeight(getChatOpen()));
     }
 }

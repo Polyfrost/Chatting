@@ -261,26 +261,6 @@ object ChattingConfig : Config(
     )
     var hideSpam = false
 
-    @Switch(
-        name = "Custom Chat Height", category = "Chat Window",
-        description = "Set a custom height for the chat window. Allows for more customization than the vanilla chat height options."
-    )
-    var customChatHeight = false
-
-    @Slider(
-        min = 20F, max = 2160F, name = "Focused Height (px)", category = "Chat Window",
-        description = "The height of the chat window when focused."
-    )
-    var focusedHeight = 180
-        get() = field.coerceIn(20, 2160)
-
-    @Slider(
-        min = 20F, max = 2160F, name = "Unfocused Height (px)", category = "Chat Window",
-        description = "The height of the chat window when unfocused."
-    )
-    var unfocusedHeight = 90
-        get() = field.coerceIn(20, 2160)
-
     @HUD(
         name = "Chat Window", category = "Chat Window"
     )
@@ -363,8 +343,6 @@ object ChattingConfig : Config(
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
         addDependency("hypixelOnlyChatTabs", "chatTabs")
         addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
-        addDependency("focusedHeight", "customChatHeight")
-        addDependency("unfocusedHeight", "customChatHeight")
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
         addDependency("bgDuration", "smoothBG")

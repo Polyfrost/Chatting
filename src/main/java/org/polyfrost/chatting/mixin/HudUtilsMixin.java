@@ -41,6 +41,12 @@ public class HudUtilsMixin {
                 if (basicOption.name.equals("Input Field Draft")) {
                     basicOption.addListener(ChatHooks.INSTANCE::resetDraft);
                 }
+                if (isChatWindow) {
+                    List<String> height = Arrays.asList("Focused Height (px)", "Unfocused Height (px)");
+                    if (height.contains(basicOption.name)) {
+                        basicOption.addDependency("Custom Chat Height", () -> ChattingConfig.INSTANCE.getChatWindow().getCustomChatHeight());
+                    }
+                }
             }
             instance.removeAll(removeQueue);
         }

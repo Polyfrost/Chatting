@@ -16,13 +16,13 @@ class ChatInputBox: BasicHud(true, -100f, -100f) {
     }
 
     @Switch(
-        name = "Compact Input Box", category = "Input Box",
+        name = "Compact Input Box",
         description = "Make the chat input box the same width as the chat box."
     )
     var compactInputBox = false
 
     @Switch(
-        name = "Input Field Draft", category = "Input Box",
+        name = "Input Field Draft",
         description = "Drafts the text you wrote in the input field after closing the chat and back it up when opening the chat again."
     )
     var inputFieldDraft = false

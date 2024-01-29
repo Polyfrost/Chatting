@@ -1,6 +1,8 @@
 package org.polyfrost.chatting.chat
 
 import cc.polyfrost.oneconfig.config.annotations.Exclude
+import cc.polyfrost.oneconfig.config.annotations.Slider
+import cc.polyfrost.oneconfig.config.annotations.Switch
 import cc.polyfrost.oneconfig.gui.animations.*
 import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.internal.hud.HudCore
@@ -44,6 +46,27 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
 
     @Exclude
     var animationHeight = 0f
+
+    @Switch(
+        name = "Custom Chat Height",
+        description = "Set a custom height for the chat window. Allows for more customization than the vanilla chat height options."
+    )
+    var customChatHeight = false
+
+    @Slider(
+        min = 20F, max = 2160F, name = "Focused Height (px)",
+        description = "The height of the chat window when focused."
+    )
+    var focusedHeight = 180
+        get() = field.coerceIn(20, 2160)
+
+    @Slider(
+        min = 20F, max = 2160F, name = "Unfocused Height (px)",
+        description = "The height of the chat window when unfocused."
+    )
+    var unfocusedHeight = 90
+        get() = field.coerceIn(20, 2160)
+
 
     override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
         if (!example) return
