@@ -19,6 +19,6 @@ public class GuiIngameForgeMixin {
 
     @Inject(method = "renderChat", at = @At(value = "HEAD"), cancellable = true, remap = false)
     private void cancelChat(int width, int height, CallbackInfo ci) {
-        if (!ChattingConfig.INSTANCE.getChatWindow().isEnabled()) ci.cancel();
+        if (!ChattingConfig.INSTANCE.getChatWindow().canShow()) ci.cancel();
     }
 }

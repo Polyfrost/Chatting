@@ -11,7 +11,6 @@ import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
-import club.sk1er.patcher.config.PatcherConfig
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.*
 import org.polyfrost.chatting.gui.components.TabButton
@@ -41,18 +40,6 @@ object ChattingConfig : Config(
     )
     var hoveredChatBackgroundColor = OneColor(80, 80, 80, 128)
 
-    @Switch(
-        name = "Compact Input Box", category = "General",
-        description = "Make the chat input box the same width as the chat box."
-    )
-    var compactInputBox = false
-
-    @Color(
-        name = "Input Box Background Color", category = "General",
-        description = "The color of the chat input box background."
-    )
-    var inputBoxBackgroundColor = OneColor(0, 0, 0, 128)
-
     @Checkbox(
         name = "Message Fade"
     )
@@ -66,18 +53,24 @@ object ChattingConfig : Config(
 
     @Switch(
         name = "Inform Outdated Mods", category = "General",
-        description = "Inform the user when a mod can be replaced by Chatting."
+        description = "Inform the user when a mod can be replaced by Chatting.",
+        size = 2
     )
     var informForAlternatives = true
 
     @Switch(
-        name = "Input Field Draft", category = "General",
-        description = "Drafts the text you wrote in the input field after closing the chat and back it up when opening the chat again."
+        name = "Chat Peak",
+        description = "Allows you to view / scroll chat while moving around."
     )
-    var inputFieldDraft = false
+    var chatPeak = false
+
+    @Switch(
+        name = "Scrolling",
+    )
+    var peakScrolling = false
 
     @KeyBind(
-        name = "Chat Peak"
+        name = "Peak KeyBind"
     )
     var chatPeakBind = OneKeyBind(UKeyboard.KEY_Z)
 
@@ -275,21 +268,28 @@ object ChattingConfig : Config(
     var customChatHeight = false
 
     @Slider(
-        min = 180F, max = 2160F, name = "Focused Height (px)", category = "Chat Window",
+        min = 20F, max = 2160F, name = "Focused Height (px)", category = "Chat Window",
         description = "The height of the chat window when focused."
     )
     var focusedHeight = 180
+        get() = field.coerceIn(20, 2160)
 
     @Slider(
-        min = 180F, max = 2160F, name = "Unfocused Height (px)", category = "Chat Window",
+        min = 20F, max = 2160F, name = "Unfocused Height (px)", category = "Chat Window",
         description = "The height of the chat window when unfocused."
     )
-    var unfocusedHeight = 180
+    var unfocusedHeight = 90
+        get() = field.coerceIn(20, 2160)
 
     @HUD(
         name = "Chat Window", category = "Chat Window"
     )
     var chatWindow = ChatWindow()
+
+    @HUD(
+        name = "Chat Input Box", category = "Input Box"
+    )
+    var chatInput = ChatInputBox()
 
     @Dropdown(
         name = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"],
@@ -368,17 +368,14 @@ object ChattingConfig : Config(
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
         addDependency("bgDuration", "smoothBG")
+        addDependency("peakScrolling", "chatPeak")
+        addDependency("chatPeakBind", "chatPeak")
+        addDependency("peakMode", "chatPeak")
         addDependency("smoothChat", "BetterChat Smooth Chat") {
             !ModCompatHooks.betterChatSmoothMessages
         }
-        addDependency("inputBoxBackgroundColor",  "Patcher's Transparent Chat Input Field. Please turn it off to use this feature.") {
-            !Chatting.isPatcher || !PatcherConfig.transparentChatInputField
-        }
         addListener("peakMode") {
             Chatting.peaking = false
-        }
-        addListener("inputFieldDraft") {
-            ChatHooks.resetDraft()
         }
         addListener("hideChatHeadOnConsecutiveMessages") {
             ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }

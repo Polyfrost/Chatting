@@ -65,6 +65,9 @@ object ModCompatHooks {
     @JvmStatic
     val chatInputLimit
         get() = if (isPatcher && PatcherConfig.extendedChatLength) 256 else 100
+    @JvmStatic
+    val shouldDrawInputBox
+        get() = !isPatcher || !PatcherConfig.transparentChatInputField
 
     @JvmStatic
     fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {

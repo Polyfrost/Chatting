@@ -6,6 +6,7 @@ import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.internal.hud.HudCore
 import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
+import cc.polyfrost.oneconfig.platform.Platform
 import cc.polyfrost.oneconfig.utils.dsl.*
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.gui.*
@@ -92,8 +93,9 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
         GlStateManager.disableAlpha()
     }
 
-    fun getAlphaBG(): Int {
-        return bgColor.alpha
+    fun canShow(): Boolean {
+        showInChat = true
+        return isEnabled && (shouldShow() || Platform.getGuiPlatform().isInChat)
     }
 
     fun getPaddingX(): Float {

@@ -1,7 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
-import cc.polyfrost.oneconfig.libs.universal.UDesktop;
-import cc.polyfrost.oneconfig.libs.universal.UKeyboard;
+import cc.polyfrost.oneconfig.libs.universal.*;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -11,20 +10,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.gui.components.CleanButton;
-import org.polyfrost.chatting.gui.components.ClearButton;
-import org.polyfrost.chatting.gui.components.ScreenshotButton;
-import org.polyfrost.chatting.gui.components.SearchButton;
-import org.polyfrost.chatting.hook.ChatLineHook;
-import org.polyfrost.chatting.hook.GuiChatHook;
-import org.polyfrost.chatting.hook.GuiNewChatHook;
+import org.polyfrost.chatting.gui.components.*;
+import org.polyfrost.chatting.hook.*;
 import org.polyfrost.chatting.utils.ModCompatHooks;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.awt.*;
@@ -69,7 +59,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         chatting$initButtons();
-        if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
+        if (ChattingConfig.INSTANCE.getChatInput().getInputFieldDraft()) {
             String command = (ChatHooks.INSTANCE.getCommandDraft().startsWith("/") ? "" : "/") + ChatHooks.INSTANCE.getCommandDraft();
             inputField.setText(inputField.getText().equals("/") ? command : ChatHooks.INSTANCE.getDraft());
         }
@@ -114,16 +104,20 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         }
     }
 
-    @ModifyArg(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"), index = 2)
-    private int modifyRight(int right) {
+    @Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"))
+    private void drawBG(int left, int top, int right, int bottom, int color) {
         ChattingConfig config = ChattingConfig.INSTANCE;
-        ChatHooks.INSTANCE.setInputBoxRight(config.getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth() + 2, ChatHooks.INSTANCE.getInputRight() + (inputField.getText().length() < ModCompatHooks.getChatInputLimit() ? 8 : 2)) : right);
-        return ChatHooks.INSTANCE.getInputBoxRight();
+        ChatHooks.INSTANCE.setInputBoxRight(config.getChatInput().getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth() + 2, ChatHooks.INSTANCE.getInputRight() + (inputField.getText().length() < ModCompatHooks.getChatInputLimit() ? 8 : 2)) : right);
+        config.getChatInput().drawBG(left, bottom, ChatHooks.INSTANCE.getInputBoxRight() - left, top - bottom);
     }
 
-    @ModifyArg(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"), index = 4)
-    private int modifyInputBoxColor(int color) {
-        return ChattingConfig.INSTANCE.getInputBoxBackgroundColor().getRGB();
+    @Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiTextField;drawTextBox()V"))
+    private void scale(GuiTextField instance) {
+        ChatInputBox inputBox = ChattingConfig.INSTANCE.getChatInput();
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(inputBox.getScale(), inputBox.getScale(), 1f);
+        instance.drawTextBox();
+        GlStateManager.popMatrix();
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"))
@@ -163,14 +157,14 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Inject(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"))
     private void clearDraft(CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
+        if (ChattingConfig.INSTANCE.getChatInput().getInputFieldDraft()) {
             inputField.setText(inputField.getText().startsWith("/") ? "/" : "");
         }
     }
 
     @Inject(method = "onGuiClosed", at = @At("HEAD"))
     private void saveDraft(CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getInputFieldDraft()) {
+        if (ChattingConfig.INSTANCE.getChatInput().getInputFieldDraft()) {
             if (inputField.getText().startsWith("/")) {
                 ChatHooks.INSTANCE.setCommandDraft(inputField.getText());
             } else {

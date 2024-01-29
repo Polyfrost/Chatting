@@ -65,6 +65,7 @@ object Chatting {
     var deltaTime = 17L
     private var lastPressed = false;
     var peaking = false
+        get() = ChattingConfig.chatPeak && field
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -177,7 +178,7 @@ object Chatting {
 
             if (mc.currentScreen is GuiChat) peaking = false
 
-            if (peaking) {
+            if (peaking && ChattingConfig.peakScrolling) {
                 var i = Mouse.getDWheel().coerceIn(-1..1)
 
                 if (i != 0) {
@@ -196,14 +197,14 @@ object Chatting {
     @SubscribeEvent
     fun peak(e: KeyInputEvent) {
         val key = ChattingConfig.chatPeakBind
-        if (key.isActive != lastPressed) {
+        if (key.isActive != lastPressed && ChattingConfig.chatPeak) {
             lastPressed = key.isActive
             if (key.isActive) {
                 peaking = !peaking
-                if (!peaking) mc.ingameGUI.chatGUI.resetScroll()
             } else if (!ChattingConfig.peakMode) {
                 peaking = false
             }
+            if (!peaking) mc.ingameGUI.chatGUI.resetScroll()
         }
     }
 

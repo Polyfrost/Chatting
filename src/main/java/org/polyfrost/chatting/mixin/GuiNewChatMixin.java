@@ -59,7 +59,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private int scrollPos;
     @Shadow
     public abstract int getChatWidth();
-
     @Unique
     private static final ResourceLocation COPY = new ResourceLocation("chatting:copy.png");
     @Unique
@@ -173,7 +172,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int mcScale = new ScaledResolution(mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int height = (int) hud.getAnimationHeight();
-        GL11.glScissor((int) hud.position.getX() * mcScale, mc.displayHeight - (int) (hud.position.getBottomY() + 1) * mcScale, (int) (hud.position.getWidth() + (getChatOpen() ? 20 : 0) * hud.getScale()) * mcScale, (height + 1) * mcScale);
+        GL11.glScissor((int) hud.position.getX() * mcScale, mc.displayHeight - (int) (hud.position.getBottomY() + 1) * mcScale, (int) hud.getAnimationWidth() * mcScale, (height + 1) * mcScale);
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
