@@ -1,69 +1,63 @@
 package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.elements.BasicOption;
-import cc.polyfrost.oneconfig.hud.HUDUtils;
-import cc.polyfrost.oneconfig.hud.Hud;
-import org.polyfrost.chatting.chat.ChatHooks;
+import cc.polyfrost.oneconfig.config.annotations.HUD;
+import cc.polyfrost.oneconfig.config.core.ConfigUtils;
+import cc.polyfrost.oneconfig.config.elements.*;
+import cc.polyfrost.oneconfig.hud.*;
+import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Supplier;
+import java.lang.reflect.Field;
 
-@Mixin(HUDUtils.class)
+@Mixin(value = HUDUtils.class, remap = false)
 public class HUDUtilsMixin {
 
-    @Unique
-    private static boolean isChatWindow, isInputBox;
-
-    @Redirect(method = "addHudOptions", at = @At(value = "INVOKE", target = "Lcc/polyfrost/oneconfig/hud/Hud;setConfig(Lcc/polyfrost/oneconfig/config/Config;)V"), remap = false)
-    private static void detect(Hud instance, Config config) {
-        isChatWindow = instance.equals(ChattingConfig.INSTANCE.getChatWindow());
-        isInputBox = instance.equals(ChattingConfig.INSTANCE.getChatInput());
-        instance.setConfig(config);
+    @Inject(method = "addHudOptions", at = @At("TAIL"))
+    private static void hudUtils$modifyOptions(OptionPage page, Field field, Object instance, Config config, CallbackInfo ci) {
+        Hud hud = (Hud) ConfigUtils.getField(field, instance);
+        if (!(hud instanceof ChatWindow) && !(hud instanceof ChatInputBox)) return;
+        HUD hudAnnotation = field.getAnnotation(HUD.class);
+        HudCore.hudOptions.removeIf(HUDUtilsMixin::hudUtils$shouldRemove);
+        ConfigUtils.getSubCategory(page, hudAnnotation.category(), hudAnnotation.subcategory()).options.removeIf(HUDUtilsMixin::hudUtils$shouldRemove);
     }
 
-    @Redirect(method = "addHudOptions", at = @At(value = "INVOKE", target = "Ljava/util/ArrayList;add(Ljava/lang/Object;)Z"), remap = false)
-    private static boolean paddingY(ArrayList instance, Object e) {
-        BasicOption option = (BasicOption) e;
-        if (isChatWindow || isInputBox) {
-            ArrayList<BasicOption> removeQueue = new ArrayList<>();
-            for (Object object : instance) {
-                BasicOption basicOption = (BasicOption) object;
-                List<String> shows = Arrays.asList("Show in F3 (Debug)", "Show in GUIs", "Enabled", "Position Alignment", "Scale");
-                if (basicOption.name.equals("Show in Chat") || (isInputBox && shows.contains(basicOption.name))) {
-                    removeQueue.add(basicOption);
+    private static boolean hudUtils$shouldRemove(BasicOption option) {
+        String fieldName = option.getField().getName();
+        Object hud = option.getParent();
+        boolean isChatWindow = hud instanceof ChatWindow;
+        boolean isInputBox = hud instanceof ChatInputBox;
+        if (!isChatWindow && !isInputBox) return false;
+        switch (fieldName) {
+            case "showInChat":
+                return true;
+            case "enabled":
+                if (isInputBox) try {
+                    option.getField().set(hud, true);
+                } catch (Exception ignored) {
                 }
-                if (basicOption.name.equals("Input Field Draft")) {
-                    basicOption.addListener(ChatHooks.INSTANCE::resetDraft);
-                }
-                if (isChatWindow) {
-                    List<String> height = Arrays.asList("Focused Height (px)", "Unfocused Height (px)");
-                    if (height.contains(basicOption.name)) {
-                        basicOption.addDependency("Custom Chat Height", () -> ChattingConfig.INSTANCE.getChatWindow().getCustomChatHeight());
-                    }
-                }
-            }
-            instance.removeAll(removeQueue);
+            case "paddingX":
+            case "paddingY":
+            case "showInGuis":
+            case "showInDebug":
+            case "positionAlignment":
+            case "scale":
+                if (isInputBox) return true;
+                break;
+            case "inputFieldDraft":
+                option.addListener(ChatHooks.INSTANCE::resetDraft);
+                break;
+            case "focusedHeight":
+            case "unfocusedHeight":
+                option.addDependency("Custom Chat Height", () -> ChattingConfig.INSTANCE.getChatWindow().getCustomChatHeight());
+                break;
         }
-        List<String> paddings = Arrays.asList("X-Padding", "Y-Padding");
-        if (isInputBox && paddings.contains(option.name)) return false;
-        return instance.add(option);
+
+        return false;
     }
 
-    @Redirect(method = "addHudOptions", at = @At(value = "INVOKE", target = "Lcc/polyfrost/oneconfig/config/elements/BasicOption;addDependency(Ljava/lang/String;Ljava/util/function/Supplier;)V", ordinal = 5), remap = false)
-    private static void no(BasicOption instance, String optionName, Supplier<Boolean> supplier) {
-        if (isInputBox) return;
-        instance.addDependency(optionName, supplier);
-    }
-
-    @Redirect(method = "addHudOptions", at = @At(value = "INVOKE", target = "Lcc/polyfrost/oneconfig/config/elements/BasicOption;addDependency(Ljava/lang/String;Ljava/util/function/Supplier;)V", ordinal = 6), remap = false)
-    private static void no1(BasicOption instance, String optionName, Supplier<Boolean> supplier) {
-        if (isInputBox) return;
-        instance.addDependency(optionName, supplier);
-    }
 }
