@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Mixin(HUDUtils.class)
-public class HudUtilsMixin {
+public class HUDUtilsMixin {
 
     @Unique
     private static boolean isChatWindow, isInputBox;
@@ -34,7 +34,7 @@ public class HudUtilsMixin {
             ArrayList<BasicOption> removeQueue = new ArrayList<>();
             for (Object object : instance) {
                 BasicOption basicOption = (BasicOption) object;
-                List<String> shows = Arrays.asList("Show in F3 (Debug)", "Show in GUIs", "Enabled", "Position Alignment");
+                List<String> shows = Arrays.asList("Show in F3 (Debug)", "Show in GUIs", "Enabled", "Position Alignment", "Scale");
                 if (basicOption.name.equals("Show in Chat") || (isInputBox && shows.contains(basicOption.name))) {
                     removeQueue.add(basicOption);
                 }

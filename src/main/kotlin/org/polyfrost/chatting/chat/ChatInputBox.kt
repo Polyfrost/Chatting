@@ -11,6 +11,7 @@ import org.polyfrost.chatting.utils.ModCompatHooks
 class ChatInputBox: BasicHud(true, -100f, -100f) {
 
     init {
+        scale = 1f
         paddingX = 0f
         paddingY = 0f
     }
@@ -27,16 +28,12 @@ class ChatInputBox: BasicHud(true, -100f, -100f) {
     )
     var inputFieldDraft = false
 
-    @Exclude
-    var bgTop = 0f
-
     fun drawBG(x: Float, y: Float, width: Float, height: Float) {
-        bgTop = y / scale + height + 2
         if (!ModCompatHooks.shouldDrawInputBox) return
         GlStateManager.enableAlpha()
         GlStateManager.enableBlend()
         nanoVG(true) {
-            drawBackground(x, y, width * scale, height * scale, scale)
+            drawBackground(x, y, width, height, 1f)
         }
         GlStateManager.disableBlend()
         GlStateManager.disableAlpha()

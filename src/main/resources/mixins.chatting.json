@@ -24,7 +24,7 @@
     "GuiUtilsMixin"
   ],
   "mixins": [
-    "HudUtilsMixin",
+    "HUDUtilsMixin",
     "InventoryPlayerMixin"
   ]
 }

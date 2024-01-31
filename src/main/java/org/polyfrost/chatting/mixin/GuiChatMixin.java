@@ -104,20 +104,15 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         }
     }
 
-    @Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"))
-    private void drawBG(int left, int top, int right, int bottom, int color) {
+    @Inject(method = "drawScreen", at = @At("HEAD"))
+    private void drawBG(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         ChattingConfig config = ChattingConfig.INSTANCE;
-        ChatHooks.INSTANCE.setInputBoxRight(config.getChatInput().getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth() + 2, ChatHooks.INSTANCE.getInputRight() + (inputField.getText().length() < ModCompatHooks.getChatInputLimit() ? 8 : 2)) : right);
-        config.getChatInput().drawBG(left, bottom, ChatHooks.INSTANCE.getInputBoxRight() - left, top - bottom);
+        ChatHooks.INSTANCE.setInputBoxRight(config.getChatInput().getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth() + 2, ChatHooks.INSTANCE.getInputRight() + (inputField.getText().length() < ModCompatHooks.getChatInputLimit() ? 8 : 2)) : width - 2);
+        config.getChatInput().drawBG(2, height - 2, ChatHooks.INSTANCE.getInputBoxRight() - 2, -12);
     }
 
-    @Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiTextField;drawTextBox()V"))
-    private void scale(GuiTextField instance) {
-        ChatInputBox inputBox = ChattingConfig.INSTANCE.getChatInput();
-        GlStateManager.pushMatrix();
-        GlStateManager.scale(inputBox.getScale(), inputBox.getScale(), 1f);
-        instance.drawTextBox();
-        GlStateManager.popMatrix();
+    @Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"))
+    private void cancelBG(int left, int top, int right, int bottom, int color) {
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"))
