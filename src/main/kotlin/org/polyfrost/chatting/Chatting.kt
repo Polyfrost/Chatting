@@ -63,7 +63,7 @@ object Chatting {
 
     private var time = -1L
     var deltaTime = 17L
-    private var lastPressed = false;
+    private var lastPressed = false
     var peaking = false
         get() = ChattingConfig.chatPeak && field
 
@@ -78,6 +78,7 @@ object Chatting {
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
         EVENT_BUS.register(ChatSpamBlock)
+        EVENT_BUS.register(ChatMention)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
     }
