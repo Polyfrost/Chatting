@@ -17,11 +17,10 @@ object ChatMention {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     fun onChat(event: ClientChatReceivedEvent) {
         val chat = event.message.formattedText
-        println(chat)
         val matcher: Matcher = MESSAGE.matcher(chat)
         if (matcher.matches()) {
             if (!matcher.group(1).contains(PLAYER_NAME)) {
-                if (matcher.group(2).contains(PLAYER_NAME) || matcher.group(2).contains(PLAYER_NAME.lowercase())) {
+                if (matcher.group(2).contains(PLAYER_NAME, true)) {
                     if (ChattingConfig.pingName) Minecraft.getMinecraft().thePlayer.playSound("random.orb", 1F, 1F)
                     if (ChattingConfig.highlightName) {
                         val originalColor = prevColor.find(matcher.group(2))?.value ?: ""
