@@ -1,10 +1,14 @@
 package org.polyfrost.chatting.chat
 
+import cc.polyfrost.oneconfig.libs.universal.ChatColor
 import org.polyfrost.chatting.gui.components.TabButton
 import com.google.gson.annotations.SerializedName
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.ChatLine
+import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
 import net.minecraft.util.IChatComponent
+import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 import java.util.*
 
 data class ChatTab(
@@ -25,11 +29,12 @@ data class ChatTab(
     val color: Int?,
     @SerializedName("hovered_color") val hoveredColor: Int?,
     @SerializedName("selected_color") val selectedColor: Int?,
-    val prefix: String?,
+    val prefix: String?
 ) {
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
     lateinit var compiledIgnoreRegex: ChatRegexes
+    @Transient var messages: List<String>? = ArrayList()
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {
@@ -41,6 +46,14 @@ data class ChatTab(
             x += 6 + width
             return@run returnValue
         }, width + 4, 12, this)
+
+        if (messages == null) return
+        messages?.forEach {
+            (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).chatLines.add(
+                0,
+                ChatLine(0, ChatComponentText(ChatColor.translateAlternateColorCodes('&', it)), 0)
+            )
+        }
     }
 
     fun shouldRender(chatComponent: IChatComponent): Boolean {

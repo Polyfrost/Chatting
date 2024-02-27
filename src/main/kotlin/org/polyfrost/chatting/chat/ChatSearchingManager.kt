@@ -4,6 +4,8 @@ import cc.polyfrost.oneconfig.libs.caffeine.cache.Cache
 import cc.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
 import cc.polyfrost.oneconfig.libs.universal.wrappers.message.UTextComponent
 import net.minecraft.client.gui.ChatLine
+import net.minecraft.util.ChatComponentText
+import org.polyfrost.chatting.chat.ChatTabs.currentTabs
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -38,5 +40,18 @@ object ChatSearchingManager {
             })
             cache.getIfPresent(text)
         }
+    }
+
+    @JvmStatic
+    fun filterChatTabMessages(text: String): List<ChatLine>? {
+        val currentTabs = currentTabs.firstOrNull()
+        if (currentTabs?.messages?.isEmpty() == false) {
+            val list: MutableList<ChatLine> = ArrayList()
+            for (message in currentTabs.messages?: emptyList()) {
+                list.add(ChatLine(0, ChatComponentText(message), 0))
+            }
+            return filterMessages(text, list)
+        }
+        return null
     }
 }
