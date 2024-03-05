@@ -31,6 +31,15 @@ object ChatSearchingManager {
 
     @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? {
+        val chatTabMessages = filterChatTabMessages(lastSearch)
+        if (chatTabMessages != null) {
+            return chatTabMessages
+        }
+        return filterMessages2(text, list)
+    }
+
+    @JvmStatic
+    fun filterMessages2(text: String, list: List<ChatLine>): List<ChatLine>? {
         if (text.isBlank()) return list
         val cached = cache.getIfPresent(text)
         return cached ?: run {
@@ -50,7 +59,7 @@ object ChatSearchingManager {
             for (message in currentTabs.messages?: emptyList()) {
                 list.add(ChatLine(0, ChatComponentText(message), 0))
             }
-            return filterMessages(text, list)
+            return filterMessages2(text, list)
         }
         return null
     }

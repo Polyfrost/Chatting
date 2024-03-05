@@ -46,14 +46,6 @@ data class ChatTab(
             x += 6 + width
             return@run returnValue
         }, width + 4, 12, this)
-
-        if (messages == null) return
-        messages?.forEach {
-            (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).chatLines.add(
-                0,
-                ChatLine(0, ChatComponentText(ChatColor.translateAlternateColorCodes('&', it)), 0)
-            )
-        }
     }
 
     fun shouldRender(chatComponent: IChatComponent): Boolean {
