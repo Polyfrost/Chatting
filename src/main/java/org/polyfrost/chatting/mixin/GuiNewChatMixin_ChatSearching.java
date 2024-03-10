@@ -29,10 +29,6 @@ public class GuiNewChatMixin_ChatSearching {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        List<ChatLine> chatTabMessages = ChatSearchingManager.filterChatTabMessages(ChatSearchingManager.INSTANCE.getLastSearch());
-        if (chatTabMessages != null) {
-            return chatTabMessages;
-        }
         return ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), drawnChatLines);
     }
 }
