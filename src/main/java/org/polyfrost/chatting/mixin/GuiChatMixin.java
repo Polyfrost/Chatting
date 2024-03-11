@@ -7,6 +7,7 @@ import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.*;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -83,7 +84,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             }
             searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
             ChatSearchingManager.INSTANCE.setLastSearch(searchButton.getInputField().getText());
-        } else if (isCtrlKeyDown() && keyCode == UKeyboard.KEY_TAB) {
+        } else if ((Keyboard.isKeyDown(219) || Keyboard.isKeyDown(220) || Keyboard.isKeyDown(29) || Keyboard.isKeyDown(157)) && keyCode == UKeyboard.KEY_TAB) { // either macos super key or ctrl key for any os
             ci.cancel();
             ChatHooks.INSTANCE.switchTab();
         }
