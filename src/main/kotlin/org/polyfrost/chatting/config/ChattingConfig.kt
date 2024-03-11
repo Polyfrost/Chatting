@@ -65,9 +65,9 @@ object ChattingConfig : Config(
     var chatPeak = false
 
     @Switch(
-        name = "Scrolling",
+        name = "Chat Peak Scrolling",
     )
-    var peakScrolling = false
+    var peakScrolling = true
 
     @KeyBind(
         name = "Peak KeyBind"
@@ -79,7 +79,7 @@ object ChattingConfig : Config(
         left = "Held",
         right = "Toggle"
     )
-    var peakMode = true
+    var peakMode = false
 
     @Switch(
         name = "Smooth Chat Messages",
@@ -300,7 +300,7 @@ object ChattingConfig : Config(
     @Info(
         category = "Tabs",
         type = InfoType.INFO,
-        text = "You can use shift to select multiple tabs, as well as ctrl + tab to switch to the next tab",
+        text = "You can use the SHIFT key to select multiple tabs, as well as CTRL + TAB to switch to the next tab.",
         size = 2
     )
     @Transient

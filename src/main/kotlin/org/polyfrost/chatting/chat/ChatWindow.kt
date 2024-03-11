@@ -18,7 +18,7 @@ import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.*
 
-class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
+class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
     @Exclude
     private val exampleList: List<ChatLine> = listOf(
@@ -66,6 +66,10 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f) {
     )
     var unfocusedHeight = 90
         get() = field.coerceIn(20, 2160)
+
+    init {
+        showInDebug = true
+    }
 
 
     override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
