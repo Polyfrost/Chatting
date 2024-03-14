@@ -251,7 +251,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyVariable(method = "setChatLine", at = @At(value = "STORE"), ordinal = 2)
     private int wrap(int value) {
-        return calculateChatboxWidth(mc.gameSettings.chatWidth);
+        return ChattingConfig.INSTANCE.getChatWindow().getCustomChatWidth() ? Chatting.INSTANCE.getChatWidth() : calculateChatboxWidth(mc.gameSettings.chatWidth);
     }
 
     private boolean isHovered(int x, int y, int width, int height) {

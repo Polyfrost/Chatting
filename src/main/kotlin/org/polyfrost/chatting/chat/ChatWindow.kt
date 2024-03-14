@@ -67,6 +67,19 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
     var unfocusedHeight = 90
         get() = field.coerceIn(20, 2160)
 
+    @Switch(
+        name = "Custom Chat Width",
+        description = "Set a custom width for the chat window. Allows for more customization than the vanilla chat width options."
+    )
+    var customChatWidth = false
+
+    @Slider(
+        min = 20F, max = 2160F, name = "Custom Width (px)",
+        description = "The width of the chat window when focused."
+    )
+    var customWidth = 320
+        get() = field.coerceIn(20, 2160)
+
     init {
         showInDebug = true
     }
@@ -138,7 +151,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
     }
 
     override fun getWidth(scale: Float, example: Boolean): Float {
-        return (GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth) + 4 + ModCompatHooks.chatHeadOffset) * scale
+        return (if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth) + 4 + ModCompatHooks.chatHeadOffset) * scale
     }
 
     override fun getHeight(scale: Float, example: Boolean): Float {

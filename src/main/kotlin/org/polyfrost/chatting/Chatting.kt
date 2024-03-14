@@ -212,10 +212,14 @@ object Chatting {
         return if (opened) ChattingConfig.chatWindow.focusedHeight else ChattingConfig.chatWindow.unfocusedHeight
     }
 
+    fun getChatWidth(): Int {
+        return ChattingConfig.chatWindow.customWidth
+    }
+
     fun screenshotLine(line: ChatLine): BufferedImage? {
         val hud = Minecraft.getMinecraft().ingameGUI
         val chat = hud.chatGUI
-        val i = MathHelper.floor_float(chat.chatWidth / chat.chatScale)
+        val i = MathHelper.floor_float(getChatWidth() / chat.chatScale)
         return screenshot(
             hashMapOf<ChatLine, String>().also {
                 GuiUtilRenderComponents.splitText(
