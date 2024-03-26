@@ -241,23 +241,34 @@ object ChattingConfig : Config(
     @Info(
         text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" + "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" + "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
         size = 2,
-        category = "Player Chats",
+        category = "Player Chats", subcategory = "Spam",
         type = InfoType.INFO
     )
     var ignored = false
 
     @Slider(
-        min = 80F, max = 100F, name = "Spam Blocker Threshold", category = "Player Chats"
+        min = 80F, max = 100F, name = "Spam Blocker Threshold", category = "Player Chats", subcategory = "Spam",
     )
     var spamThreshold = 100
 
     @Switch(
-        name = "Custom SkyBlock Chat Formatting (remove ranks)", category = "Player Chats"
+        name = "Custom SkyBlock Chat Formatting (remove ranks)", category = "Player Chats", subcategory = "Spam",
     )
     var customChatFormatting = false
 
     @Switch(
-        name = "Completely Hide Spam", category = "Player Chats"
+        name = "Highlight Name in Chat", category = "Player Chats", subcategory = "Mentions",
+        description = "This will only work when other players say your name (and only on Hypixel for now)"
+    )
+    var highlightName = false
+
+    @Switch(
+        name = "Play Sound in Chat", category = "Player Chats", subcategory = "Mentions"
+    )
+    var pingName = false
+
+    @Switch(
+        name = "Completely Hide Spam", category = "Player Chats", subcategory = "Spam",
     )
     var hideSpam = false
 
