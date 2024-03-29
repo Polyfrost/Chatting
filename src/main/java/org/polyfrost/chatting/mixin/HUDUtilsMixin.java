@@ -47,6 +47,8 @@ public class HUDUtilsMixin {
             case "showInDebug":
             case "positionAlignment":
             case "scale":
+            case "locked":
+            case "resetPosition":
                 if (isInputBox) return true;
                 break;
             case "inputFieldDraft":
