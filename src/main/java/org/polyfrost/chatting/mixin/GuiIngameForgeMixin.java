@@ -21,4 +21,10 @@ public class GuiIngameForgeMixin {
     private void cancelChat(int width, int height, CallbackInfo ci) {
         if (!ChattingConfig.INSTANCE.getChatWindow().canShow()) ci.cancel();
     }
+
+    @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderChat(II)V"))
+    private void setBypass(float partialTicks, CallbackInfo ci) {
+        ChattingConfig.INSTANCE.getChatWindow().setGuiIngame(true);
+    }
+
 }

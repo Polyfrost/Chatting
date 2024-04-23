@@ -3,20 +3,24 @@ package org.polyfrost.chatting.chat
 import cc.polyfrost.oneconfig.config.annotations.Exclude
 import cc.polyfrost.oneconfig.config.annotations.Slider
 import cc.polyfrost.oneconfig.config.annotations.Switch
-import cc.polyfrost.oneconfig.gui.animations.*
+import cc.polyfrost.oneconfig.gui.animations.Animation
+import cc.polyfrost.oneconfig.gui.animations.DummyAnimation
 import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.internal.hud.HudCore
 import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.platform.Platform
-import cc.polyfrost.oneconfig.utils.dsl.*
+import cc.polyfrost.oneconfig.utils.dsl.mc
+import cc.polyfrost.oneconfig.utils.dsl.nanoVG
 import club.sk1er.patcher.config.PatcherConfig
-import net.minecraft.client.gui.*
+import net.minecraft.client.gui.ChatLine
+import net.minecraft.client.gui.GuiNewChat
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
-import org.polyfrost.chatting.utils.*
+import org.polyfrost.chatting.utils.EaseOutQuart
+import org.polyfrost.chatting.utils.ModCompatHooks
 
 class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
@@ -46,6 +50,9 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
     @Exclude
     var animationHeight = 0f
+
+    @Exclude
+    var isGuiIngame = false
 
     @Switch(
         name = "Custom Chat Height",
@@ -135,7 +142,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
     fun canShow(): Boolean {
         showInChat = true
-        return isEnabled && (shouldShow() || Platform.getGuiPlatform().isInChat)
+        return isEnabled && (shouldShow() || Platform.getGuiPlatform().isInChat) && (isGuiIngame xor isCachingIgnored)
     }
 
     fun getPaddingX(): Float {
@@ -151,7 +158,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
     }
 
     override fun getWidth(scale: Float, example: Boolean): Float {
-        return (if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth) + 4 + ModCompatHooks.chatHeadOffset) * scale
+        return ((if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth)) + 4 + ModCompatHooks.chatHeadOffset) * scale
     }
 
     override fun getHeight(scale: Float, example: Boolean): Float {

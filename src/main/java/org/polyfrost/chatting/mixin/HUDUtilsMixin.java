@@ -48,6 +48,7 @@ public class HUDUtilsMixin {
             case "positionAlignment":
             case "scale":
             case "locked":
+            case "ignoreCaching":
             case "resetPosition":
                 if (isInputBox) return true;
                 break;

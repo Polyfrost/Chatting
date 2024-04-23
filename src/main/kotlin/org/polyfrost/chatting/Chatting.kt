@@ -1,11 +1,15 @@
 package org.polyfrost.chatting
 
+import cc.polyfrost.oneconfig.events.EventManager
+import cc.polyfrost.oneconfig.events.event.InitializationEvent
+import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
 import cc.polyfrost.oneconfig.libs.universal.UDesktop
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.Notifications
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
 import cc.polyfrost.oneconfig.utils.dsl.mc
+import cc.polyfrost.oneconfig.utils.dsl.runAsync
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
@@ -61,8 +65,6 @@ object Chatting {
     var isHychat = false
         private set
 
-    private var time = -1L
-    var deltaTime = 17L
     private var lastPressed = false;
     var peaking = false
         get() = ChattingConfig.chatPeak && field
@@ -76,10 +78,20 @@ object Chatting {
         ChattingConfig
         CommandManager.INSTANCE.registerCommand(ChattingCommand())
         ClientRegistry.registerKeyBinding(keybind)
+        EventManager.INSTANCE.register(this)
         EVENT_BUS.register(this)
         EVENT_BUS.register(ChatSpamBlock)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
+    }
+
+    @Subscribe
+    fun onInit(e: InitializationEvent) {
+        runAsync {
+            while (true) {
+                println("HI")
+            }
+        }
     }
 
     @Mod.EventHandler
@@ -152,19 +164,6 @@ object Chatting {
                     skytilsClass.getMethod("markDirty").invoke(instance)
                     skytilsClass.getMethod("writeData").invoke(instance)
                 })
-        }
-    }
-
-    @SubscribeEvent
-    fun onRenderTick(event: RenderGameOverlayEvent.Pre) {
-        if (event.type == RenderGameOverlayEvent.ElementType.ALL) {
-            if (time == -1L) {
-                time = UMinecraft.getTime()
-            } else {
-                val currentTime = UMinecraft.getTime()
-                deltaTime = currentTime - time
-                time = currentTime
-            }
         }
     }
 
