@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
 import net.minecraft.util.MathHelper
-import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
@@ -78,20 +77,10 @@ object Chatting {
         ChattingConfig
         CommandManager.INSTANCE.registerCommand(ChattingCommand())
         ClientRegistry.registerKeyBinding(keybind)
-        EventManager.INSTANCE.register(this)
         EVENT_BUS.register(this)
         EVENT_BUS.register(ChatSpamBlock)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
-    }
-
-    @Subscribe
-    fun onInit(e: InitializationEvent) {
-        runAsync {
-            while (true) {
-                println("HI")
-            }
-        }
     }
 
     @Mod.EventHandler
