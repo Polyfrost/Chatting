@@ -3,14 +3,17 @@ package org.polyfrost.chatting.mixin;
 import cc.polyfrost.oneconfig.hud.Position;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.MathHelper;
 import org.polyfrost.chatting.chat.ChatWindow;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -19,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public abstract class GuiNewChatMixin_Movable {
 
     @Shadow public abstract int getChatWidth();
+
+    @Unique private static ChatLine currentLine;
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;translate(FFF)V", ordinal = 0))
     private void translate(Args args) {
@@ -52,7 +57,7 @@ public abstract class GuiNewChatMixin_Movable {
     private int mouseX(int constant) {
         ChattingConfig config = ChattingConfig.INSTANCE;
         ChatWindow hud = config.getChatWindow();
-        return (int) ((hud.position.getX()) + (hud.getPaddingX() + 1 + (config.getShowChatHeads() && config.getOffsetNonPlayerMessages() ? 8 : 0)) * hud.getScale());
+        return (int) ((hud.position.getX()) + (hud.getPaddingX() + 1) * hud.getScale());
     }
 
     @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 27))
@@ -62,14 +67,26 @@ public abstract class GuiNewChatMixin_Movable {
         return height - (int) (hud.position.getBottomY() - hud.getPaddingY() * hud.getScale() + ModCompatHooks.getChatPosition());
     }
 
+    @ModifyVariable(method = "getChatComponent", at = @At("STORE"), ordinal = 0)
+    private ChatLine capture(ChatLine chatLine) {
+        currentLine = chatLine;
+        return chatLine;
+    }
+
+    @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 0))
+    private int offset(int value) {
+        return ((ChatLineHook) currentLine).chatting$hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages() ? ModCompatHooks.getChatHeadOffset() : 0;
+    }
+
     @Redirect(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F", ordinal = 0))
     private float getScale(GuiNewChat instance) {
         return ChattingConfig.INSTANCE.getChatWindow().getScale();
     }
 
-    @Redirect(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F", ordinal = 1))
-    private float getScale2(GuiNewChat instance) {
-        return 1f;
+    @ModifyArg(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", ordinal = 2))
+    private float width(float value) {
+        ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
+        return hud.position.getX() + hud.getWidth();
     }
 
 }
