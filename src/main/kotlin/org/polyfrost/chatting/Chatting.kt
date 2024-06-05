@@ -1,16 +1,10 @@
 package org.polyfrost.chatting
 
-import cc.polyfrost.oneconfig.events.EventManager
-import cc.polyfrost.oneconfig.events.event.InitializationEvent
-import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
 import cc.polyfrost.oneconfig.libs.universal.UDesktop
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.utils.Notifications
 import cc.polyfrost.oneconfig.utils.commands.CommandManager
 import cc.polyfrost.oneconfig.utils.dsl.browseLink
 import cc.polyfrost.oneconfig.utils.dsl.mc
-import cc.polyfrost.oneconfig.utils.dsl.runAsync
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
@@ -70,7 +64,7 @@ object Chatting {
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
-    val oldModDir = File(File(Minecraft.getMinecraft().mcDataDir, "W-OVERFLOW"), NAME)
+    val oldModDir = File(File(mc.mcDataDir, "W-OVERFLOW"), NAME)
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
@@ -158,7 +152,7 @@ object Chatting {
 
     @SubscribeEvent
     fun onTickEvent(event: TickEvent.ClientTickEvent) {
-        if (event.phase == TickEvent.Phase.START && Minecraft.getMinecraft().theWorld != null && Minecraft.getMinecraft().thePlayer != null && (Minecraft.getMinecraft().currentScreen == null || Minecraft.getMinecraft().currentScreen is GuiChat)) {
+        if (event.phase == TickEvent.Phase.START && mc.theWorld != null && mc.thePlayer != null && (mc.currentScreen == null || mc.currentScreen is GuiChat)) {
             if (doTheThing) {
                 screenshotChat()
                 doTheThing = false
@@ -205,7 +199,7 @@ object Chatting {
     }
 
     fun screenshotLine(line: ChatLine): BufferedImage? {
-        val hud = Minecraft.getMinecraft().ingameGUI
+        val hud = mc.ingameGUI
         val chat = hud.chatGUI
         val i = MathHelper.floor_float(getChatWidth() / chat.chatScale)
         return screenshot(
@@ -213,7 +207,7 @@ object Chatting {
                 GuiUtilRenderComponents.splitText(
                     line.chatComponent,
                     i,
-                    Minecraft.getMinecraft().fontRendererObj,
+                    mc.fontRendererObj,
                     false,
                     false
                 ).map { it.formattedText }.reversed().forEach { string ->
@@ -228,7 +222,7 @@ object Chatting {
     }
 
     fun screenshotChat(scrollPos: Int) {
-        val hud = Minecraft.getMinecraft().ingameGUI
+        val hud = mc.ingameGUI
         val chat = hud.chatGUI
         val chatLines = LinkedHashMap<ChatLine, String>()
         ChatSearchingManager.filterMessages(
@@ -237,7 +231,7 @@ object Chatting {
         )?.let { drawnLines ->
             val chatHeight =
                 if (ChattingConfig.chatWindow.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
-                    Minecraft.getMinecraft().gameSettings.chatHeightFocused / 9
+                    mc.gameSettings.chatHeightFocused / 9
                 )
             for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
                 chatLines[drawnLines[i]] = drawnLines[i].chatComponent.formattedText
@@ -263,18 +257,18 @@ object Chatting {
         val fr: FontRenderer = ModCompatHooks.fontRenderer
         val width = messages.maxOf { fr.getStringWidth(it.value) + (if (ChattingConfig.showChatHeads && ((it.key as ChatLineHook).`chatting$hasDetected`() || ChattingConfig.offsetNonPlayerMessages)) 10 else 0) } + 4
         val fb: Framebuffer = createBindFramebuffer(width * 2, (messages.size * 9) * 2)
-        val file = File(Minecraft.getMinecraft().mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
+        val file = File(mc.mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
         GlStateManager.scale(2f, 2f, 1f)
-        val scale = Minecraft.getMinecraft().gameSettings.chatScale
+        val scale = mc.gameSettings.chatScale
         GlStateManager.scale(scale, scale, 1f)
         messages.entries.forEachIndexed { i: Int, entry: MutableMap.MutableEntry<ChatLine, String> ->
             ModCompatHooks.redirectDrawString(entry.value, 0f, (messages.size - 1 - i) * 9f, 0xffffff, entry.key, true)
         }
 
         val image = fb.screenshot(file)
-        Minecraft.getMinecraft().entityRenderer.setupOverlayRendering()
-        Minecraft.getMinecraft().framebuffer.bindFramebuffer(true)
+        mc.entityRenderer.setupOverlayRendering()
+        mc.framebuffer.bindFramebuffer(true)
         Notifications.INSTANCE.send(
             "Chatting",
             "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""),

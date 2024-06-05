@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.chat
 
 import cc.polyfrost.oneconfig.libs.universal.ChatColor
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import org.polyfrost.chatting.gui.components.TabButton
 import com.google.gson.annotations.SerializedName
 import net.minecraft.client.Minecraft
@@ -40,7 +41,7 @@ data class ChatTab(
     fun initialize() {
         compiledRegex = ChatRegexes(uncompiledRegex)
         compiledIgnoreRegex = ChatRegexes(uncompiledIgnoreRegex)
-        val width = Minecraft.getMinecraft().fontRendererObj.getStringWidth(name)
+        val width = mc.fontRendererObj.getStringWidth(name)
         button = TabButton(653452, run {
             val returnValue = x - 2
             x += 6 + width

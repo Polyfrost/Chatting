@@ -2,6 +2,7 @@ package org.polyfrost.chatting.gui.components
 
 import cc.polyfrost.oneconfig.config.core.OneColor
 import cc.polyfrost.oneconfig.libs.universal.UResolution
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatSearchingManager
 import net.minecraft.client.Minecraft
@@ -54,7 +55,7 @@ class SearchButton() :
 
     inner class SearchTextField : GuiTextField(
         69420,
-        Minecraft.getMinecraft().fontRendererObj,
+        mc.fontRendererObj,
         UResolution.scaledWidth * 4 / 5 - 60,
         UResolution.scaledHeight - 26,
         UResolution.scaledWidth / 5,

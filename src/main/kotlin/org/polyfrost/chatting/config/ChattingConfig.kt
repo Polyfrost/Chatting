@@ -9,7 +9,7 @@ import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
 import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.*
@@ -399,7 +399,7 @@ object ChattingConfig : Config(
             "chatTabs"
         ).forEach {
             addListener(it) {
-            UMinecraft.getMinecraft().currentScreen?.let { screen ->
+            mc.currentScreen?.let { screen ->
                 if (screen is GuiChatHook) {
                     screen.`chatting$triggerButtonReset`()
                 }

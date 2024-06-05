@@ -95,7 +95,7 @@ open class CleanButton(
                         ((xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2)).toFloat(),
                         (yPosition + (height - 8) / 2).toFloat(),
                         j,
-                        (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).`chatting$getTextOpacity`()
+                        (mc.ingameGUI.chatGUI as GuiNewChatHook).`chatting$getTextOpacity`()
                     )
                 }
             }

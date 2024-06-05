@@ -1,23 +1,21 @@
 package org.polyfrost.chatting.utils
 
+import cc.polyfrost.oneconfig.platform.Platform
 import cc.polyfrost.oneconfig.renderer.TextRenderer
 import cc.polyfrost.oneconfig.utils.dsl.getAlpha
 import cc.polyfrost.oneconfig.utils.dsl.mc
-import org.polyfrost.chatting.Chatting.isBetterChat
-import org.polyfrost.chatting.Chatting.isPatcher
-import org.polyfrost.chatting.config.ChattingConfig.offsetNonPlayerMessages
-import org.polyfrost.chatting.config.ChattingConfig.showChatHeads
-import org.polyfrost.chatting.config.ChattingConfig.textRenderType
 import club.sk1er.patcher.config.PatcherConfig
 import com.llamalad7.betterchat.BetterChat
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
+import org.polyfrost.chatting.Chatting.isBetterChat
+import org.polyfrost.chatting.Chatting.isPatcher
 import org.polyfrost.chatting.config.ChattingConfig
+import org.polyfrost.chatting.config.ChattingConfig.offsetNonPlayerMessages
+import org.polyfrost.chatting.config.ChattingConfig.showChatHeads
 import org.polyfrost.chatting.hook.ChatLineHook
-import org.polyfrost.chatting.hook.GuiNewChatHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 
 // This exists because mixin doesn't like dummy classes
@@ -44,15 +42,15 @@ object ModCompatHooks {
 
     @JvmStatic
     val fontRenderer: FontRenderer
-        get() = Minecraft.getMinecraft().fontRendererObj
+        get() = mc.fontRendererObj
 
     @JvmStatic
     val chatLines: List<ChatLine>
-        get() = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).chatLines
+        get() = (mc.ingameGUI.chatGUI as GuiNewChatAccessor).chatLines
 
     @JvmStatic
     val drawnChatLines: List<ChatLine>
-        get() = (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines
+        get() = (mc.ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines
 
     @JvmStatic
     val chatHeadOffset
@@ -65,6 +63,7 @@ object ModCompatHooks {
     @JvmStatic
     val chatInputLimit
         get() = if (isPatcher && PatcherConfig.extendedChatLength) 256 else 100
+
     @JvmStatic
     val shouldDrawInputBox
         get() = !isPatcher || !PatcherConfig.transparentChatInputField
@@ -112,13 +111,10 @@ object ModCompatHooks {
                 GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
             }
         }
-        return when (textRenderType) {
-            0 -> fontRenderer.drawString(text, actualX, y, color, false)
-            2 -> TextRenderer.drawBorderedText(text,
-                actualX,
-                y,
-                color,
-                (Minecraft.getMinecraft().ingameGUI.chatGUI as GuiNewChatHook).`chatting$getTextOpacity`())
+        return when (ChattingConfig.textRenderType) {
+            0 -> Platform.getGLPlatform().drawText(text, actualX, y, color, false).toInt()
+            1 -> Platform.getGLPlatform().drawText(text, actualX, y, color, true).toInt()
+            2 -> TextRenderer.drawBorderedText(text, actualX, y, color, color.getAlpha())
             else -> fontRenderer.drawString(text, actualX, y, color, true)
         }
     }

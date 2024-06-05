@@ -2,6 +2,7 @@ package org.polyfrost.chatting.gui.components
 
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.libs.universal.UScreen
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 import net.minecraft.client.Minecraft
@@ -18,9 +19,8 @@ class ScreenshotButton :
         { RenderType.NONE }) {
 
     override fun onMousePress() {
-        val chat = Minecraft.getMinecraft().ingameGUI.chatGUI
         if (UScreen.currentScreen is GuiChat) {
-            Chatting.screenshotChat((chat as GuiNewChatAccessor).scrollPos)
+            Chatting.screenshotChat((mc.ingameGUI.chatGUI as GuiNewChatAccessor).scrollPos)
         }
     }
 

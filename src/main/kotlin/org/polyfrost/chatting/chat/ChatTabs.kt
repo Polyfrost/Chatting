@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.chat
 
 import cc.polyfrost.oneconfig.config.core.ConfigUtils
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.gui.components.TabButton
 import com.google.gson.GsonBuilder
@@ -19,8 +20,8 @@ object ChatTabs {
     var currentTabs: ArrayList<ChatTab> = object : ArrayList<ChatTab>() {
         override fun add(element: ChatTab): Boolean {
             val returnValue = super.add(element)
-            if (Minecraft.getMinecraft().theWorld != null && returnValue) {
-                Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
+            if (mc.theWorld != null && returnValue) {
+                mc.ingameGUI.chatGUI.refreshChat()
             }
             return returnValue
         }

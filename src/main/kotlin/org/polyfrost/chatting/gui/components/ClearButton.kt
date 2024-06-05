@@ -4,6 +4,7 @@ import cc.polyfrost.oneconfig.libs.universal.ChatColor
 import cc.polyfrost.oneconfig.libs.universal.UChat
 import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.utils.Multithreading
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
@@ -23,7 +24,7 @@ class ClearButton :
         ++times
         if (times > 1) {
             times = 0
-            Minecraft.getMinecraft().ingameGUI.chatGUI.clearChatMessages()
+            mc.ingameGUI.chatGUI.clearChatMessages()
         } else {
             UChat.chat(ChatColor.RED + ChatColor.BOLD.toString() + "Click again to clear the chat!")
             Multithreading.runAsync {

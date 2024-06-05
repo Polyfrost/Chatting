@@ -104,7 +104,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                         int q = m * 9;
                         String string = chatLine.getChatComponent().getFormattedText();
                         GlStateManager.enableBlend();
-                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (chatting$getOpacity(0, chatLine) << 24), chatLine, false);
+                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (chatting$getOpacity(chatting$updateCounter, chatLine) << 24), chatLine, false);
                         GlStateManager.disableAlpha();
                         GlStateManager.disableBlend();
                     }
