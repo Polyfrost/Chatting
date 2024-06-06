@@ -199,20 +199,10 @@ object Chatting {
     }
 
     fun screenshotLine(line: ChatLine): BufferedImage? {
-        val hud = mc.ingameGUI
-        val chat = hud.chatGUI
-        val i = MathHelper.floor_float(getChatWidth() / chat.chatScale)
         return screenshot(
             hashMapOf<ChatLine, String>().also {
-                GuiUtilRenderComponents.splitText(
-                    line.chatComponent,
-                    i,
-                    mc.fontRendererObj,
-                    false,
-                    false
-                ).map { it.formattedText }.reversed().forEach { string ->
-                    it[line] = string
-                }
+                val chatLine = (line as ChatLineHook).fullMessage
+                it[chatLine] = chatLine.chatComponent.formattedText
             }
         )
     }
@@ -260,8 +250,6 @@ object Chatting {
         val file = File(mc.mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
         GlStateManager.scale(2f, 2f, 1f)
-        val scale = mc.gameSettings.chatScale
-        GlStateManager.scale(scale, scale, 1f)
         messages.entries.forEachIndexed { i: Int, entry: MutableMap.MutableEntry<ChatLine, String> ->
             ModCompatHooks.redirectDrawString(entry.value, 0f, (messages.size - 1 - i) * 9f, 0xffffff, entry.key, true)
         }

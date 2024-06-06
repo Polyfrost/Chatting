@@ -6,6 +6,7 @@
 package org.polyfrost.chatting.mixin;
 
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.ChatHook;
 import org.polyfrost.chatting.hook.ChatLineHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
@@ -31,11 +32,13 @@ public class ChatLineMixin implements ChatLineHook {
     private static NetworkPlayerInfo lastPlayerInfo;
     private static long lastUniqueId = 0;
     private long uniqueId = 0;
+    private ChatLine fullMessage = null;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {
         lastUniqueId++;
         uniqueId = lastUniqueId;
+        fullMessage = ChatHook.currentLine;
         chatting$chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
         if (netHandler == null) return;
@@ -110,5 +113,10 @@ public class ChatLineMixin implements ChatLineHook {
     @Override
     public long chatting$getUniqueId() {
         return uniqueId;
+    }
+
+    @Override
+    public ChatLine getFullMessage() {
+        return fullMessage;
     }
 }

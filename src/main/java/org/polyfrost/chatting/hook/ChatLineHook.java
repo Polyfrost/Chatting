@@ -14,4 +14,6 @@ public interface ChatLineHook {
     void chatting$updatePlayerInfo();
 
     long chatting$getUniqueId();
+
+    ChatLine getFullMessage();
 }

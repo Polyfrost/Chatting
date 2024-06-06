@@ -45,13 +45,20 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Unique
     private static final List<String> COPY_TOOLTIP = Lists.newArrayList(
-        "\u00A7e\u00A7lCopy To Clipboard",
-        "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
-        "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line",
-        "\u00A7b\u00A7lSHIFT CLICK\u00A7r \u00A78- \u00A77Screenshot Line",
-        "",
-        "\u00A7e\u00A7lModifiers",
-        "\u00A7b\u00A7l" + chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes");
+            "\u00A7e\u00A7lCopy To Clipboard",
+            "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
+            "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line",
+            "\u00A7b\u00A7lSHIFT CLICK\u00A7r \u00A78- \u00A77Screenshot Message",
+            "",
+            "\u00A7e\u00A7lModifiers",
+            "\u00A7b\u00A7l" + chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes"
+    );
+
+    @Unique
+    private static final List<String> DELETE_TOOLTIP = Lists.newArrayList(
+            "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
+            "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line"
+    );
 
     private SearchButton searchButton;
     private ScreenshotButton screenshotButton;
@@ -92,17 +99,27 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Inject(method = "drawScreen", at = @At("HEAD"))
     private void onDrawScreen(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getChatCopy()) {
-            GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
-            ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
-            int scale = new ScaledResolution(mc).getScaleFactor();
-            int x = Mouse.getX();
-            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX());
-            if (hook.chatting$isHovering() && x > right * scale && x < (right + 9 * hud.getScale()) * scale) {
-                GuiUtils.drawHoveringText(COPY_TOOLTIP, mouseX, mouseY, width, height, -1, fontRendererObj);
-                GlStateManager.disableLighting();
-            }
+        boolean copy = ChattingConfig.INSTANCE.getChatCopy();
+        boolean delete = ChattingConfig.INSTANCE.getChatDelete();
+        if (!copy && !delete) return;
+        GuiNewChatHook hook = ((GuiNewChatHook) Minecraft.getMinecraft().ingameGUI.getChatGUI());
+        ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
+        int scale = new ScaledResolution(mc).getScaleFactor();
+        int x = Mouse.getX();
+        int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX());
+        delete = delete && hovered(hook, x, right + (int) ((copy ? 10 : 0) * hud.getScale()), scale, hud);
+        copy = copy && hovered(hook, x, right, scale, hud);
+
+        if (copy || delete) {
+            List<String> tooltip = delete ? DELETE_TOOLTIP : COPY_TOOLTIP;
+            GuiUtils.drawHoveringText(tooltip, mouseX, mouseY, width, height, -1, fontRendererObj);
+            GlStateManager.disableLighting();
         }
+    }
+
+    @Unique
+    private boolean hovered(GuiNewChatHook hook, int x, int right, int scale, ChatWindow hud) {
+        return hook.chatting$isHovering() && x > right * scale && x < (right + 9 * hud.getScale()) * scale;
     }
 
     @Inject(method = "drawScreen", at = @At("HEAD"))
@@ -123,8 +140,9 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         int scale = new ScaledResolution(mc).getScaleFactor();
         int x = Mouse.getX();
         if (hook.chatting$isHovering()) {
+            boolean copy = ChattingConfig.INSTANCE.getChatCopy();
             int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX()) * scale;
-            if (ChattingConfig.INSTANCE.getChatCopy() && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
+            if (copy && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
                 Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
                 if (message == null) return;
                 try {
@@ -132,13 +150,19 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (ChattingConfig.INSTANCE.getChatDelete() && x > right + 10 * hud.getScale() * scale && x < right + 19 * hud.getScale() * scale) {
+            } else if (ChattingConfig.INSTANCE.getChatDelete() && x > right + (copy ? 10 : 0) * hud.getScale() * scale && x < right + ((copy ? 10 : 0) + 9) * hud.getScale() * scale) {
                 ChatLine chatLine = hook.chatting$getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
-                ModCompatHooks.getDrawnChatLines().removeIf(line -> ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId());
-                ModCompatHooks.getChatLines().removeIf(line -> ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId());
+                ModCompatHooks.getDrawnChatLines().removeIf(line -> remove(line, chatLine));
+                ModCompatHooks.getChatLines().removeIf(line -> remove(line, chatLine));
             }
         }
+    }
+
+    private boolean remove(ChatLine line, ChatLine chatLine) {
+        return UKeyboard.isCtrlKeyDown() ?
+                ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId() :
+                ((ChatLineHook) ((ChatLineHook) line).getFullMessage()).chatting$getUniqueId() == ((ChatLineHook) ((ChatLineHook) chatLine).getFullMessage()).chatting$getUniqueId();
     }
 
     @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)

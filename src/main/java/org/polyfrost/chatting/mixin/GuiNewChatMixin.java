@@ -3,12 +3,15 @@ package org.polyfrost.chatting.mixin;
 import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.utils.Notifications;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import net.minecraft.util.IChatComponent;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.chat.ChatWindow;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.ChatHook;
+import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
 import org.polyfrost.chatting.utils.RenderUtils;
@@ -249,6 +252,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         chatting$lineInBounds = false;
     }
 
+    @Inject(method = "setChatLine", at = @At("HEAD"))
+    private void captureComponent(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        ChatHook.currentLine = new ChatLine(0, chatComponent, 0);
+    }
+
     @ModifyVariable(method = "setChatLine", at = @At(value = "STORE"), ordinal = 2)
     private int wrap(int value) {
         return ChattingConfig.INSTANCE.getChatWindow().getCustomChatWidth() ? Chatting.INSTANCE.getChatWidth() : calculateChatboxWidth(mc.gameSettings.chatWidth);
@@ -395,7 +403,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     public Transferable chatting$getChattingChatComponent(int mouseY) {
         ChatLine subLine = chatting$getHoveredLine(mouseY);
         if (subLine != null) {
-            ChatLine fullLine = this.chatting$getFullMessage(subLine);
+            ChatLine fullLine = ((ChatLineHook) subLine).getFullMessage();
             if (GuiScreen.isShiftKeyDown()) {
                 if (fullLine != null) {
                     BufferedImage image = Chatting.INSTANCE.screenshotLine(subLine);

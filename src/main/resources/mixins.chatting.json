@@ -13,7 +13,6 @@
     "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",
     "GuiNewChatAccessor",
-    "GuiNewChatMapMixin",
     "GuiNewChatMixin",
     "GuiNewChatMixin_ChatHeight",
     "GuiNewChatMixin_ChatSearching",

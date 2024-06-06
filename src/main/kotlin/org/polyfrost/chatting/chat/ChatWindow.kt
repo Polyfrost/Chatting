@@ -26,11 +26,11 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
     @Exclude
     private val exampleList: List<ChatLine> = listOf(
-        ChatLine(0, ChatComponentText("§bChatting"), 1),
-        ChatLine(0, ChatComponentText(""), 2),
-        ChatLine(0, ChatComponentText("§aThis is a movable chat"), 3),
-        ChatLine(0, ChatComponentText("§eDrag me around!"), 4),
-        ChatLine(0, ChatComponentText("Click to drag"), 5)
+        ChatLine(0, ChatComponentText("§bChatting"), 0),
+        ChatLine(0, ChatComponentText(""), 0),
+        ChatLine(0, ChatComponentText("§aThis is a movable chat"), 0),
+        ChatLine(0, ChatComponentText("§eDrag me around!"), 0),
+        ChatLine(0, ChatComponentText("Click to drag"), 0)
     )
 
     @Exclude

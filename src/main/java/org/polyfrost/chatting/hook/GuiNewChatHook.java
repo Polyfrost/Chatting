@@ -13,9 +13,5 @@ public interface GuiNewChatHook {
 
     Transferable chatting$getChattingChatComponent(int mouseY);
 
-    default ChatLine chatting$getFullMessage(ChatLine line) {
-        throw new AssertionError("getFullMessage not overridden on GuiNewChat");
-    }
-
     int chatting$getTextOpacity();
 }
