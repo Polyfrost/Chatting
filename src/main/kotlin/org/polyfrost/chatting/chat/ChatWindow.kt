@@ -136,7 +136,6 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
         nanoVG(true) {
             drawBackground(position.x, position.bottomY - animationHeight, animationWidth, animationHeight, scale)
         }
-        GlStateManager.disableBlend()
         GlStateManager.disableAlpha()
     }
 

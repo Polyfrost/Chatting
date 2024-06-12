@@ -65,6 +65,10 @@ open class CleanButton(
         if (visible) {
             val fontrenderer = mc.fontRendererObj
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
+            GlStateManager.enableAlpha()
+            GlStateManager.enableBlend()
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
+            GlStateManager.blendFunc(770, 771)
             hovered =
                 mouseX >= xPosition && mouseY >= yPosition && mouseX < xPosition + width && mouseY < yPosition + height
             if (!Chatting.isPatcher || !PatcherConfig.transparentChatInputField) {

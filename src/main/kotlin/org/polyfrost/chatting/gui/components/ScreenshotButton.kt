@@ -28,9 +28,10 @@ class ScreenshotButton :
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
             GlStateManager.pushMatrix()
-            GlStateManager.enableBlend()
             GlStateManager.enableAlpha()
+            GlStateManager.enableBlend()
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
+            GlStateManager.blendFunc(770, 771)
             mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "screenshot.png"))
             val color = if (hovered) ChattingConfig.chatButtonHoveredColor else ChattingConfig.chatButtonColor
             if (ChattingConfig.buttonShadow) {
@@ -39,8 +40,6 @@ class ScreenshotButton :
             }
             GlStateManager.color(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
             Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
-            GlStateManager.disableAlpha()
-            GlStateManager.disableBlend()
             GlStateManager.popMatrix()
         }
     }
