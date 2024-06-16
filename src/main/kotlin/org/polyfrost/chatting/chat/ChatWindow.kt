@@ -3,6 +3,7 @@ package org.polyfrost.chatting.chat
 import cc.polyfrost.oneconfig.config.annotations.Exclude
 import cc.polyfrost.oneconfig.config.annotations.Slider
 import cc.polyfrost.oneconfig.config.annotations.Switch
+import cc.polyfrost.oneconfig.config.core.OneColor
 import cc.polyfrost.oneconfig.gui.animations.Animation
 import cc.polyfrost.oneconfig.gui.animations.DummyAnimation
 import cc.polyfrost.oneconfig.hud.BasicHud
@@ -22,7 +23,8 @@ import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
 
-class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
+class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
+    1f, true, true, 6f, 5f, 5f, OneColor(0, 0, 0, 120), false, 2f, OneColor(0, 0, 0)) {
 
     @Exclude
     private val exampleList: List<ChatLine> = listOf(
@@ -89,8 +91,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
     init {
         showInDebug = true
-        rounded = true
-        cornerRadius = 6f
+        ignoreCaching = true
     }
 
 
