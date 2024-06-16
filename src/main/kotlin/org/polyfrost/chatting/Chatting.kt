@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.shader.Framebuffer
-import net.minecraft.util.MathHelper
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
@@ -34,6 +33,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.stream.Collectors
 
 
 @Mod(
@@ -200,9 +200,13 @@ object Chatting {
 
     fun screenshotLine(line: ChatLine): BufferedImage? {
         return screenshot(
-            hashMapOf<ChatLine, String>().also {
-                val chatLine = (line as ChatLineHook).fullMessage
-                it[chatLine] = chatLine.chatComponent.formattedText
+            linkedMapOf<ChatLine, String>().also { map ->
+                val fullMessage = (line as ChatLineHook).fullMessage
+                for (chatLine in (mc.ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines) {
+                    if ((chatLine as ChatLineHook).fullMessage == fullMessage) {
+                        map[chatLine] = chatLine.chatComponent.formattedText
+                    }
+                }
             }
         )
     }
