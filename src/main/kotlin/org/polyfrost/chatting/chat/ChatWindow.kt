@@ -89,6 +89,8 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f) {
 
     init {
         showInDebug = true
+        rounded = true
+        cornerRadius = 6f
     }
 
 
