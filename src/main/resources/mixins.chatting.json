@@ -22,9 +22,7 @@
     "GuiNewChatMixin_SmoothMessages",
     "GuiNewChatMixin_TextRendering",
     "GuiTextFieldMixin",
-    "GuiUtilsMixin"
-  ],
-  "mixins": [
+    "GuiUtilsMixin",
     "HUDUtilsMixin",
     "InventoryPlayerMixin"
   ]
