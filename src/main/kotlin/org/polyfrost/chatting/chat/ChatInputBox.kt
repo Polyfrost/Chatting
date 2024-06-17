@@ -23,7 +23,7 @@ class ChatInputBox: BasicHud(true, -100f, -100f) {
 
     @Switch(
         name = "Input Field Draft",
-        description = "Drafts the text you wrote in the input field after closing the chat and back it up when opening the chat again."
+        description = "Drafts the text you wrote in the input field after closing the chat and backs it up when opening the chat again."
     )
     var inputFieldDraft = false
 
