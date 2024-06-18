@@ -15,5 +15,5 @@ public interface ChatLineHook {
 
     long chatting$getUniqueId();
 
-    ChatLine getFullMessage();
+    ChatLine chatting$getFullMessage();
 }

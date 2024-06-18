@@ -15,6 +15,7 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.util.IChatComponent;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -25,20 +26,28 @@ import java.util.Map;
 
 @Mixin(ChatLine.class)
 public class ChatLineMixin implements ChatLineHook {
-    private boolean detected = false;
-    private boolean first = true;
-    private NetworkPlayerInfo playerInfo;
-    private NetworkPlayerInfo detectedPlayerInfo;
-    private static NetworkPlayerInfo lastPlayerInfo;
-    private static long lastUniqueId = 0;
-    private long uniqueId = 0;
-    private ChatLine fullMessage = null;
+    @Unique
+    private boolean chatting$detected = false;
+    @Unique
+    private boolean chatting$first = true;
+    @Unique
+    private NetworkPlayerInfo chatting$playerInfo;
+    @Unique
+    private NetworkPlayerInfo chatting$detectedPlayerInfo;
+    @Unique
+    private static NetworkPlayerInfo chatting$lastPlayerInfo;
+    @Unique
+    private static long chatting$lastUniqueId = 0;
+    @Unique
+    private long chatting$uniqueId = 0;
+    @Unique
+    private ChatLine chatting$fullMessage = null;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {
-        lastUniqueId++;
-        uniqueId = lastUniqueId;
-        fullMessage = ChatHook.currentLine;
+        chatting$lastUniqueId++;
+        chatting$uniqueId = chatting$lastUniqueId;
+        chatting$fullMessage = ChatHook.currentLine;
         chatting$chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
         if (netHandler == null) return;
@@ -46,20 +55,20 @@ public class ChatLineMixin implements ChatLineHook {
         try {
             for (String word : iChatComponent.getFormattedText().split("(§.)|\\W")) {
                 if (word.isEmpty()) continue;
-                playerInfo = netHandler.getPlayerInfo(word);
-                if (playerInfo == null) {
-                    playerInfo = getPlayerFromNickname(word, netHandler, nicknameCache);
+                chatting$playerInfo = netHandler.getPlayerInfo(word);
+                if (chatting$playerInfo == null) {
+                    chatting$playerInfo = chatting$getPlayerFromNickname(word, netHandler, nicknameCache);
                 }
-                if (playerInfo != null) {
-                    detectedPlayerInfo = playerInfo;
-                    detected = true;
-                    if (playerInfo == lastPlayerInfo) {
-                        first = false;
+                if (chatting$playerInfo != null) {
+                    chatting$detectedPlayerInfo = chatting$playerInfo;
+                    chatting$detected = true;
+                    if (chatting$playerInfo == chatting$lastPlayerInfo) {
+                        chatting$first = false;
                         if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()) {
-                            playerInfo = null;
+                            chatting$playerInfo = null;
                         }
                     } else {
-                        lastPlayerInfo = playerInfo;
+                        chatting$lastPlayerInfo = chatting$playerInfo;
                     }
                     break;
                 }
@@ -68,8 +77,9 @@ public class ChatLineMixin implements ChatLineHook {
         }
     }
 
+    @Unique
     @Nullable
-    private static NetworkPlayerInfo getPlayerFromNickname(String word, NetHandlerPlayClient connection, Map<String, NetworkPlayerInfo> nicknameCache) {
+    private static NetworkPlayerInfo chatting$getPlayerFromNickname(String word, NetHandlerPlayClient connection, Map<String, NetworkPlayerInfo> nicknameCache) {
         if (nicknameCache.isEmpty()) {
             for (NetworkPlayerInfo p : connection.getPlayerInfoMap()) {
                 IChatComponent displayName = p.getDisplayName();
@@ -93,30 +103,30 @@ public class ChatLineMixin implements ChatLineHook {
 
     @Override
     public boolean chatting$hasDetected() {
-        return detected;
+        return chatting$detected;
     }
 
     @Override
     public NetworkPlayerInfo chatting$getPlayerInfo() {
-        return playerInfo;
+        return chatting$playerInfo;
     }
 
     @Override
     public void chatting$updatePlayerInfo() {
-        if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages() && !first) {
-            playerInfo = null;
+        if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages() && !chatting$first) {
+            chatting$playerInfo = null;
         } else {
-            playerInfo = detectedPlayerInfo;
+            chatting$playerInfo = chatting$detectedPlayerInfo;
         }
     }
 
     @Override
     public long chatting$getUniqueId() {
-        return uniqueId;
+        return chatting$uniqueId;
     }
 
     @Override
-    public ChatLine getFullMessage() {
-        return fullMessage;
+    public ChatLine chatting$getFullMessage() {
+        return chatting$fullMessage;
     }
 }

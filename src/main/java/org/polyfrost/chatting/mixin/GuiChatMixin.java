@@ -45,24 +45,27 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Unique
     private static final List<String> COPY_TOOLTIP = Lists.newArrayList(
-            "\u00A7e\u00A7lCopy To Clipboard",
-            "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
-            "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line",
-            "\u00A7b\u00A7lSHIFT CLICK\u00A7r \u00A78- \u00A77Screenshot Message",
+            "§e§lCopy To Clipboard",
+            "§b§lNORMAL CLICK§r §8- §7Full Message",
+            "§b§lCTRL CLICK§r §8- §7Single Line",
+            "§b§lSHIFT CLICK§r §8- §7Screenshot Message",
             "",
-            "\u00A7e\u00A7lModifiers",
-            "\u00A7b\u00A7l" + chatting$getModifierKey() + "\u00A7r \u00A78- \u00A77Formatting Codes"
+            "§e§lModifiers",
+            "§b§l" + chatting$getModifierKey() + "§r §8- §7Formatting Codes"
     );
 
     @Unique
     private static final List<String> DELETE_TOOLTIP = Lists.newArrayList(
-            "\u00A7b\u00A7lNORMAL CLICK\u00A7r \u00A78- \u00A77Full Message",
-            "\u00A7b\u00A7lCTRL CLICK\u00A7r \u00A78- \u00A77Single Line"
+            "§b§lNORMAL CLICK§r §8- §7Full Message",
+            "§b§lCTRL CLICK§r §8- §7Single Line"
     );
 
-    private SearchButton searchButton;
-    private ScreenshotButton screenshotButton;
-    private ClearButton clearButton;
+    @Unique
+    private SearchButton chatting$searchButton;
+    @Unique
+    private ScreenshotButton chatting$screenshotButton;
+    @Unique
+    private ClearButton chatting$clearButton;
 
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
@@ -76,21 +79,21 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Inject(method = "updateScreen", at = @At("HEAD"))
     private void updateScreen(CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getChatSearch() && searchButton.isEnabled()) {
-            searchButton.getInputField().updateCursorCounter();
+        if (ChattingConfig.INSTANCE.getChatSearch() && chatting$searchButton.isEnabled()) {
+            chatting$searchButton.getInputField().updateCursorCounter();
         }
     }
 
     @Inject(method = "keyTyped", at = @At("HEAD"), cancellable = true)
     private void keyTyped(char typedChar, int keyCode, CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getChatSearch() && searchButton.isEnabled()) {
+        if (ChattingConfig.INSTANCE.getChatSearch() && chatting$searchButton.isEnabled()) {
             ci.cancel();
             if (keyCode == 1) {
-                searchButton.onMousePress();
+                chatting$searchButton.onMousePress();
                 return;
             }
-            searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
-            ChatSearchingManager.INSTANCE.setLastSearch(searchButton.getInputField().getText());
+            chatting$searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
+            ChatSearchingManager.INSTANCE.setLastSearch(chatting$searchButton.getInputField().getText());
         } else if ((Keyboard.isKeyDown(219) || Keyboard.isKeyDown(220) || Keyboard.isKeyDown(29) || Keyboard.isKeyDown(157)) && keyCode == UKeyboard.KEY_TAB) { // either macos super key or ctrl key for any os
             ci.cancel();
             ChatHooks.INSTANCE.switchTab();
@@ -107,8 +110,8 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         int scale = new ScaledResolution(mc).getScaleFactor();
         int x = Mouse.getX();
         int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX());
-        delete = delete && hovered(hook, x, right + (int) ((copy ? 10 : 0) * hud.getScale()), scale, hud);
-        copy = copy && hovered(hook, x, right, scale, hud);
+        delete = delete && chatting$hovered(hook, x, right + (int) ((copy ? 10 : 0) * hud.getScale()), scale, hud);
+        copy = copy && chatting$hovered(hook, x, right, scale, hud);
 
         if (copy || delete) {
             List<String> tooltip = delete ? DELETE_TOOLTIP : COPY_TOOLTIP;
@@ -118,7 +121,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
     }
 
     @Unique
-    private boolean hovered(GuiNewChatHook hook, int x, int right, int scale, ChatWindow hud) {
+    private boolean chatting$hovered(GuiNewChatHook hook, int x, int right, int scale, ChatWindow hud) {
         return hook.chatting$isHovering() && x > right * scale && x < (right + 9 * hud.getScale()) * scale;
     }
 
@@ -153,16 +156,17 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             } else if (ChattingConfig.INSTANCE.getChatDelete() && x > right + (copy ? 10 : 0) * hud.getScale() * scale && x < right + ((copy ? 10 : 0) + 9) * hud.getScale() * scale) {
                 ChatLine chatLine = hook.chatting$getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
-                ModCompatHooks.getDrawnChatLines().removeIf(line -> remove(line, chatLine));
-                ModCompatHooks.getChatLines().removeIf(line -> remove(line, chatLine));
+                ModCompatHooks.getDrawnChatLines().removeIf(line -> chatting$remove(line, chatLine));
+                ModCompatHooks.getChatLines().removeIf(line -> chatting$remove(line, chatLine));
             }
         }
     }
 
-    private boolean remove(ChatLine line, ChatLine chatLine) {
+    @Unique
+    private boolean chatting$remove(ChatLine line, ChatLine chatLine) {
         return UKeyboard.isCtrlKeyDown() ?
                 ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId() :
-                ((ChatLineHook) ((ChatLineHook) line).getFullMessage()).chatting$getUniqueId() == ((ChatLineHook) ((ChatLineHook) chatLine).getFullMessage()).chatting$getUniqueId();
+                ((ChatLineHook) ((ChatLineHook) line).chatting$getFullMessage()).chatting$getUniqueId() == ((ChatLineHook) ((ChatLineHook) chatLine).chatting$getFullMessage()).chatting$getUniqueId();
     }
 
     @ModifyArg(method = "keyTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;sendChatMessage(Ljava/lang/String;)V"), index = 0)
@@ -202,17 +206,17 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Unique
     private void chatting$initButtons() {
-        searchButton = new SearchButton();
+        chatting$searchButton = new SearchButton();
         if (ChattingConfig.INSTANCE.getChatSearch()) {
-            buttonList.add(searchButton);
+            buttonList.add(chatting$searchButton);
         }
-        screenshotButton = new ScreenshotButton();
+        chatting$screenshotButton = new ScreenshotButton();
         if (ChattingConfig.INSTANCE.getChatScreenshot()) {
-            buttonList.add(screenshotButton);
+            buttonList.add(chatting$screenshotButton);
         }
-        clearButton = new ClearButton();
+        chatting$clearButton = new ClearButton();
         if (ChattingConfig.INSTANCE.getChatDeleteHistory()) {
-            buttonList.add(clearButton);
+            buttonList.add(chatting$clearButton);
         }
         if (ChattingConfig.INSTANCE.getChatTabs()) {
             for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {

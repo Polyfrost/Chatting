@@ -36,7 +36,9 @@ public abstract class GuiNewChatMixin_SmoothMessages {
     @Unique
     private int chatting$newLines;
 
+    @Unique
     private EaseOutQuart chatting$easeOutQuart;
+    @Unique
     private float chatting$animationPercent;
     @Unique
     private int chatting$lineBeingDrawn;

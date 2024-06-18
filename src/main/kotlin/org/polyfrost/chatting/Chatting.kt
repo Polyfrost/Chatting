@@ -201,9 +201,9 @@ object Chatting {
     fun screenshotLine(line: ChatLine): BufferedImage? {
         return screenshot(
             linkedMapOf<ChatLine, String>().also { map ->
-                val fullMessage = (line as ChatLineHook).fullMessage
+                val fullMessage = (line as ChatLineHook).`chatting$getFullMessage`()
                 for (chatLine in (mc.ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines) {
-                    if ((chatLine as ChatLineHook).fullMessage == fullMessage) {
+                    if ((chatLine as ChatLineHook).`chatting$getFullMessage`() == fullMessage) {
                         map[chatLine] = chatLine.chatComponent.formattedText
                     }
                 }

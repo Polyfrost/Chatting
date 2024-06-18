@@ -23,7 +23,7 @@ public abstract class GuiNewChatMixin_Movable {
 
     @Shadow public abstract int getChatWidth();
 
-    @Unique private static ChatLine currentLine;
+    @Unique private static ChatLine chatting$currentLine;
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;translate(FFF)V", ordinal = 0))
     private void translate(Args args) {
@@ -69,13 +69,13 @@ public abstract class GuiNewChatMixin_Movable {
 
     @ModifyVariable(method = "getChatComponent", at = @At("STORE"), ordinal = 0)
     private ChatLine capture(ChatLine chatLine) {
-        currentLine = chatLine;
+        chatting$currentLine = chatLine;
         return chatLine;
     }
 
     @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 0))
     private int offset(int value) {
-        return ((ChatLineHook) currentLine).chatting$hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages() ? ModCompatHooks.getChatHeadOffset() : 0;
+        return ((ChatLineHook) chatting$currentLine).chatting$hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages() ? ModCompatHooks.getChatHeadOffset() : 0;
     }
 
     @Redirect(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F", ordinal = 0))
