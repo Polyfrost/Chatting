@@ -6,6 +6,7 @@ import cc.polyfrost.oneconfig.libs.universal.wrappers.message.UTextComponent
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.chat.ChatTabs.currentTabs
+import org.polyfrost.chatting.hook.ChatHook
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -57,7 +58,9 @@ object ChatSearchingManager {
         if (currentTabs?.messages?.isEmpty() == false) {
             val list: MutableList<ChatLine> = ArrayList()
             for (message in currentTabs.messages?: emptyList()) {
+                ChatHook.lineVisible = true
                 list.add(ChatLine(0, ChatComponentText(message), 0))
+                ChatHook.lineVisible = false
             }
             return filterMessages2(text, list)
         }

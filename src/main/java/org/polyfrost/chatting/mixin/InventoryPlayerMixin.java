@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class InventoryPlayerMixin {
     @Inject(method = "changeCurrentItem", at = @At("HEAD"), cancellable = true)
     private void cancelHotbarScrolling(int direction, CallbackInfo ci) {
-        if (Chatting.INSTANCE.getPeaking() && ChattingConfig.INSTANCE.getPeakScrolling()) {
+        if (Chatting.INSTANCE.getPeeking() && ChattingConfig.INSTANCE.getPeekScrolling()) {
             ci.cancel();
         }
     }

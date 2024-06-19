@@ -58,6 +58,7 @@ loom {
         runConfigs {
             "client" {
                 programArgs("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
+                property("fml.coreMods.load", "org.polyfrost.craftycrashes.plugin.LegacyCraftyCrashesLoadingPlugin")
                 property("mixin.debug.export", "true")
             }
         }
@@ -89,6 +90,7 @@ sourceSets {
 
 // Adds the Polyfrost maven repository so that we can get the libraries necessary to develop the mod.
 repositories {
+    mavenLocal()
     maven("https://repo.polyfrost.org/releases")
 }
 
@@ -100,6 +102,7 @@ dependencies {
     modRuntimeOnly("me.djtheredstoner:DevAuth-${if (platform.isFabric) "fabric" else if (platform.isLegacyForge) "forge-legacy" else "forge-latest"}:1.1.2")
 
     compileOnly("cc.polyfrost:universalcraft-1.8.9-forge:246")
+    //modRuntimeOnly("org.polyfrost:legacycraftycrashes:1.0.0")
 //    shade("org.polyfrost:universalcraft-$platform:295")
 
     // If we are building for legacy forge, includes the launch wrapper with `shade` as we configured earlier.

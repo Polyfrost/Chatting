@@ -59,27 +59,27 @@ object ChattingConfig : Config(
     var informForAlternatives = true
 
     @Switch(
-        name = "Chat Peak",
+        name = "Chat Peek",
         description = "Allows you to view / scroll chat while moving around."
     )
-    var chatPeak = false
+    var chatPeek = false
 
     @Switch(
-        name = "Chat Peak Scrolling",
+        name = "Chat Peek Scrolling",
     )
-    var peakScrolling = true
+    var peekScrolling = true
 
     @KeyBind(
-        name = "Peak KeyBind"
+        name = "Peek KeyBind"
     )
-    var chatPeakBind = OneKeyBind(UKeyboard.KEY_Z)
+    var chatPeekBind = OneKeyBind(UKeyboard.KEY_Z)
 
     @DualOption(
-        name = "Peak Mode",
+        name = "Peek Mode",
         left = "Held",
         right = "Toggle"
     )
-    var peakMode = false
+    var peekMode = false
 
     @Switch(
         name = "Smooth Chat Messages",
@@ -346,14 +346,14 @@ object ChattingConfig : Config(
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
         addDependency("bgDuration", "smoothBG")
-        addDependency("peakScrolling", "chatPeak")
-        addDependency("chatPeakBind", "chatPeak")
-        addDependency("peakMode", "chatPeak")
+        addDependency("peekScrolling", "chatPeek")
+        addDependency("chatPeekBind", "chatPeek")
+        addDependency("peekMode", "chatPeek")
         addDependency("smoothChat", "BetterChat Smooth Chat") {
             !ModCompatHooks.betterChatSmoothMessages
         }
-        addListener("peakMode") {
-            Chatting.peaking = false
+        addListener("peekMode") {
+            Chatting.peeking = false
         }
         addListener("hideChatHeadOnConsecutiveMessages") {
             ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }

@@ -23,17 +23,22 @@ import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import org.polyfrost.chatting.chat.ChatScrollingHook.shouldSmooth
-import org.polyfrost.chatting.chat.*
+import org.polyfrost.chatting.chat.ChatSearchingManager
+import org.polyfrost.chatting.chat.ChatShortcuts
+import org.polyfrost.chatting.chat.ChatSpamBlock
+import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.command.ChattingCommand
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
-import org.polyfrost.chatting.utils.*
+import org.polyfrost.chatting.utils.ModCompatHooks
+import org.polyfrost.chatting.utils.copyToClipboard
+import org.polyfrost.chatting.utils.createBindFramebuffer
+import org.polyfrost.chatting.utils.screenshot
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.stream.Collectors
 
 
 @Mod(
@@ -59,8 +64,8 @@ object Chatting {
         private set
 
     private var lastPressed = false;
-    var peaking = false
-        get() = ChattingConfig.chatPeak && field
+    var peeking = false
+        get() = ChattingConfig.chatPeek && field
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
@@ -158,9 +163,9 @@ object Chatting {
                 doTheThing = false
             }
 
-            if (mc.currentScreen is GuiChat) peaking = false
+            if (mc.currentScreen is GuiChat) peeking = false
 
-            if (peaking && ChattingConfig.peakScrolling) {
+            if (peeking && ChattingConfig.peekScrolling) {
                 var i = Mouse.getDWheel().coerceIn(-1..1)
 
                 if (i != 0) {
@@ -177,16 +182,16 @@ object Chatting {
     }
 
     @SubscribeEvent
-    fun peak(e: KeyInputEvent) {
-        val key = ChattingConfig.chatPeakBind
-        if (key.isActive != lastPressed && ChattingConfig.chatPeak) {
+    fun peek(e: KeyInputEvent) {
+        val key = ChattingConfig.chatPeekBind
+        if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
             lastPressed = key.isActive
             if (key.isActive) {
-                peaking = !peaking
-            } else if (!ChattingConfig.peakMode) {
-                peaking = false
+                peeking = !peeking
+            } else if (!ChattingConfig.peekMode) {
+                peeking = false
             }
-            if (!peaking) mc.ingameGUI.chatGUI.resetScroll()
+            if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
         }
     }
 

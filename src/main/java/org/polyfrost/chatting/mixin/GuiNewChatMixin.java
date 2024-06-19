@@ -257,6 +257,16 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         ChatHook.currentLine = new ChatLine(0, chatComponent, 0);
     }
 
+    @Inject(method = "setChatLine", at = @At(value = "NEW", target = "net/minecraft/client/gui/ChatLine", ordinal = 0))
+    private void markVisible(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        ChatHook.lineVisible = true;
+    }
+
+    @Inject(method = "setChatLine", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", ordinal = 0, shift = At.Shift.AFTER))
+    private void markVisible2(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        ChatHook.lineVisible = false;
+    }
+
     @ModifyVariable(method = "setChatLine", at = @At(value = "STORE"), ordinal = 2)
     private int wrap(int value) {
         return ChattingConfig.INSTANCE.getChatWindow().getCustomChatWidth() ? Chatting.INSTANCE.getChatWidth() : calculateChatboxWidth(mc.gameSettings.chatWidth);
@@ -296,8 +306,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
      */
 
     @Inject(method = "getChatOpen", at = @At("HEAD"), cancellable = true)
-    private void chatPeak(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(mc.currentScreen instanceof GuiChat || Chatting.INSTANCE.getPeaking());
+    private void chatPeek(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(mc.currentScreen instanceof GuiChat || Chatting.INSTANCE.getPeeking());
     }
 
     @Inject(method = "drawChat", at = @At("RETURN"))

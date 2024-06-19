@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Mixin(ChatLine.class)
 public class ChatLineMixin implements ChatLineHook {
@@ -44,7 +45,7 @@ public class ChatLineMixin implements ChatLineHook {
     private ChatLine chatting$fullMessage = null;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(int i, IChatComponent iChatComponent, int j, CallbackInfo ci) {
+    private void onInit(int i, IChatComponent iChatComponent, int chatId, CallbackInfo ci) {
         chatting$lastUniqueId++;
         chatting$uniqueId = chatting$lastUniqueId;
         chatting$fullMessage = ChatHook.currentLine;
@@ -62,18 +63,20 @@ public class ChatLineMixin implements ChatLineHook {
                 if (chatting$playerInfo != null) {
                     chatting$detectedPlayerInfo = chatting$playerInfo;
                     chatting$detected = true;
-                    if (chatting$playerInfo == chatting$lastPlayerInfo) {
-                        chatting$first = false;
-                        if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()) {
-                            chatting$playerInfo = null;
+                    if (ChatHook.lineVisible) {
+                        if (chatting$lastPlayerInfo != null && chatting$playerInfo.getGameProfile() == chatting$lastPlayerInfo.getGameProfile()) {
+                            chatting$first = false;
+                            if (ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()) {
+                                chatting$playerInfo = null;
+                            }
                         }
-                    } else {
-                        chatting$lastPlayerInfo = chatting$playerInfo;
+                        chatting$lastPlayerInfo = chatting$detectedPlayerInfo;
                     }
-                    break;
+                    return;
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
