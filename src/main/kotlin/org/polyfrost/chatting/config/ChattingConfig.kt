@@ -11,6 +11,7 @@ import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard
 import cc.polyfrost.oneconfig.utils.dsl.mc
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
+import club.sk1er.patcher.config.OldPatcherConfig
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.*
 import org.polyfrost.chatting.gui.components.TabButton
@@ -338,6 +339,23 @@ object ChattingConfig : Config(
 
     init {
         initialize()
+
+        try {
+            Class.forName("club.sk1er.patcher.config.OldPatcherConfig")
+            if (OldPatcherConfig.transparentChat) {
+                if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
+                    chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0 })
+                    chatWindow.openOpacity = 255
+                } else {
+                    chatWindow.setBackground(false)
+                }
+            }
+            if (OldPatcherConfig.transparentChatInputField) {
+                chatInput.setBackground(false)
+            }
+            save()
+        } catch (_: ClassNotFoundException) {}
+
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")

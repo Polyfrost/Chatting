@@ -56,4 +56,8 @@ class ChatInputBox: BasicHud(true, -100f, -100f) {
     override fun getHeight(scale: Float, example: Boolean): Float {
         return 0f
     }
+
+    fun setBackground(boolean: Boolean) {
+        background = boolean
+    }
 }

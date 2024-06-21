@@ -25,9 +25,8 @@ import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
-import kotlin.math.roundToInt
 
-class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
+class ChatWindow : BasicHud(true, 0f, 1080 - 27f - 45f - 12f,
     1f, true, true, 6f, 5f, 5f, OneColor(0, 0, 0, 120), false, 2f, OneColor(0, 0, 0)) {
 
     @Exclude
@@ -230,11 +229,23 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     }
 
     override fun getWidth(scale: Float, example: Boolean): Float {
-        return ((if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth)) + 4 + ModCompatHooks.chatHeadOffset) * scale
+        return ((if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth)) + 2 + 4 + ModCompatHooks.chatHeadOffset) * scale
     }
 
     override fun getHeight(scale: Float, example: Boolean): Float {
         return 9f * 5 * scale
+    }
+
+    fun setBackground(boolean: Boolean) {
+        background = boolean
+    }
+
+    fun getBackgroundColor(): OneColor {
+        return bgColor
+    }
+
+    fun setBackgroundColor(color: OneColor) {
+        bgColor = color
     }
 
 }
