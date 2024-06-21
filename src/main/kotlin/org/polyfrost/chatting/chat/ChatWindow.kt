@@ -11,10 +11,13 @@ import cc.polyfrost.oneconfig.internal.hud.HudCore
 import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.platform.Platform
+import cc.polyfrost.oneconfig.renderer.NanoVGHelper
 import cc.polyfrost.oneconfig.utils.dsl.mc
 import cc.polyfrost.oneconfig.utils.dsl.nanoVG
+import cc.polyfrost.oneconfig.utils.dsl.setAlpha
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.gui.ChatLine
+import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.gui.GuiNewChat
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ChatComponentText
@@ -22,6 +25,7 @@ import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
+import kotlin.math.roundToInt
 
 class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     1f, true, true, 6f, 5f, 5f, OneColor(0, 0, 0, 120), false, 2f, OneColor(0, 0, 0)) {
@@ -54,7 +58,16 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     var animationHeight = 0f
 
     @Exclude
+    var previousAnimationWidth = 0f
+
+    @Exclude
+    var previousAnimationHeight = 0f
+
+    @Exclude
     var isGuiIngame = false
+
+    @Exclude
+    var wasInChatGui = false
 
     @Switch(
         name = "Custom Chat Height",
@@ -89,6 +102,26 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     var customWidth = 320
         get() = field.coerceIn(20, 2160)
 
+    @Switch(
+        name = "Different Opacity When Open",
+        description = "Change the opacity of the chat window when it is open."
+    )
+    var differentOpacity = false
+
+    @Slider(
+        min = 0F, max = 255F, name = "Open Background Opacity",
+        description = "The opacity of the chat window when it is open."
+    )
+    var openOpacity = 120
+        get() = field.coerceIn(0, 255)
+
+    @Slider(
+        min = 0F, max = 255F, name = "Open Border Opacity",
+        description = "The opacity of the chat window border when it is open."
+    )
+    var openBorderOpacity = 255
+        get() = field.coerceIn(0, 255)
+
     init {
         showInDebug = true
         ignoreCaching = true
@@ -112,7 +145,42 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
 
     override fun drawBackground(x: Float, y: Float, width: Float, height: Float, scale: Float) {
         if (Chatting.isPatcher && PatcherConfig.transparentChat) return
-        super.drawBackground(x, y, width, height, scale)
+        val nanoVGHelper = NanoVGHelper.INSTANCE
+        val animatingOpacity = wasInChatGui && (ChattingConfig.smoothBG && (previousAnimationWidth != width || previousAnimationHeight != height))
+        wasInChatGui = mc.currentScreen is GuiChat || animatingOpacity
+        previousAnimationWidth = width
+        previousAnimationHeight = height
+        val bgOpacity = openOpacity
+        val borderOpacity = openBorderOpacity
+        val bgColor = bgColor.getRGB().setAlpha(if (differentOpacity && wasInChatGui) bgOpacity else bgColor.alpha)
+        val borderColor = borderColor.getRGB().setAlpha(if (differentOpacity && wasInChatGui) borderOpacity else borderColor.alpha)
+        nanoVGHelper.setupAndDraw(true) { vg: Long ->
+            if (rounded) {
+                nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor, cornerRadius * scale)
+                if (border) nanoVGHelper.drawHollowRoundRect(
+                    vg,
+                    x - borderSize * scale,
+                    y - borderSize * scale,
+                    width + borderSize * scale,
+                    height + borderSize * scale,
+                    borderColor,
+                    cornerRadius * scale,
+                    borderSize * scale
+                )
+            } else {
+                nanoVGHelper.drawRect(vg, x, y, width, height, bgColor)
+                if (border) nanoVGHelper.drawHollowRoundRect(
+                    vg,
+                    x - borderSize * scale,
+                    y - borderSize * scale,
+                    width + borderSize * scale,
+                    height + borderSize * scale,
+                    borderColor,
+                    0f,
+                    borderSize * scale
+                )
+            }
+        }
     }
 
     fun drawBG() {
@@ -124,16 +192,18 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
         GlStateManager.enableAlpha()
         GlStateManager.enableBlend()
         if (width != widthAnimation.end) {
-            if (ChattingConfig.smoothBG)
+            if (ChattingConfig.smoothBG) {
                 widthAnimation = EaseOutQuart(duration, animationWidth, width, false)
-            else
+            } else {
                 animationWidth = width
+            }
         }
         if (heightEnd != heightAnimation.end) {
-            if (ChattingConfig.smoothBG)
+            if (ChattingConfig.smoothBG) {
                 heightAnimation = EaseOutQuart(duration, animationHeight, heightEnd, false)
-            else
+            } else {
                 animationHeight = heightEnd
+            }
         }
         if (animationHeight <= 0.3f || !background || HudCore.editing) return
         nanoVG(true) {
