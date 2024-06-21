@@ -345,6 +345,7 @@ object ChattingConfig : Config(
             if (OldPatcherConfig.transparentChat) {
                 if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
                     chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0 })
+                    chatWindow.differentOpacity = true
                     chatWindow.openOpacity = 255
                 } else {
                     chatWindow.setBackground(false)
