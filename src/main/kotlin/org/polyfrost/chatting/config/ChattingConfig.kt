@@ -83,13 +83,6 @@ object ChattingConfig : Config(
     var peekMode = false
 
     @Switch(
-        name = "Underlined Links", category = "General",
-        description = "Makes clickable links in chat blue and underlined.",
-        size = 1
-    )
-    var underlinedLinks = true
-
-    @Switch(
         name = "Smooth Chat Messages",
         category = "Animations", subcategory = "Messages",
         description = "Smoothly animate chat messages when they appear."
