@@ -25,5 +25,8 @@
     "GuiUtilsMixin",
     "HUDUtilsMixin",
     "InventoryPlayerMixin"
+  ],
+  "mixins": [
+    "ChatStyleMixin"
   ]
 }
