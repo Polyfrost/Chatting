@@ -344,24 +344,30 @@ object ChattingConfig : Config(
     )
     var tooltipTextRenderType = 1
 
+    var isPatcherMigrated = false
+
     init {
         initialize()
 
         try {
             Class.forName("club.sk1er.patcher.config.OldPatcherConfig")
-            if (OldPatcherConfig.transparentChat) {
-                if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
-                    chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0 })
-                    chatWindow.differentOpacity = true
-                    chatWindow.openOpacity = 255
-                } else {
-                    chatWindow.setBackground(false)
+            if (!isPatcherMigrated) {
+                if (OldPatcherConfig.transparentChat) {
+                    if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
+                        chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0 })
+                        chatWindow.differentOpacity = true
+                        chatWindow.openOpacity = 255
+                    } else {
+                        chatWindow.setBackground(false)
+                    }
                 }
+                if (OldPatcherConfig.transparentChatInputField) {
+                    chatInput.setBackground(false)
+                }
+                isPatcherMigrated = true
+
+                save()
             }
-            if (OldPatcherConfig.transparentChatInputField) {
-                chatInput.setBackground(false)
-            }
-            save()
         } catch (_: ClassNotFoundException) {}
 
         addDependency("fadeTime", "fade")
