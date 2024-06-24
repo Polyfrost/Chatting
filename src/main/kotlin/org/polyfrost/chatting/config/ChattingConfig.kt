@@ -345,6 +345,7 @@ object ChattingConfig : Config(
     var tooltipTextRenderType = 1
 
     var isPatcherMigrated = false
+    var isPatcherMigratedPt2CauseImStupid = false
 
     init {
         initialize()
@@ -356,7 +357,7 @@ object ChattingConfig : Config(
                     if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
                         chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0 })
                         chatWindow.differentOpacity = true
-                        chatWindow.openOpacity = 255
+                        chatWindow.openOpacity = 0
                     } else {
                         chatWindow.setBackground(false)
                     }
@@ -365,6 +366,17 @@ object ChattingConfig : Config(
                     chatInput.setBackground(false)
                 }
                 isPatcherMigrated = true
+
+                save()
+            }
+            if (!isPatcherMigratedPt2CauseImStupid) {
+                if (OldPatcherConfig.transparentChat) {
+                    if (OldPatcherConfig.transparentChatOnlyWhenClosed && chatWindow.openOpacity == 255) {
+                        chatWindow.openOpacity = 0
+                    }
+                }
+
+                isPatcherMigratedPt2CauseImStupid = true
 
                 save()
             }
