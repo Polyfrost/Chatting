@@ -26,7 +26,7 @@ object ChattingConfig : Config(
         ModType.UTIL_QOL,
         "/chatting_dark.svg",
         VigilanceMigrator(File(Chatting.oldModDir, Chatting.ID + ".toml").toPath().toString())
-    ), "chatting.json"
+    ), "chatting.json", true, false
 ) {
 
     @Dropdown(

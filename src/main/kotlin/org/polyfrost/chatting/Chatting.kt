@@ -74,6 +74,16 @@ object Chatting {
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
         ChattingConfig
+        if (!ChattingConfig.enabled) {
+            ChattingConfig.enabled = true
+            ChattingConfig.save()
+        }
+        if (!ChattingConfig.chatWindow.transferOverScale) {
+            ChattingConfig.chatWindow.normalScale = ChattingConfig.chatWindow.scale
+            ChattingConfig.chatWindow.transferOverScale = true
+            ChattingConfig.save()
+        }
+        ChattingConfig.chatWindow.updateMCChatScale()
         CommandManager.INSTANCE.registerCommand(ChattingCommand())
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)

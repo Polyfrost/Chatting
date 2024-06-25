@@ -9,6 +9,7 @@
     "ClientCommandHandlerMixin",
     "EntityPlayerSPMixin",
     "EntityRendererMixin",
+    "GameSettingsMixin",
     "GuiChatMixin",
     "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",

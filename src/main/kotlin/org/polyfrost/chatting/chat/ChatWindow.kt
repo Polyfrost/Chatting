@@ -69,6 +69,10 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     @Exclude
     var wasInChatGui = false
 
+    var normalScale = 1f
+    var lastChatGuiScale = -1f
+    var transferOverScale = false
+
     @Switch(
         name = "Custom Chat Height",
         description = "Set a custom height for the chat window. Allows for more customization than the vanilla chat height options."
@@ -277,6 +281,17 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
 
     fun setBackgroundColor(color: OneColor) {
         bgColor = color
+    }
+
+    override fun setScale(scale: Float, example: Boolean) {
+        super.setScale(scale, example)
+        normalScale = scale
+    }
+
+    fun updateMCChatScale() {
+        if (ChattingConfig.chatWindow.lastChatGuiScale != mc.gameSettings.chatScale) {
+            ChattingConfig.chatWindow.scale = ChattingConfig.chatWindow.normalScale * mc.gameSettings.chatScale
+        }
     }
 
 }
