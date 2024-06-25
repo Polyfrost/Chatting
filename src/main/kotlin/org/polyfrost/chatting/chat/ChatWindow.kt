@@ -290,6 +290,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
 
     fun updateMCChatScale() {
         if (ChattingConfig.chatWindow.lastChatGuiScale != mc.gameSettings.chatScale) {
+            ChattingConfig.chatWindow.lastChatGuiScale = mc.gameSettings.chatScale
             ChattingConfig.chatWindow.scale = ChattingConfig.chatWindow.normalScale * mc.gameSettings.chatScale
         }
     }
