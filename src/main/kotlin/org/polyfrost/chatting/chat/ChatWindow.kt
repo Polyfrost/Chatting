@@ -131,14 +131,11 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
         description = "Revert the chat window to the vanilla chat window, instead of the Chattings custom chat window.",
         text = "Revert"
     )
-    var revertToVanilla: Runnable = Runnable {
+    var revertToVanilla = Runnable {
         rounded = false
         paddingX = 0f
         paddingY = 0f
         ChattingConfig.smoothBG = false
-
-        ChattingConfig.save()
-        ChattingConfig.openGui()
     }
 
     @Button(
@@ -146,21 +143,17 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
         description = "Revert the chat window to the Chatting custom chat window, instead of the vanilla chat window.",
         text = "Revert"
     )
-    var revertToChatting: Runnable = Runnable {
+    var revertToChatting = Runnable {
         rounded = true
         paddingX = 5f
         paddingY = 5f
         ChattingConfig.smoothBG = true
-
-        ChattingConfig.save()
-        ChattingConfig.openGui()
     }
 
     init {
         showInDebug = true
         ignoreCaching = true
     }
-
 
     override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
         if (!example) return
