@@ -17,7 +17,6 @@ import java.lang.reflect.Field;
 
 @Mixin(value = HUDUtils.class, remap = false)
 public class HUDUtilsMixin {
-
     @Inject(method = "addHudOptions", at = @At("TAIL"))
     private static void hudUtils$modifyOptions(OptionPage page, Field field, Object instance, Config config, CallbackInfo ci) {
         Hud hud = (Hud) ConfigUtils.getField(field, instance);
@@ -27,6 +26,7 @@ public class HUDUtilsMixin {
         ConfigUtils.getSubCategory(page, hudAnnotation.category(), hudAnnotation.subcategory()).options.removeIf(HUDUtilsMixin::hudUtils$shouldRemove);
     }
 
+    @Unique
     private static boolean hudUtils$shouldRemove(BasicOption option) {
         String fieldName = option.getField().getName();
         Object hud = option.getParent();

@@ -20,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_Movable {
-
     @Shadow public abstract int getChatWidth();
 
     @Unique private static ChatLine chatting$currentLine;
