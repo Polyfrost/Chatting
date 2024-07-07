@@ -5,6 +5,7 @@
 
 package org.polyfrost.chatting.mixin;
 
+import org.apache.commons.lang3.StringUtils;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hook.ChatHook;
 import org.polyfrost.chatting.hook.ChatLineHook;
@@ -23,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Mixin(ChatLine.class)
 public class ChatLineMixin implements ChatLineHook {
@@ -43,6 +44,8 @@ public class ChatLineMixin implements ChatLineHook {
     private long chatting$uniqueId = 0;
     @Unique
     private ChatLine chatting$fullMessage = null;
+    @Unique
+    private static final Pattern chatting$pattern = Pattern.compile("(§.)|\\W");
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(int i, IChatComponent iChatComponent, int chatId, CallbackInfo ci) {
@@ -54,7 +57,7 @@ public class ChatLineMixin implements ChatLineHook {
         if (netHandler == null) return;
         Map<String, NetworkPlayerInfo> nicknameCache = new HashMap<>();
         try {
-            for (String word : iChatComponent.getFormattedText().split("(§.)|\\W")) {
+            for (String word : chatting$pattern.split(StringUtils.substringBefore(iChatComponent.getFormattedText(), ":"))) {
                 if (word.isEmpty()) continue;
                 chatting$playerInfo = netHandler.getPlayerInfo(word);
                 if (chatting$playerInfo == null) {
