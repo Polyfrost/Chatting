@@ -7,7 +7,6 @@ import org.polyfrost.chatting.chat.ChatScrollingHook;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiNewChat;
-import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.utils.EaseOutQuad;
 import org.spongepowered.asm.mixin.Final;
@@ -35,12 +34,17 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
     @Shadow
     private boolean isScrolled;
 
+    @Shadow public abstract boolean getChatOpen();
+
+    @Shadow public abstract void resetScroll();
+
     @Unique
     private Animation chatting$scrollingAnimation = new DummyAnimation(0f);
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void chatting$scrollingAnimationStart(int updateCounter, CallbackInfo ci) {
         if (chatting$scrollingAnimation.isFinished()) {
+            if (!getChatOpen()) resetScroll();
             if (scrollPos == 0) {
                 isScrolled = false;
             }

@@ -14,19 +14,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(targets = {"gg.essential.key.EssentialKeybindingRegistry"})
 public class EssentialKeybindingRegistryMixin {
 
-    @Unique private int chatting$said = 0;
+    @Unique private long chatting$lastNotify = System.currentTimeMillis();
 
     @Dynamic("Essential")
     @Inject(method = "isHoldingChatPeek", at = @At("RETURN"), cancellable = true)
     private void overrideChatPeek(CallbackInfoReturnable<Boolean> cir) {
         if (!ChattingConfig.INSTANCE.getChatPeek() && cir.getReturnValue()) {
-            if (chatting$said % 50 == 0) {
+            if (System.currentTimeMillis() - chatting$lastNotify >= 1000) {
                 Notifications.INSTANCE.send("Chatting", "Essential's chat peek has been replaced by Chatting. You can configure this via OneConfig, by clicking the right shift key on your keyboard, or by typing /chatting in your chat.");
+                chatting$lastNotify = System.currentTimeMillis();
             }
-            chatting$said++;
-            if (chatting$said > 50) chatting$said = 1;
         }
         cir.setReturnValue(false);
     }
-
 }

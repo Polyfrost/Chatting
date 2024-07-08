@@ -3,11 +3,12 @@ package org.polyfrost.chatting.chat
 import cc.polyfrost.oneconfig.config.annotations.Switch
 import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.utils.dsl.nanoVG
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import net.minecraft.client.renderer.GlStateManager
+import org.polyfrost.chatting.chat.ChatHooks.inputBoxRight
 import org.polyfrost.chatting.utils.ModCompatHooks
 
-class ChatInputBox: BasicHud(true, -100f, -100f) {
+class ChatInputBox : BasicHud(true, -100f, -100f) {
 
     init {
         scale = 1f
@@ -27,13 +28,12 @@ class ChatInputBox: BasicHud(true, -100f, -100f) {
     )
     var inputFieldDraft = false
 
-    fun drawBG(x: Float, y: Float, width: Float, height: Float) {
+    fun drawBG() {
         if (!ModCompatHooks.shouldDrawInputBox) return
         GlStateManager.enableAlpha()
         GlStateManager.enableBlend()
-        nanoVG(true) {
-            drawBackground(x, y, width, height, 1f)
-        }
+        val scale = UResolution.scaleFactor.toFloat()
+        drawBackground(2f, UResolution.scaledHeight - 14f + (if (UResolution.windowHeight % 2 == 1) scale - 1 else 0f) / scale, inputBoxRight - 2f, 12f, 1f)
         GlStateManager.disableBlend()
         GlStateManager.disableAlpha()
     }

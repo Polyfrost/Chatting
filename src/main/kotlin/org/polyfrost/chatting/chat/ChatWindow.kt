@@ -257,7 +257,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     }
 
     override fun getWidth(scale: Float, example: Boolean): Float {
-        return ((if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth)) + 2 + 4 + ModCompatHooks.chatHeadOffset) * scale
+        return ((if (customChatWidth) Chatting.getChatWidth() else GuiNewChat.calculateChatboxWidth(mc.gameSettings.chatWidth)) + 4 + ModCompatHooks.chatHeadOffset) * scale
     }
 
     override fun getHeight(scale: Float, example: Boolean): Float {
