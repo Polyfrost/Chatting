@@ -108,7 +108,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
         int scale = new ScaledResolution(mc).getScaleFactor();
         int x = Mouse.getX();
-        int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX());
+        int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX() * 2) * hud.getScale() + (int) hud.position.getX());
         delete = delete && chatting$hovered(hook, x, right + (int) ((copy ? 10 : 0) * hud.getScale()), scale, hud);
         copy = copy && chatting$hovered(hook, x, right, scale, hud);
 
@@ -139,7 +139,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         int x = Mouse.getX();
         if (hook.chatting$isHovering()) {
             boolean copy = ChattingConfig.INSTANCE.getChatCopy();
-            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX()) * hud.getScale() + (int) hud.position.getX()) * scale;
+            int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX() * 2) * hud.getScale() + (int) hud.position.getX()) * scale;
             if (copy && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
                 Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
                 if (message == null) return;

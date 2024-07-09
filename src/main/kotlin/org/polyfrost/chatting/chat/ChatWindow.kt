@@ -11,6 +11,7 @@ import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.internal.hud.HudCore
 import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.polyfrost.oneconfig.platform.Platform
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper
 import cc.polyfrost.oneconfig.utils.dsl.mc
@@ -213,7 +214,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     fun drawBG() {
         animationWidth = widthAnimation.get()
         animationHeight = heightAnimation.get()
-        width = position.width + (if (mc.ingameGUI.chatGUI.chatOpen && !Chatting.peeking) ModCompatHooks.chatButtonOffset else 0) * scale
+        width = position.width // + (if (mc.ingameGUI.chatGUI.chatOpen && !Chatting.peeking) ModCompatHooks.chatButtonOffset else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
         val duration = ChattingConfig.bgDuration
         GlStateManager.enableAlpha()
@@ -234,7 +235,8 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
         }
         if (animationHeight <= 0.3f || !background || HudCore.editing) return
         nanoVG(true) {
-            drawBackground(position.x, position.bottomY - animationHeight, animationWidth, animationHeight, scale)
+            val scale = UResolution.scaleFactor.toFloat()
+            drawBackground(position.x, position.bottomY - animationHeight + (if (UResolution.windowHeight % 2 == 1) scale - 1 else 0f) / scale, animationWidth, animationHeight, this@ChatWindow.scale)
         }
         GlStateManager.disableAlpha()
     }

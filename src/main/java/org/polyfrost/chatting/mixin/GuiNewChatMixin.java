@@ -175,7 +175,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int mcScale = new ScaledResolution(mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int height = (int) hud.getAnimationHeight();
-        GL11.glScissor((int) ((hud.position.getX() - 1) * mcScale), mc.displayHeight - (int) (hud.position.getBottomY() + hud.getScale()) * mcScale, (int) ((hud.getAnimationWidth() + 1) * mcScale), (int) ((height + hud.getScale()) * mcScale));
+        GL11.glScissor((int) ((hud.position.getX() - 1) * mcScale), mc.displayHeight - (int) (hud.position.getBottomY() + hud.getScale()) * mcScale, (int) ((hud.getAnimationWidth() + 21) * mcScale), (int) ((height + hud.getScale()) * mcScale));
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
@@ -337,6 +337,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         GlStateManager.pushMatrix();
         int posLeft = right + 1;
         int posRight = right + 10;
+        GlStateManager.translate(chatting$config().getChatWindow().getPaddingX() * chatting$config().getChatWindow().getScale(), 0f, 0f);
         if (chatting$config().getChatCopy()) {
             mc.getTextureManager().bindTexture(chatting$COPY);
             chatting$right = right;
