@@ -167,10 +167,16 @@ object ChattingConfig : Config(
 
     @Switch(
         name = "Button Shadow", category = "Buttons",
-        description = "Enable button shadow.",
-        size = 2
+        description = "Enable button shadow."
     )
     var buttonShadow = true
+
+    @Switch(
+        name = "Extend Chat Background",
+        category = "Buttons",
+        description = "Extends the chat background if buttons are enabled."
+    )
+    var extendBG = true
 
     @Switch(
         name = "Chat Copying Button", category = "Buttons",

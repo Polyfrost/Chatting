@@ -214,7 +214,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     fun drawBG() {
         animationWidth = widthAnimation.get()
         animationHeight = heightAnimation.get()
-        width = position.width // + (if (mc.ingameGUI.chatGUI.chatOpen && !Chatting.peeking) ModCompatHooks.chatButtonOffset else 0) * scale
+        width = position.width + (if (mc.ingameGUI.chatGUI.chatOpen && !Chatting.peeking && ChattingConfig.extendBG) ModCompatHooks.chatButtonOffset else 0) * scale
         val heightEnd = if (height == 0) 0f else (height + paddingY * 2f) * scale
         val duration = ChattingConfig.bgDuration
         GlStateManager.enableAlpha()
