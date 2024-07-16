@@ -246,13 +246,9 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
         return isEnabled && (shouldShow() || Platform.getGuiPlatform().isInChat) && (isGuiIngame xor isCachingIgnored)
     }
 
-    fun getPaddingX(): Float {
-        return paddingX
-    }
+    fun getPaddingX() = paddingX
 
-    fun getPaddingY(): Float {
-        return paddingY
-    }
+    fun getPaddingY() = paddingY
 
     override fun shouldDrawBackground(): Boolean {
         return HudCore.editing

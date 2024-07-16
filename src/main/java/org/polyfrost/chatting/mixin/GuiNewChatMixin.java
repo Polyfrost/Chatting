@@ -183,7 +183,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
-    @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;clamp_double(DDD)D"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableBlend()V")))
+    @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0))
     private void captureDrawRect(Args args, int updateCounter) {
         args.set(4, ColorUtils.getColor(0, 0, 0, 0));
         if (mc.currentScreen instanceof GuiChat) {
