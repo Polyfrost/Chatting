@@ -45,13 +45,21 @@ public class ChatLineMixin implements ChatLineHook {
     @Unique
     private ChatLine chatting$fullMessage = null;
     @Unique
+    private static ChatLine chatting$lastChatLine = null;
+    @Unique
     private static final Pattern chatting$pattern = Pattern.compile("(§.)|\\W");
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(int i, IChatComponent iChatComponent, int chatId, CallbackInfo ci) {
         chatting$lastUniqueId++;
         chatting$uniqueId = chatting$lastUniqueId;
+        if (chatting$lastChatLine == ChatHook.currentLine) {
+            if (chatting$lastPlayerInfo != null) {
+                return;
+            }
+        }
         chatting$fullMessage = ChatHook.currentLine;
+        chatting$lastChatLine = chatting$fullMessage;
         chatting$chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
         if (netHandler == null) return;
