@@ -107,7 +107,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                         int q = m * 9;
                         String string = chatLine.getChatComponent().getFormattedText();
                         GlStateManager.enableBlend();
-                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 16777215 + (chatting$getOpacity(chatting$updateCounter, chatLine) << 24), chatLine, false);
+                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 0xFFFFFFFF, chatLine, false);
                         GlStateManager.disableAlpha();
                         GlStateManager.disableBlend();
                     }
@@ -315,6 +315,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (!chatting$chatCheck && chatting$isHovering) {
             chatting$isHovering = false;
         }
+    }
+
+    @Inject(method = "getChatScale", at = @At("HEAD"), cancellable = true)
+    private void chatScale(CallbackInfoReturnable<Float> cir) {
+        cir.setReturnValue(ChattingConfig.INSTANCE.getChatWindow().getScale());
     }
 
     @Override

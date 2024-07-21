@@ -173,42 +173,19 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
 
     override fun drawBackground(x: Float, y: Float, width: Float, height: Float, scale: Float) {
         if (Chatting.isPatcher && PatcherConfig.transparentChat) return
-        val nanoVGHelper = NanoVGHelper.INSTANCE
         val animatingOpacity = wasInChatGui && (ChattingConfig.smoothBG && (previousAnimationWidth != width || previousAnimationHeight != height))
         wasInChatGui = mc.currentScreen is GuiChat || animatingOpacity
         previousAnimationWidth = width
         previousAnimationHeight = height
         val bgOpacity = openOpacity
         val borderOpacity = openBorderOpacity
-        val bgColor = bgColor.getRGB().setAlpha(if (differentOpacity && wasInChatGui) bgOpacity else bgColor.alpha)
-        val borderColor = borderColor.getRGB().setAlpha(if (differentOpacity && wasInChatGui) borderOpacity else borderColor.alpha)
-        nanoVGHelper.setupAndDraw(true) { vg: Long ->
-            if (rounded) {
-                nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor, cornerRadius * scale)
-                if (border) nanoVGHelper.drawHollowRoundRect(
-                    vg,
-                    x - borderSize * scale,
-                    y - borderSize * scale,
-                    width + borderSize * scale,
-                    height + borderSize * scale,
-                    borderColor,
-                    cornerRadius * scale,
-                    borderSize * scale
-                )
-            } else {
-                nanoVGHelper.drawRect(vg, x, y, width, height, bgColor)
-                if (border) nanoVGHelper.drawHollowRoundRect(
-                    vg,
-                    x - borderSize * scale,
-                    y - borderSize * scale,
-                    width + borderSize * scale,
-                    height + borderSize * scale,
-                    borderColor,
-                    0f,
-                    borderSize * scale
-                )
-            }
-        }
+        val tempBgAlpha = bgColor.alpha
+        val tempBorderAlpha = borderColor.alpha
+        bgColor.alpha = if (differentOpacity && wasInChatGui) bgOpacity else bgColor.alpha
+        borderColor.alpha = if (differentOpacity && wasInChatGui) borderOpacity else borderColor.alpha
+        super.drawBackground(x, y, width, height, scale)
+        bgColor.alpha = tempBgAlpha
+        borderColor.alpha = tempBorderAlpha
     }
 
     fun drawBG() {
