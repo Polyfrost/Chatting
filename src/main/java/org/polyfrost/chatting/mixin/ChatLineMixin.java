@@ -53,12 +53,12 @@ public class ChatLineMixin implements ChatLineHook {
     private void onInit(int i, IChatComponent iChatComponent, int chatId, CallbackInfo ci) {
         chatting$lastUniqueId++;
         chatting$uniqueId = chatting$lastUniqueId;
+        chatting$fullMessage = ChatHook.currentLine;
         if (chatting$lastChatLine == ChatHook.currentLine) {
             if (chatting$lastPlayerInfo != null) {
                 return;
             }
         }
-        chatting$fullMessage = ChatHook.currentLine;
         chatting$lastChatLine = chatting$fullMessage;
         chatting$chatLines.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
