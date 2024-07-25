@@ -11,6 +11,7 @@
     "EntityRendererMixin",
     "GameSettingsMixin",
     "GuiChatMixin",
+    "GuiContainerCreativeMixin",
     "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",
     "GuiNewChatAccessor",
@@ -28,6 +29,7 @@
     "InventoryPlayerMixin"
   ],
   "mixins": [
+    "ChatPeekMixin_SkyHanni",
     "ChatStyleMixin",
     "EssentialKeybindingRegistryMixin"
   ]

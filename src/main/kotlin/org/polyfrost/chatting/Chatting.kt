@@ -167,10 +167,23 @@ object Chatting {
 
     @SubscribeEvent
     fun onTickEvent(event: TickEvent.ClientTickEvent) {
-        if (event.phase == TickEvent.Phase.START && mc.theWorld != null && mc.thePlayer != null && (mc.currentScreen == null || mc.currentScreen is GuiChat)) {
-            if (doTheThing) {
-                screenshotChat()
-                doTheThing = false
+        if (event.phase == TickEvent.Phase.START && mc.theWorld != null && mc.thePlayer != null) {
+            if ((mc.currentScreen == null || mc.currentScreen is GuiChat)) {
+                if (doTheThing) {
+                    screenshotChat()
+                    doTheThing = false
+                }
+            }
+
+            val key = ChattingConfig.chatPeekBind
+            if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
+                lastPressed = key.isActive
+                if (key.isActive) {
+                    peeking = !peeking
+                } else if (!ChattingConfig.peekMode) {
+                    peeking = false
+                }
+                if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
             }
 
             if (mc.currentScreen is GuiChat) peeking = false
@@ -188,20 +201,6 @@ object Chatting {
                     mc.ingameGUI.chatGUI.scroll(i)
                 }
             }
-        }
-    }
-
-    @SubscribeEvent
-    fun peek(e: KeyInputEvent) {
-        val key = ChattingConfig.chatPeekBind
-        if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
-            lastPressed = key.isActive
-            if (key.isActive) {
-                peeking = !peeking
-            } else if (!ChattingConfig.peekMode) {
-                peeking = false
-            }
-            if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
         }
     }
 
