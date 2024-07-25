@@ -158,17 +158,14 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
 
     override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
         if (!example) return
-        nanoVG(true){
-            GL.pushMatrix()
-            GL.translate(x, y + scale, 0f)
-            GL.scale(scale, scale, 1f)
-            for (chat in exampleList) {
-                ModCompatHooks.redirectDrawString(chat.chatComponent.formattedText, 0f, 0f, -1, chat, false)
-                GL.translate(0f, 9f, 0f)
-            }
-            GL.popMatrix()
+        GL.pushMatrix()
+        GL.translate(x, y + scale, 0f)
+        GL.scale(scale, scale, 1f)
+        for (chat in exampleList) {
+            ModCompatHooks.redirectDrawString(chat.chatComponent.formattedText, 0f, 0f, -1, chat, false)
+            GL.translate(0f, 9f, 0f)
         }
-
+        GL.popMatrix()
     }
 
     override fun drawBackground(x: Float, y: Float, width: Float, height: Float, scale: Float) {
