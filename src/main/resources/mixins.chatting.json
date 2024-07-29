@@ -6,6 +6,7 @@
   "verbose": true,
   "client": [
     "ChatLineMixin",
+    "ChatStyleMixin",
     "ClientCommandHandlerMixin",
     "EntityPlayerSPMixin",
     "EntityRendererMixin",
@@ -27,11 +28,9 @@
     "GuiTextFieldMixin",
     "GuiUtilsMixin",
     "HUDUtilsMixin",
-    "InventoryPlayerMixin"
-  ],
-  "mixins": [
-    "ChatPeekMixin_SkyHanni",
-    "ChatStyleMixin",
-    "EssentialKeybindingRegistryMixin"
+    "InventoryPlayerMixin",
+    "compat.ChatPeekMixin_SkyHanni",
+    "compat.ChatTabsMixin_SkytilsCopyChat",
+    "compat.EssentialKeybindingRegistryMixin"
   ]
 }
