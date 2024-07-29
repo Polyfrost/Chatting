@@ -69,9 +69,9 @@ object ModCompatHooks {
         get() = !isPatcher || !PatcherConfig.transparentChatInputField
 
     @JvmStatic
-    fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine, screenshot: Boolean): Int {
+    fun redirectDrawString(text: String, x: Float, y: Float, color: Int, chatLine: ChatLine): Int {
         var actualX = x
-        if (showChatHeads && !screenshot) {
+        if (showChatHeads) {
             val hook = chatLine as ChatLineHook
             if (hook.`chatting$hasDetected`() || offsetNonPlayerMessages) {
                 actualX += 10f
