@@ -18,7 +18,7 @@ public class ChatPeekMixin_SkyHanni {
     private static long chatting$lastNotify = System.currentTimeMillis();
 
     @Dynamic("SkyHanni")
-    @Inject(method = "peek", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "peek", at = @At("RETURN"), cancellable = true)
     private static void cancel(CallbackInfoReturnable<Boolean> cir) {
         if (!ChattingConfig.INSTANCE.getChatPeek() && cir.getReturnValue()) {
             if (System.currentTimeMillis() - chatting$lastNotify >= 1000) {

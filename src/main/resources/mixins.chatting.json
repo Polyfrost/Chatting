@@ -17,6 +17,7 @@
     "GuiNewChatAccessor",
     "GuiNewChatMixin",
     "GuiNewChatMixin_ChatHeight",
+    "GuiNewChatMixin_ChatPeek",
     "GuiNewChatMixin_ChatSearching",
     "GuiNewChatMixin_ChatTabs",
     "GuiNewChatMixin_Movable",

@@ -305,11 +305,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
      */
 
-    @Inject(method = "getChatOpen", at = @At("HEAD"), cancellable = true)
-    private void chatPeek(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(mc.currentScreen instanceof GuiChat || Chatting.INSTANCE.getPeeking());
-    }
-
     @Inject(method = "drawChat", at = @At("RETURN"))
     private void checkStuff(int j2, CallbackInfo ci) {
         if (!chatting$chatCheck && chatting$isHovering) {
