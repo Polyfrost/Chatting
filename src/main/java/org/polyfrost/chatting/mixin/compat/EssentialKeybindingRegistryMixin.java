@@ -1,4 +1,4 @@
-package org.polyfrost.chatting.mixin;
+package org.polyfrost.chatting.mixin.compat;
 
 import cc.polyfrost.oneconfig.utils.Notifications;
 import org.polyfrost.chatting.config.ChattingConfig;

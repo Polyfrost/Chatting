@@ -191,6 +191,12 @@ object ChattingConfig : Config(
     var rightClickCopy = false
 
     @Switch(
+        name = "Only Click Copy Chat Message when Holding CTRL", category = "Buttons",
+        description = "Only allow right clicking on a chat message to copy it when holding CTRL."
+    )
+    var rightClickCopyCtrl = true
+
+    @Switch(
         name = "Delete Chat Message Button", category = "Buttons",
         description = "Enable deleting individual chat messages via a button."
     )
@@ -253,12 +259,20 @@ object ChattingConfig : Config(
      */
 
     @Info(
-        text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" + "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" + "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
+        text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.",
         size = 2,
         category = "Player Chats",
         type = InfoType.INFO
     )
     var ignored = false
+
+    @Info(
+        text = "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at. May not be accurate.",
+        size = 2,
+        category = "Player Chats",
+        type = InfoType.INFO
+    )
+    var ignored1 = false
 
     @Slider(
         min = 80F, max = 100F, name = "Spam Blocker Threshold", category = "Player Chats"
@@ -388,6 +402,7 @@ object ChattingConfig : Config(
             }
         } catch (_: ClassNotFoundException) {}
 
+        addDependency("rightClickCopyCtrl", "rightClickCopy")
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
