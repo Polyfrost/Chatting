@@ -92,29 +92,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique
     private long chatting$time;
 
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
-    private void drawClosing(int updateCounter, CallbackInfo ci) {
-        ChatWindow hud = chatting$config().getChatWindow();
-
-        if (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + hud.getPaddingY() * 2) * hud.getScale() > 9 * hud.getScale()) {
-            int height = (hud.getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(true) : calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused));
-            for (int m = 0; m < this.drawnChatLines.size() && m < height / 9; ++m) {
-                ChatLine chatLine = this.drawnChatLines.get(m);
-                if (chatLine != null) {
-                    int unFocusHeight = (hud.getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(false) : calculateChatboxHeight(this.mc.gameSettings.chatHeightUnfocused));
-                    boolean shouldShow = (chatting$config().getFade() && m >= chatting$totalLines) || m >= unFocusHeight / 9;
-                    if (!getChatOpen() && shouldShow) {
-                        int q = m * 9;
-                        String string = chatLine.getChatComponent().getFormattedText();
-                        GlStateManager.enableBlend();
-                        ModCompatHooks.redirectDrawString(string, chatting$config().getFade() ? 0 : 3, -q - 8, 0xFFFFFFFF, chatLine);
-                        GlStateManager.disableAlpha();
-                        GlStateManager.disableBlend();
-                    }
-                }
-            }
-        }
-    }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
@@ -175,7 +152,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int mcScale = new ScaledResolution(mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int height = (int) hud.getAnimationHeight();
-        GL11.glScissor((int) ((hud.position.getX() - 1) * mcScale), mc.displayHeight - (int) (hud.position.getBottomY() + hud.getScale()) * mcScale, (int) ((hud.getAnimationWidth() + 1 + (ChattingConfig.INSTANCE.getExtendBG() ? 0 : 20)) * mcScale), (int) ((height + hud.getScale()) * mcScale));
+        GL11.glScissor((int) ((hud.position.getX() - 3) * mcScale), mc.displayHeight - (int) (hud.position.getBottomY() + hud.getScale()) * mcScale, (int) ((hud.getAnimationWidth() + 3 + (ChattingConfig.INSTANCE.getExtendBG() ? 0 : 20)) * mcScale), (int) ((height + hud.getScale()) * mcScale));
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
@@ -208,7 +185,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatOpen()Z"))
     private boolean noFade(GuiNewChat instance) {
-        return !chatting$config().getFade() || instance.getChatOpen();
+        ChatWindow hud = chatting$config().getChatWindow();
+        return !chatting$config().getFade() || instance.getChatOpen() || (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + hud.getPaddingY() * 2) * hud.getScale() > 9 * hud.getScale());
     }
 
     @Unique
