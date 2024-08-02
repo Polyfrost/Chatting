@@ -87,7 +87,7 @@ object ChattingConfig : Config(
         description = "Makes clickable links in chat blue and underlined.",
         size = 1
     )
-    var underlinedLinks = true
+    var underlinedLinks = false
 
     @Switch(
         name = "Smooth Chat Messages",
