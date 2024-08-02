@@ -393,18 +393,18 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @Override
-    public Transferable chatting$getChattingChatComponent(int mouseY) {
+    public Transferable chatting$getChattingChatComponent(int mouseY, int mouseButton) {
         ChatLine subLine = chatting$getHoveredLine(mouseY);
         if (subLine != null) {
             ChatLine fullLine = ((ChatLineHook) subLine).chatting$getFullMessage();
-            if (GuiScreen.isShiftKeyDown()) {
+            if (GuiScreen.isShiftKeyDown() && mouseButton == 0) {
                 if (fullLine != null) {
                     BufferedImage image = Chatting.INSTANCE.screenshotLine(subLine);
                     if (image != null) RenderUtils.copyToClipboard(image);
                 }
                 return null;
             }
-            ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : fullLine;
+            ChatLine line = GuiScreen.isCtrlKeyDown() && mouseButton == 0 ? subLine : fullLine;
             String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
             String actualMessage = GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message);
             Notifications.INSTANCE.send("Chatting", line == null ? "Could not find chat message." : "Copied following text: " + actualMessage);
