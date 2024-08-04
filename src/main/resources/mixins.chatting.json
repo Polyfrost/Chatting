@@ -15,6 +15,7 @@
     "GuiContainerCreativeMixin",
     "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",
+    "GuiMixin",
     "GuiNewChatAccessor",
     "GuiNewChatMixin",
     "GuiNewChatMixin_ChatHeight",

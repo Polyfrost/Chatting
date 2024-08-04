@@ -124,11 +124,12 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         return hook.chatting$isHovering() && x > right * scale && x < (right + 9 * hud.getScale()) * scale;
     }
 
-    @Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"))
-    private void cancelBG(int left, int top, int right, int bottom, int color) {
+    @Inject(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiChat;drawRect(IIIII)V"))
+    private void drawBG(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         ChattingConfig config = ChattingConfig.INSTANCE;
         ChatHooks.INSTANCE.setInputBoxRight(config.getChatInput().getCompactInputBox() ? Math.max((int) config.getChatWindow().getWidth() + 2, ChatHooks.INSTANCE.getInputRight() + (inputField.getText().length() < ModCompatHooks.getChatInputLimit() ? 8 : 2)) : width - 2);
         config.getChatInput().drawBG();
+        ChatHook.cancelRect = true;
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"))

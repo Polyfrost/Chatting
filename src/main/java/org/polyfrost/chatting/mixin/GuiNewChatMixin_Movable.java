@@ -2,10 +2,9 @@ package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.hud.Position;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import net.minecraft.client.Minecraft;
+import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.MathHelper;
 import org.polyfrost.chatting.chat.ChatWindow;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -38,16 +37,6 @@ public abstract class GuiNewChatMixin_Movable {
         return MathHelper.ceiling_float_int((float)this.getChatWidth());
     }
 
-    @ModifyConstant(method = "drawChat", constant = @Constant(intValue = 9, ordinal = 0))
-    private int chatMode(int constant) {
-        return constant;
-    }
-
-    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F"))
-    private float scale(GuiNewChat instance) {
-        return ChattingConfig.INSTANCE.getChatWindow().getScale();
-    }
-
     @Inject(method = "drawChat", at = @At(value = "HEAD"), cancellable = true)
     private void exampleChat(int updateCounter, CallbackInfo ci) {
         if (HudCore.editing) ci.cancel();
@@ -62,9 +51,8 @@ public abstract class GuiNewChatMixin_Movable {
 
     @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 27))
     private int mouseY(int constant) {
-        int height = new ScaledResolution(Minecraft.getMinecraft()).getScaledHeight();
         ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
-        return height - (int) (hud.position.getBottomY() - hud.getPaddingY() * hud.getScale() + ModCompatHooks.getChatPosition());
+        return UResolution.getScaledHeight() - (int) (hud.position.getBottomY() - hud.getPaddingY() * hud.getScale() + ModCompatHooks.getChatPosition());
     }
 
     @ModifyVariable(method = "getChatComponent", at = @At("STORE"), ordinal = 0)
@@ -76,11 +64,6 @@ public abstract class GuiNewChatMixin_Movable {
     @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 0))
     private int offset(int value) {
         return ((ChatLineHook) chatting$currentLine).chatting$hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages() ? ModCompatHooks.getChatHeadOffset() : 0;
-    }
-
-    @Redirect(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F", ordinal = 0))
-    private float getScale(GuiNewChat instance) {
-        return ChattingConfig.INSTANCE.getChatWindow().getScale();
     }
 
     @ModifyArg(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", ordinal = 2))
