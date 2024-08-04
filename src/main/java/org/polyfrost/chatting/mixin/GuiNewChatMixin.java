@@ -1,8 +1,8 @@
 package org.polyfrost.chatting.mixin;
 
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import cc.polyfrost.oneconfig.utils.Notifications;
+import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import net.minecraft.util.IChatComponent;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -162,7 +162,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0))
     private void captureDrawRect(Args args, int updateCounter) {
-        ChatHook.cancelRect = true;
+        args.set(4, ColorUtils.getColor(0, 0, 0, 0));
         if (mc.currentScreen instanceof GuiChat) {
             int left = args.get(0);
             int top = args.get(1);
@@ -174,7 +174,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             }
             if (chatting$isHovered(left, top, right - left, 9) || chatting$isHovered(right + 1, top, 9, 9) || chatting$isHovered(right + 11, top, 9, 9)) {
                 args.set(4, chatting$config().getHoveredChatBackgroundColor().getRGB());
-                ChatHook.cancelRect = false;
             }
         }
     }
@@ -320,36 +319,49 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             GlStateManager.translate(chatting$config().getChatWindow().getPaddingX() * chatting$config().getChatWindow().getScale(), 0f, 0f);
         }
         if (chatting$config().getChatCopy()) {
-            chatting$drawButton(chatting$COPY, posLeft, top, posRight);
+            mc.getTextureManager().bindTexture(chatting$COPY);
+            chatting$right = right;
+            boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
+            OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
+            drawRect(posLeft, top, posRight, top + 9, color.getRGB());
+            color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
+            GlStateManager.pushMatrix();
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            if (chatting$config().getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
+                drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
+            }
+            GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
             posLeft += 10;
             posRight += 10;
         }
         if (chatting$config().getChatDelete()) {
-            chatting$drawButton(chatting$DELETE, posLeft, top, posRight);
+            mc.getTextureManager().bindTexture(chatting$DELETE);
+            boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
+            OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
+            drawRect(posLeft, top, posRight, top + 9, color.getRGB());
+            color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
+            GlStateManager.pushMatrix();
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            if (chatting$config().getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
+                drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
+            }
+            GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
         }
         GlStateManager.disableLighting();
-        GlStateManager.popMatrix();
-    }
-
-    @Unique
-    private void chatting$drawButton(ResourceLocation location, int left, int top, int right) {
-        mc.getTextureManager().bindTexture(chatting$DELETE);
-        boolean hovered = chatting$isHovered(left, top, 9, 9);
-        OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
-        drawRect(left, top, right, top + 9, color.getRGB());
-        color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
-        GlStateManager.pushMatrix();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        if (chatting$config().getButtonShadow()) {
-            GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
-            drawModalRectWithCustomSizedTexture(left + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
-        }
-        GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-        drawModalRectWithCustomSizedTexture(left, top, 0f, 0f, 9, 9, 9, 9);
-        GlStateManager.disableAlpha();
-        GlStateManager.disableBlend();
         GlStateManager.popMatrix();
     }
 
@@ -357,7 +369,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     public ChatLine chatting$getHoveredLine(int mouseY) {
         if (this.getChatOpen()) {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
-            float i = (float) UResolution.getScaleFactor();
+            int i = scaledresolution.getScaleFactor();
             ChatWindow hud = chatting$config().getChatWindow();
             float f = hud.getScale();
             int k = (int) (mouseY / i - (scaledresolution.getScaledHeight() - hud.position.getBottomY() + hud.getPaddingY() * hud.getScale()) + ModCompatHooks.getYOffset());

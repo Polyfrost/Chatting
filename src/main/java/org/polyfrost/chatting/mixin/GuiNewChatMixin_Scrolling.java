@@ -6,7 +6,6 @@ import org.polyfrost.chatting.chat.ChatScrollingHook;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiNewChat;
 import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.hook.ChatHook;
 import org.polyfrost.chatting.utils.EaseOutQuad;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -44,14 +43,18 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
         return ChattingConfig.INSTANCE.getSmoothScrolling() ? (int) chatting$scrollingAnimation.get() : scrollPos;
     }
 
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))
-    private void redirectScrollBar(int updateCounter, CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getRemoveScrollBar()) ChatHook.cancelRect = true;
+    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))
+    private void redirectScrollBar(int left, int top, int right, int bottom, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) {
+            drawRect(left, top, right, bottom, color);
+        }
     }
 
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 2))
-    private void redirectScrollBar2(int updateCounter, CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getRemoveScrollBar()) ChatHook.cancelRect = true;
+    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 2))
+    private void redirectScrollBar2(int left, int top, int right, int bottom, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) {
+            drawRect(left, top, right, bottom, color);
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.config.ChattingConfig;
