@@ -332,7 +332,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Unique
     private void chatting$drawButton(ResourceLocation location, int left, int top, int right) {
-        mc.getTextureManager().bindTexture(chatting$DELETE);
+        mc.getTextureManager().bindTexture(location);
         boolean hovered = chatting$isHovered(left, top, 9, 9);
         OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
         drawRect(left, top, right, top + 9, color.getRGB());
