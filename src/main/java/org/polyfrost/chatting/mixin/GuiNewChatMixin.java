@@ -319,36 +319,49 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             GlStateManager.translate(chatting$config().getChatWindow().getPaddingX() * chatting$config().getChatWindow().getScale(), 0f, 0f);
         }
         if (chatting$config().getChatCopy()) {
-            chatting$drawButton(chatting$COPY, posLeft, top, posRight);
+            mc.getTextureManager().bindTexture(chatting$COPY);
+            chatting$right = right;
+            boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
+            OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
+            drawRect(posLeft, top, posRight, top + 9, color.getRGB());
+            color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
+            GlStateManager.pushMatrix();
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            if (chatting$config().getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
+                drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
+            }
+            GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
             posLeft += 10;
             posRight += 10;
         }
         if (chatting$config().getChatDelete()) {
-            chatting$drawButton(chatting$DELETE, posLeft, top, posRight);
+            mc.getTextureManager().bindTexture(chatting$DELETE);
+            boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
+            OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
+            drawRect(posLeft, top, posRight, top + 9, color.getRGB());
+            color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
+            GlStateManager.pushMatrix();
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            if (chatting$config().getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
+                drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
+            }
+            GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
         }
         GlStateManager.disableLighting();
-        GlStateManager.popMatrix();
-    }
-
-    @Unique
-    private void chatting$drawButton(ResourceLocation location, int left, int top, int right) {
-        mc.getTextureManager().bindTexture(location);
-        boolean hovered = chatting$isHovered(left, top, 9, 9);
-        OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
-        drawRect(left, top, right, top + 9, color.getRGB());
-        color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
-        GlStateManager.pushMatrix();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        if (chatting$config().getButtonShadow()) {
-            GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
-            drawModalRectWithCustomSizedTexture(left + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
-        }
-        GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-        drawModalRectWithCustomSizedTexture(left, top, 0f, 0f, 9, 9, 9, 9);
-        GlStateManager.disableAlpha();
-        GlStateManager.disableBlend();
         GlStateManager.popMatrix();
     }
 
