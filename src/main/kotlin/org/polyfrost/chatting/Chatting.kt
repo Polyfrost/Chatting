@@ -173,6 +173,8 @@ object Chatting {
                 }
             }
 
+            var canScroll = true
+
             val key = ChattingConfig.chatPeekBind
             if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
                 lastPressed = key.isActive
@@ -181,6 +183,7 @@ object Chatting {
                 } else if (!ChattingConfig.peekMode) {
                     peeking = false
                 }
+                canScroll = false
                 if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
             }
 
@@ -196,7 +199,7 @@ object Chatting {
                     }
 
                     shouldSmooth = true
-                    mc.ingameGUI.chatGUI.scroll(i)
+                    if (canScroll) mc.ingameGUI.chatGUI.scroll(i)
                 }
             }
         }
