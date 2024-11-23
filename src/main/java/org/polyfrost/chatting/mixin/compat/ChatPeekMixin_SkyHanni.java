@@ -20,9 +20,9 @@ public class ChatPeekMixin_SkyHanni {
     @Dynamic("SkyHanni")
     @Inject(method = "peek", at = @At("RETURN"), cancellable = true)
     private static void cancel(CallbackInfoReturnable<Boolean> cir) {
-        if (!ChattingConfig.INSTANCE.getChatPeek() && cir.getReturnValue()) {
+        if (ChattingConfig.INSTANCE.getChatPeek() && cir.getReturnValue()) {
             if (System.currentTimeMillis() - chatting$lastNotify >= 1000) {
-                Notifications.INSTANCE.send("Chatting", "SkyHanni's chat peek has been replaced by Chatting. You can configure this via OneConfig, by clicking the right shift key on your keyboard, or by typing /chatting in your chat.");
+                Notifications.INSTANCE.send("Chatting", "You have activated the “Chat peek” feature in both SkyHanni and Chatting. Deactivate one of the two to avoid unintended behavior.");
                 chatting$lastNotify = System.currentTimeMillis();
             }
         }
