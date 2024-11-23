@@ -26,6 +26,5 @@ public class ChatPeekMixin_SkyHanni {
                 chatting$lastNotify = System.currentTimeMillis();
             }
         }
-        cir.setReturnValue(false);
     }
 }
