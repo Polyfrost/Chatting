@@ -5,7 +5,6 @@ import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.settings.KeyBinding
-import net.minecraft.client.shader.Framebuffer
 import net.minecraftforge.common.MinecraftForge.EVENT_BUS
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
@@ -14,7 +13,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
@@ -172,10 +170,26 @@ object Chatting {
 
     @SubscribeEvent
     fun onTickEvent(event: TickEvent.ClientTickEvent) {
-        if (event.phase == TickEvent.Phase.START && mc.theWorld != null && mc.thePlayer != null && (mc.currentScreen == null || mc.currentScreen is GuiChat)) {
-            if (doTheThing) {
-                screenshotChat()
-                doTheThing = false
+        if (event.phase == TickEvent.Phase.START && mc.theWorld != null && mc.thePlayer != null) {
+            if ((mc.currentScreen == null || mc.currentScreen is GuiChat)) {
+                if (doTheThing) {
+                    screenshotChat()
+                    doTheThing = false
+                }
+            }
+
+            var canScroll = true
+
+            val key = ChattingConfig.chatPeekBind
+            if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
+                lastPressed = key.isActive
+                if (key.isActive) {
+                    peeking = !peeking
+                } else if (!ChattingConfig.peekMode) {
+                    peeking = false
+                }
+                canScroll = false
+                if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
             }
 
             if (mc.currentScreen is GuiChat) peeking = false
@@ -190,23 +204,9 @@ object Chatting {
                     }
 
                     shouldSmooth = true
-                    mc.ingameGUI.chatGUI.scroll(i)
+                    if (canScroll) mc.ingameGUI.chatGUI.scroll(i)
                 }
             }
-        }
-    }
-
-    @SubscribeEvent
-    fun peek(e: KeyInputEvent) {
-        val key = ChattingConfig.chatPeekBind
-        if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
-            lastPressed = key.isActive
-            if (key.isActive) {
-                peeking = !peeking
-            } else if (!ChattingConfig.peekMode) {
-                peeking = false
-            }
-            if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
         }
     }
 
@@ -269,14 +269,16 @@ object Chatting {
             return null
         }
 
-        val fr: FontRenderer = ModCompatHooks.fontRenderer
-        val width = messages.maxOf { fr.getStringWidth(it.value) + (if (ChattingConfig.showChatHeads && ((it.key as ChatLineHook).`chatting$hasDetected`() || ChattingConfig.offsetNonPlayerMessages)) 10 else 0) } + 4
-        val fb: Framebuffer = createBindFramebuffer(width * 2, (messages.size * 9) * 2)
+        val fr = ModCompatHooks.fontRenderer
+        val border = ChattingConfig.textRenderType == 2
+        val offset = if (border) 1 else 0
+        val width = messages.maxOf { fr.getStringWidth(it.value) + (if (ChattingConfig.showChatHeads && ((it.key as ChatLineHook).`chatting$hasDetected`() || ChattingConfig.offsetNonPlayerMessages)) 10 else 0) } + if (border) 2 else 1
+        val fb = createBindFramebuffer(width * 2, (messages.size * 9 + offset) * 2)
         val file = File(mc.mcDataDir, "screenshots/chat/" + fileFormatter.format(Date()))
 
         GlStateManager.scale(2f, 2f, 1f)
         messages.entries.forEachIndexed { i: Int, entry: MutableMap.MutableEntry<ChatLine, String> ->
-            ModCompatHooks.redirectDrawString(entry.value, 0f, (messages.size - 1 - i) * 9f, 0xffffff, entry.key, true)
+            ModCompatHooks.redirectDrawString(entry.value, offset.toFloat(), (messages.size - 1 - i) * 9f + offset.toFloat(), 0xFFFFFFFF.toInt(), entry.key)
         }
 
         val image = fb.screenshot(file)

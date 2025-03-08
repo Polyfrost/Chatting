@@ -79,7 +79,7 @@ object ChattingConfig : Config(
         title = "Underlined Links", category = "General",
         description = "Makes clickable links in chat blue and underlined.",
     )
-    var underlinedLinks = true
+    var underlinedLinks = false
 
     @Switch(
         title = "Smooth Chat Messages",
@@ -181,6 +181,12 @@ object ChattingConfig : Config(
         description = "Enable right clicking on a chat message to copy it."
     )
     var rightClickCopy = false
+
+    @Switch(
+        title = "Only Click Copy Chat Message when Holding CTRL", category = "Buttons",
+        description = "Only allow right clicking on a chat message to copy it when holding CTRL."
+    )
+    var rightClickCopyCtrl = true
 
     @Switch(
         title = "Delete Chat Message Button", category = "Buttons",
@@ -369,6 +375,7 @@ object ChattingConfig : Config(
         } catch (_: ClassNotFoundException) {
         }
 
+        addDependency("rightClickCopyCtrl", "rightClickCopy")
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")

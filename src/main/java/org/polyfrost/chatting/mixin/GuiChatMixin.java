@@ -142,8 +142,8 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         if (hook.chatting$isHovering()) {
             boolean copy = ChattingConfig.INSTANCE.getChatCopy();
             int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPaddingX() * (ChattingConfig.INSTANCE.getExtendBG() ? 1f : 2f)) * hud.getScale() + (int) hud.position.getX()) * scale;
-            if (copy && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
-                Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY());
+            if (copy && x > right && x < right + 9 * hud.getScale() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy() && (!ChattingConfig.INSTANCE.getRightClickCopyCtrl() || UKeyboard.isCtrlKeyDown()))) {
+                Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY(), mouseButton);
                 if (message == null) return;
                 try {
                     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(message, null);

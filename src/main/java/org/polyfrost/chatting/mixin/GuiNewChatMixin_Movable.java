@@ -43,11 +43,6 @@ public abstract class GuiNewChatMixin_Movable {
         return constant;
     }
 
-    @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F"))
-    private float scale(GuiNewChat instance) {
-        return ChattingConfig.INSTANCE.getChatWindow().getScale();
-    }
-
     @Inject(method = "drawChat", at = @At(value = "HEAD"), cancellable = true)
     private void exampleChat(int updateCounter, CallbackInfo ci) {
         if (HudCore.editing) ci.cancel();
@@ -76,11 +71,6 @@ public abstract class GuiNewChatMixin_Movable {
     @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 0))
     private int offset(int value) {
         return ((ChatLineHook) chatting$currentLine).chatting$hasDetected() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages() ? ModCompatHooks.getChatHeadOffset() : 0;
-    }
-
-    @Redirect(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatScale()F", ordinal = 0))
-    private float getScale(GuiNewChat instance) {
-        return ChattingConfig.INSTANCE.getChatWindow().getScale();
     }
 
     @ModifyArg(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", ordinal = 2))

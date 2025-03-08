@@ -6,16 +6,20 @@
   "verbose": true,
   "client": [
     "ChatLineMixin",
+    "ChatStyleMixin",
     "ClientCommandHandlerMixin",
     "EntityPlayerSPMixin",
     "EntityRendererMixin",
     "GameSettings_ChatScaleChangeEvent_Mixin",
     "GuiChatMixin",
     "GuiIngameForge_DrawChatAccessor",
+    "GuiContainerCreativeMixin",
+    "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",
     "GuiNewChatAccessor",
     "GuiNewChatMixin",
     "GuiNewChatMixin_ChatHeight",
+    "GuiNewChatMixin_ChatPeek",
     "GuiNewChatMixin_ChatSearching",
     "GuiNewChatMixin_ChatTabs",
     "GuiNewChatMixin_Movable",
@@ -24,11 +28,11 @@
     "GuiNewChatMixin_TextRendering",
     "GuiTextFieldMixin",
     "GuiUtilsMixin",
-    "HUDUtilsMixin",
-    "InventoryPlayerMixin"
-  ],
-  "mixins": [
     "ChatStyle_UnderlineLinks_Mixin",
-    "EssentialKeybindingRegistryMixin"
+    "EssentialKeybindingRegistryMixin",
+    "InventoryPlayerMixin",
+    "compat.ChatPeekMixin_SkyHanni",
+    "compat.ChatTabsMixin_SkytilsCopyChat",
+    "compat.EssentialKeybindingRegistryMixin"
   ]
 }

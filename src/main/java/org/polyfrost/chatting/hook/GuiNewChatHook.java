@@ -11,7 +11,7 @@ public interface GuiNewChatHook {
 
     ChatLine chatting$getHoveredLine(int mouseY);
 
-    Transferable chatting$getChattingChatComponent(int mouseY);
+    Transferable chatting$getChattingChatComponent(int mouseY, int mouseButton);
 
     int chatting$getTextOpacity();
 }
