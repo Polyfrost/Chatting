@@ -1,16 +1,5 @@
 package org.polyfrost.chatting.config
 
-import cc.polyfrost.oneconfig.config.Config
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.core.OneColor
-import cc.polyfrost.oneconfig.config.core.OneKeyBind
-import cc.polyfrost.oneconfig.config.data.InfoType
-import cc.polyfrost.oneconfig.config.data.Mod
-import cc.polyfrost.oneconfig.config.data.ModType
-import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
-import cc.polyfrost.oneconfig.libs.universal.UKeyboard
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
 import club.sk1er.patcher.config.OldPatcherConfig
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.*
@@ -18,86 +7,89 @@ import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiChatHook
 import org.polyfrost.chatting.utils.ModCompatHooks
-import java.io.File
+import org.polyfrost.oneconfig.api.config.v1.Config
+import org.polyfrost.oneconfig.api.config.v1.Property
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.polyui.color.rgba
+import org.polyfrost.polyui.input.KeyBinder
 
 object ChattingConfig : Config(
-    Mod(
-        Chatting.NAME,
-        ModType.UTIL_QOL,
-        "/chatting_dark.svg",
-        VigilanceMigrator(File(Chatting.oldModDir, Chatting.ID + ".toml").toPath().toString())
-    ), "chatting.json", true, false
+    "chatting.json",
+    "/chatting_dark.svg",
+    Category.QOL,
 ) {
 
     @Dropdown(
-        name = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"],
+        title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"],
         description = "Specifies how text should be rendered in the chat. Full Shadow displays a shadow on all sides of the text, while Shadow only displays a shadow on the right and bottom sides of the text."
     )
     var textRenderType = 1
 
     @Color(
-        name = "Hover Message Background Color", category = "General",
+        title = "Hover Message Background Color", category = "General",
         description = "The color of the chat background when hovering over a message."
     )
-    var hoveredChatBackgroundColor = OneColor(80, 80, 80, 128)
+    var hoveredChatBackgroundColor = rgba(80, 80, 80, 0.5f)
 
     @Checkbox(
-        name = "Message Fade"
+        title = "Message Fade"
     )
     var fade = true
 
     @Slider(
-        name = "Time Before Fade",
+        title = "Time Before Fade",
         min = 0f, max = 20f
     )
     var fadeTime = 10f
 
     @Switch(
-        name = "Inform Outdated Mods", category = "General",
+        title = "Inform Outdated Mods", category = "General",
         description = "Inform the user when a mod can be replaced by Chatting.",
-        size = 2
     )
     var informForAlternatives = true
 
     @Switch(
-        name = "Chat Peek",
+        title = "Chat Peek",
         description = "Allows you to view / scroll chat while moving around."
     )
     var chatPeek = false
 
     @Switch(
-        name = "Chat Peek Scrolling",
+        title = "Chat Peek Scrolling",
     )
     var peekScrolling = true
 
-    @KeyBind(
-        name = "Peek KeyBind"
+    @Keybind(
+        title = "Peek KeyBind"
     )
-    var chatPeekBind = OneKeyBind(UKeyboard.KEY_Z)
+    var chatPeekBind = KeyBinder.Bind('z') {
+        // todo
+        true
+    }
 
-    @DualOption(
-        name = "Peek Mode",
-        left = "Held",
-        right = "Toggle"
+    @RadioButton(
+        title = "Peek Mode",
+        options = ["Held", "Toggle"],
     )
-    var peekMode = false
+    var peekMode = 0
 
     @Switch(
-        name = "Underlined Links", category = "General",
+        title = "Underlined Links", category = "General",
         description = "Makes clickable links in chat blue and underlined.",
-        size = 1
     )
     var underlinedLinks = true
 
     @Switch(
-        name = "Smooth Chat Messages",
+        title = "Smooth Chat Messages",
         category = "Animations", subcategory = "Messages",
         description = "Smoothly animate chat messages when they appear."
     )
     var smoothChat = true
 
     @Slider(
-        name = "Message Animation Speed",
+        title = "Message Animation Speed",
         category = "Animations", subcategory = "Messages",
         min = 0.0f, max = 1.0f,
         description = "The speed at which chat messages animate."
@@ -105,14 +97,14 @@ object ChattingConfig : Config(
     var messageSpeed = 0.5f
 
     @Switch(
-        name = "Smooth Chat Background",
+        title = "Smooth Chat Background",
         category = "Animations", subcategory = "Background",
         description = "Smoothly animate chat background."
     )
     var smoothBG = true
 
     @Slider(
-        name = "Background Animation Duration",
+        title = "Background Animation Duration",
         category = "Animations", subcategory = "Background",
         min = 50f, max = 1000f,
         description = "The speed at which chat background animate."
@@ -120,14 +112,14 @@ object ChattingConfig : Config(
     var bgDuration = 400f
 
     @Switch(
-        name = "Smooth Chat Scrolling",
+        title = "Smooth Chat Scrolling",
         category = "Animations", subcategory = "Scrolling",
         description = "Smoothly animate scrolling when scrolling through the chat."
     )
     var smoothScrolling = true
 
     @Slider(
-        name = "Scrolling Animation Speed",
+        title = "Scrolling Animation Speed",
         category = "Animations", subcategory = "Scrolling",
         min = 0.0f, max = 1.0f,
         description = "The speed at which scrolling animates."
@@ -135,99 +127,99 @@ object ChattingConfig : Config(
     var scrollingSpeed = 0.15f
 
     @Switch(
-        name = "Remove Scroll Bar",
+        title = "Remove Scroll Bar",
         category = "Animations", subcategory = "Scrolling",
         description = "Removes the vanilla scroll bar from the chat."
     )
     var removeScrollBar = true
 
     @Color(
-        name = "Chat Button Color", category = "Buttons",
+        title = "Chat Button Color", category = "Buttons",
         description = "The color of the chat button."
     )
-    var chatButtonColor = OneColor(255, 255, 255, 255)
+    var chatButtonColor = rgba(255, 255, 255, 1f)
 
     @Color(
-        name = "Chat Button Hovered Color", category = "Buttons",
+        title = "Chat Button Hovered Color", category = "Buttons",
         description = "The color of the chat button when hovered."
     )
-    var chatButtonHoveredColor = OneColor(255, 255, 160, 255)
+    var chatButtonHoveredColor = rgba(255, 255, 160, 1f)
 
     @Color(
-        name = "Chat Button Background Color", category = "Buttons",
+        title = "Chat Button Background Color", category = "Buttons",
         description = "The color of the chat button background."
     )
-    var chatButtonBackgroundColor = OneColor(0, 0, 0, 128)
+    var chatButtonBackgroundColor = rgba(0, 0, 0, 0.5f)
 
     @Color(
-        name = "Chat Button Hovered Background Color", category = "Buttons",
+        title = "Chat Button Hovered Background Color", category = "Buttons",
         description = "The color of the chat button background when hovered."
     )
-    var chatButtonHoveredBackgroundColor = OneColor(255, 255, 255, 128)
+    var chatButtonHoveredBackgroundColor = rgba(255, 255, 255, 0.5f)
 
     @Switch(
-        name = "Button Shadow", category = "Buttons",
+        title = "Button Shadow", category = "Buttons",
         description = "Enable button shadow."
     )
     var buttonShadow = true
 
     @Switch(
-        name = "Extend Chat Background",
+        title = "Extend Chat Background",
         category = "Buttons",
         description = "Extends the chat background if buttons are enabled."
     )
     var extendBG = true
 
     @Switch(
-        name = "Chat Copying Button", category = "Buttons",
+        title = "Chat Copying Button", category = "Buttons",
         description = "Enable copying chat messages via a button."
     )
     var chatCopy = true
 
     @Switch(
-        name = "Right Click to Copy Chat Message", category = "Buttons",
+        title = "Right Click to Copy Chat Message", category = "Buttons",
         description = "Enable right clicking on a chat message to copy it."
     )
     var rightClickCopy = false
 
     @Switch(
-        name = "Delete Chat Message Button", category = "Buttons",
+        title = "Delete Chat Message Button", category = "Buttons",
         description = "Enable deleting individual chat messages via a button."
     )
     var chatDelete = true
 
     @Switch(
-        name = "Delete Chat History Button", category = "Buttons",
+        title = "Delete Chat History Button", category = "Buttons",
         description = "Enable deleting chat history via a button."
     )
     var chatDeleteHistory = true
 
     @Switch(
-        name = "Chat Screenshot Button", category = "Buttons",
+        title = "Chat Screenshot Button", category = "Buttons",
         description = "Enable taking a screenshot of the chat via a button."
     )
     var chatScreenshot = true
 
     @Switch(
-        name = "Chat Searching", category = "Buttons",
+        title = "Chat Searching", category = "Buttons",
         description = "Enable searching through chat messages."
     )
     var chatSearch = true
 
     @Switch(
-        name = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads",
+        title = "Show Chat Heads", description = "Show the chat heads of players in chat", category = "Chat Heads",
     )
     var showChatHeads = true
 
     @Switch(
-        name = "Offset Non-Player Messages",
+        title = "Offset Non-Player Messages",
         description = "Offset all messages, even if a player has not been detected.",
         category = "Chat Heads"
     )
     var offsetNonPlayerMessages = false
 
     @Switch(
-        name = "Hide Chat Head on Consecutive Messages",
+        title = "Hide Chat Head on Consecutive Messages",
         description = "Hide the chat head if the previous message was from the same player.",
         category = "Chat Heads"
     )
@@ -236,7 +228,7 @@ object ChattingConfig : Config(
     /*/
     @Property(
         type = PropertyType.SWITCH,
-        name = "Show Timestamp",
+        title = "Show Timestamp",
         description = "Show message timestamp.",
         category = "General"
     )
@@ -244,7 +236,7 @@ object ChattingConfig : Config(
 
     @Property(
         type = PropertyType.SWITCH,
-        name = "Timestamp Only On Hover",
+        title = "Timestamp Only On Hover",
         description = "Show timestamp only on mouse hover.",
         category = "General"
     )
@@ -252,100 +244,89 @@ object ChattingConfig : Config(
 
      */
 
-    @Info(
-        text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" + "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" + "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
-        size = 2,
-        category = "Player Chats",
-        type = InfoType.INFO
-    )
-    var ignored = false
+//    @Info( TODO
+//        text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" + "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" + "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
+//        size = 2,
+//        category = "Player Chats",
+//        type = InfoType.INFO
+//    )
+//    var ignored = false
 
     @Slider(
-        min = 80F, max = 100F, name = "Spam Blocker Threshold", category = "Player Chats"
+        min = 80F, max = 100F, title = "Spam Blocker Threshold", category = "Player Chats"
     )
     var spamThreshold = 100
 
     @Switch(
-        name = "Custom SkyBlock Chat Formatting (remove ranks)", category = "Player Chats"
+        title = "Custom SkyBlock Chat Formatting (remove ranks)", category = "Player Chats"
     )
     var customChatFormatting = false
 
     @Switch(
-        name = "Completely Hide Spam", category = "Player Chats"
+        title = "Completely Hide Spam", category = "Player Chats"
     )
     var hideSpam = false
 
-    @HUD(
-        name = "Chat Window", category = "Chat Window"
-    )
-    var chatWindow = ChatWindow()
-
-    @HUD(
-        name = "Chat Input Box", category = "Input Box"
-    )
-    var chatInput = ChatInputBox()
-
     @Dropdown(
-        name = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"],
+        title = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"],
         description = "What to do when taking a screenshot."
     )
     var copyMode = 0
 
     @Switch(
-        name = "Chat Tabs", category = "Tabs",
+        title = "Chat Tabs", category = "Tabs",
         description = "Allow filtering chat messages by a tab."
     )
     var chatTabs = true
         get() {
             if (!field) return false
             return if (hypixelOnlyChatTabs) {
-                HypixelUtils.INSTANCE.isHypixel
+                HypixelUtils.isHypixel()
             } else {
                 true
             }
         }
 
     @Checkbox(
-        name = "Enable Tabs Only on Hypixel", category = "Tabs",
+        title = "Enable Tabs Only on Hypixel", category = "Tabs",
         description = "Only enable chat tabs on Hypixel"
     )
     var hypixelOnlyChatTabs = true
 
-    @Info(
-        category = "Tabs",
-        type = InfoType.INFO,
-        text = "You can use the SHIFT key to select multiple tabs, as well as CTRL + TAB to switch to the next tab.",
-        size = 2
-    )
-    @Transient
-    var ignored2 = true
+//    @Info( TODO
+//        category = "Tabs",
+//        type = InfoType.INFO,
+//        text = "You can use the SHIFT key to select multiple tabs, as well as CTRL + TAB to switch to the next tab.",
+//        size = 2
+//    )
+//    var ignored2 = true
 
     @Switch(
-        name = "Chat Shortcuts", category = "Shortcuts"
+        title = "Chat Shortcuts", category = "Shortcuts"
     )
     var chatShortcuts = false
         get() {
             if (!field) return false
             return if (hypixelOnlyChatShortcuts) {
-                HypixelUtils.INSTANCE.isHypixel
+                HypixelUtils.isHypixel()
             } else {
                 true
             }
         }
 
     @Checkbox(
-        name = "Enable Shortcuts Only on Hypixel", category = "Shortcuts"
+        title = "Enable Shortcuts Only on Hypixel", category = "Shortcuts"
     )
     var hypixelOnlyChatShortcuts = true
 
     @Switch(
-        name = "Remove Tooltip Background", category = "Tooltips",
+        title = "Remove Tooltip Background", category = "Tooltips",
         description = "Removes the background from tooltips."
     )
     var removeTooltipBackground = false
 
     @Dropdown(
-        name = "Tooltip Text Render Type", category = "Tooltips", options = ["No Shadow", "Shadow", "Full Shadow"],
+        title = "Tooltip Text Render Type", category = "Tooltips", options = ["No Shadow", "Shadow", "Full Shadow"],
         description = "The type of shadow to render on tooltips."
     )
     var tooltipTextRenderType = 1
@@ -354,7 +335,6 @@ object ChattingConfig : Config(
     var isPatcherMigratedPt2CauseImStupid = false
 
     init {
-        initialize()
 
         try {
             Class.forName("club.sk1er.patcher.config.OldPatcherConfig")
@@ -386,7 +366,8 @@ object ChattingConfig : Config(
 
                 save()
             }
-        } catch (_: ClassNotFoundException) {}
+        } catch (_: ClassNotFoundException) {
+        }
 
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
@@ -400,15 +381,15 @@ object ChattingConfig : Config(
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
         addDependency("smoothChat", "BetterChat Smooth Chat") {
-            !ModCompatHooks.betterChatSmoothMessages
+            if (!ModCompatHooks.betterChatSmoothMessages) Property.Display.HIDDEN else Property.Display.SHOWN
         }
-        addListener("peekMode") {
+        addCallback("peekMode") {
             Chatting.peeking = false
         }
-        addListener("hideChatHeadOnConsecutiveMessages") {
+        addCallback("hideChatHeadOnConsecutiveMessages") {
             ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }
         }
-        addListener("chatTabs") {
+        addCallback("chatTabs") {
             ChatTabs.initialize()
             if (!chatTabs) {
                 val dummy = ChatTab(
@@ -439,7 +420,7 @@ object ChattingConfig : Config(
                 ChatTabs.currentTabs.add(ChatTabs.tabs[0])
             }
         }
-        addListener("chatShortcuts") {
+        addCallback("chatShortcuts") {
             ChatShortcuts.initialize()
         }
         listOf(
@@ -448,13 +429,14 @@ object ChattingConfig : Config(
             "chatDeleteHistory",
             "chatTabs"
         ).forEach {
-            addListener(it) {
-            mc.currentScreen?.let { screen ->
-                if (screen is GuiChatHook) {
-                    screen.`chatting$triggerButtonReset`()
+            addCallback(it) {
+                mc.currentScreen?.let { screen ->
+                    if (screen is GuiChatHook) {
+                        screen.`chatting$triggerButtonReset`()
+                    }
                 }
             }
-        } }
+        }
         // addDependency("showTimestampHover", "showTimestamp")
     }
 }

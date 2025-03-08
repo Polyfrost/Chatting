@@ -1,8 +1,11 @@
 package org.polyfrost.chatting.mixin;
 
-import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.utils.Notifications;
-import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import dev.deftu.omnicore.client.OmniClipboard;
+import org.polyfrost.oneconfig.api.ui.v1.Notifications;
+import org.polyfrost.polyui.color.PolyColor;
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
+import org.polyfrost.oneconfig.api.ui.v1.notifications.Notifications;
+import org.polyfrost.oneconfig.utils.v1.color.ColorUtils;
 import net.minecraft.util.IChatComponent;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -185,7 +188,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0))
     private void captureDrawRect(Args args, int updateCounter) {
-        args.set(4, ColorUtils.getColor(0, 0, 0, 0));
+        args.set(4, 0/* Color.TRANSPARENT */);
         if (mc.currentScreen instanceof GuiChat) {
             int left = args.get(0);
             int top = args.get(1);
@@ -349,7 +352,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             mc.getTextureManager().bindTexture(chatting$COPY);
             chatting$right = right;
             boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
-            OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
+            PolyColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
             drawRect(posLeft, top, posRight, top + 9, color.getRGB());
             color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
             GlStateManager.pushMatrix();
@@ -371,7 +374,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (chatting$config().getChatDelete()) {
             mc.getTextureManager().bindTexture(chatting$DELETE);
             boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
-            OneColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
+            PolyColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
             drawRect(posLeft, top, posRight, top + 9, color.getRGB());
             color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
             GlStateManager.pushMatrix();
@@ -434,7 +437,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ChatLine line = GuiScreen.isCtrlKeyDown() ? subLine : fullLine;
             String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
             String actualMessage = GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message);
-            Notifications.INSTANCE.send("Chatting", line == null ? "Could not find chat message." : "Copied following text: " + actualMessage);
+            Notifications.enqueue(Notifications.Type.Error, "Chatting", line == null ? "Could not find chat message." : "Copied following text: " + actualMessage);
             return new StringSelection(actualMessage);
         }
         return null;

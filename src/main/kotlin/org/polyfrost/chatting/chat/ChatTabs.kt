@@ -1,17 +1,12 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.config.core.ConfigUtils
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import com.google.gson.*
+import net.minecraft.util.IChatComponent
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.gui.components.TabButton
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
-import net.minecraft.client.Minecraft
-import net.minecraft.util.IChatComponent
-import java.io.File
+import org.polyfrost.oneconfig.api.config.v1.ConfigManager
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.io.path.*
 
 object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
@@ -29,8 +24,8 @@ object ChatTabs {
     var hasCancelledAnimation = false
     private var initialized = false
 
-    private val tabFile = ConfigUtils.getProfileFile("chattabs.json")
-    private val oldTabFile = File(Chatting.oldModDir, "chattabs.json")
+    private val tabFile = ConfigManager.active().folder.resolve("chattabs.json")
+    private val oldTabFile = Chatting.oldModDir.resolve("chattabs.json")
 
     fun initialize() {
         if (initialized) {
@@ -40,7 +35,7 @@ object ChatTabs {
         }
         if (!tabFile.exists()) {
             if (oldTabFile.exists()) {
-                tabFile.writeText(oldTabFile.readText())
+                oldTabFile.moveTo(tabFile)
                 handleFile()
             } else {
                 generateNewFile()
@@ -71,6 +66,7 @@ object ChatTabs {
                     chatTabJson.version = ChatTabsJson.VERSION
                     tabFile.writeText(GSON.toJson(chatTabJson))
                 }
+
                 2 -> {
                     // ver 3 adds ignore_
                     chatTabJson.tabs.forEach {
@@ -82,6 +78,7 @@ object ChatTabs {
                     chatTabJson.version = ChatTabsJson.VERSION
                     tabFile.writeText(GSON.toJson(chatTabJson))
                 }
+
                 3 -> {
                     // ver 4 adds color options
                     chatTabJson.tabs.forEach {
@@ -92,6 +89,7 @@ object ChatTabs {
                     chatTabJson.version = ChatTabsJson.VERSION
                     tabFile.writeText(GSON.toJson(chatTabJson))
                 }
+
                 4 -> {
                     // ver 5 adds lowercase
                     chatTabJson.tabs.forEach {
@@ -101,6 +99,7 @@ object ChatTabs {
                     chatTabJson.version = ChatTabsJson.VERSION
                     tabFile.writeText(GSON.toJson(chatTabJson))
                 }
+
                 5 -> {
                     // ver 6 changes pm regex
                     chatTabJson.tabs.forEach {
@@ -118,7 +117,7 @@ object ChatTabs {
             }
         } catch (e: Throwable) {
             e.printStackTrace()
-            tabFile.delete()
+            tabFile.deleteIfExists()
             generateNewFile()
         }
     }
@@ -156,6 +155,7 @@ object ChatTabs {
                             detected = true
                             it.remove()
                         }
+
                         "From " -> {
                             detected = true
                             it.remove()
@@ -177,7 +177,7 @@ object ChatTabs {
             ends.iterator().let {
                 while (it.hasNext()) {
                     when (it.next().asString) {
-                        "§r§ehas invited you to join their party!", -> {
+                        "§r§ehas invited you to join their party!" -> {
                             detected = true
                             it.remove()
                         }
@@ -203,7 +203,7 @@ object ChatTabs {
     }
 
     private fun generateNewFile() {
-        tabFile.createNewFile()
+        tabFile.createFile()
         val jsonObject = JsonObject()
         val defaultTabs = generateDefaultTabs()
         jsonObject.add("tabs", defaultTabs)

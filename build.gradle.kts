@@ -18,8 +18,8 @@ plugins {
 
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.49"
-        loaderVersion = "1.1.0-alpha.35"
+        version = "1.0.0-alpha.70"
+        loaderVersion = "1.1.0-alpha.44"
 
         usePolyMixin = true
         polyMixinVersion = "0.8.4+build.2"
@@ -42,6 +42,15 @@ toolkitLoomHelper {
     if (mcData.isForge) {
         // Configures the Mixin tweaker if we are building for Forge.
         useForgeMixin(modData.id)
+    }
+}
+
+sourceSets {
+    val dummy by creating
+    main {
+        dummy.compileClasspath += compileClasspath
+        compileClasspath += dummy.output
+        output.setResourcesDir(java.classesDirectory)
     }
 }
 

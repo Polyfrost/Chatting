@@ -1,15 +1,13 @@
 package org.polyfrost.chatting.gui.components
 
-import cc.polyfrost.oneconfig.libs.universal.UResolution
-import cc.polyfrost.oneconfig.renderer.TextRenderer
-import org.polyfrost.chatting.Chatting
-import org.polyfrost.chatting.config.ChattingConfig
 import club.sk1er.patcher.config.PatcherConfig
+import dev.deftu.omnicore.client.render.OmniResolution
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
+import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatHooks
-import org.polyfrost.chatting.hook.GuiNewChatHook
+import org.polyfrost.chatting.config.ChattingConfig
 
 /**
  * Taken from ChatShortcuts under MIT License
@@ -46,7 +44,7 @@ open class CleanButton(
     }
 
     open fun setPositionY() {
-        yPosition = UResolution.scaledHeight - 27 + if (ChattingConfig.chatInput.compactInputBox && xPosition - ChatHooks.inputBoxRight >= 1) 13 else 0
+        yPosition = OmniResolution.scaledHeight - 27 + if (ChattingConfig.chatInput.compactInputBox && xPosition - ChatHooks.inputBoxRight >= 1) 13 else 0
     }
 
     override fun mousePressed(mc: Minecraft, mouseX: Int, mouseY: Int): Boolean {
@@ -94,19 +92,19 @@ open class CleanButton(
                 }
 
                 RenderType.FULL -> {
-                    TextRenderer.drawBorderedText(
-                        displayString,
-                        ((xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2)).toFloat(),
-                        (yPosition + (height - 8) / 2).toFloat(),
-                        j,
-                        (mc.ingameGUI.chatGUI as GuiNewChatHook).`chatting$getTextOpacity`()
-                    )
+//                    TextRenderer.drawBorderedText( TODO
+//                        displayString,
+//                        ((xPosition + width / 2) - (fontrenderer.getStringWidth(displayString) / 2)).toFloat(),
+//                        (yPosition + (height - 8) / 2).toFloat(),
+//                        j,
+//                        (mc.ingameGUI.chatGUI as GuiNewChatHook).`chatting$getTextOpacity`()
+//                    )
                 }
             }
         }
     }
 
     private fun getBackgroundColor(hovered: Boolean) =
-        if (hovered) ChattingConfig.chatButtonHoveredBackgroundColor.rgb
-        else ChattingConfig.chatButtonBackgroundColor.rgb
+        if (hovered) ChattingConfig.chatButtonHoveredBackgroundColor.rgba
+        else ChattingConfig.chatButtonBackgroundColor.rgba
 }

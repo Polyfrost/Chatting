@@ -1,16 +1,11 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.libs.universal.ChatColor
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import org.polyfrost.chatting.gui.components.TabButton
 import com.google.gson.annotations.SerializedName
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.ChatLine
-import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
 import net.minecraft.util.IChatComponent
-import org.polyfrost.chatting.mixin.GuiNewChatAccessor
-import java.util.*
+import org.polyfrost.chatting.gui.components.TabButton
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import java.util.Locale
 
 data class ChatTab(
     val enabled: Boolean,
@@ -35,7 +30,8 @@ data class ChatTab(
     lateinit var button: TabButton
     lateinit var compiledRegex: ChatRegexes
     lateinit var compiledIgnoreRegex: ChatRegexes
-    @Transient var messages: List<String>? = ArrayList()
+    @Transient
+    var messages: List<String>? = ArrayList()
 
     //Ugly hack to make GSON not make button / regex null
     fun initialize() {

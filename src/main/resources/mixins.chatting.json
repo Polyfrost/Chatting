@@ -9,9 +9,9 @@
     "ClientCommandHandlerMixin",
     "EntityPlayerSPMixin",
     "EntityRendererMixin",
-    "GameSettingsMixin",
+    "GameSettings_ChatScaleChangeEvent_Mixin",
     "GuiChatMixin",
-    "GuiIngameForgeAccessor",
+    "GuiIngameForge_DrawChatAccessor",
     "GuiIngameForgeMixin",
     "GuiNewChatAccessor",
     "GuiNewChatMixin",
@@ -28,7 +28,7 @@
     "InventoryPlayerMixin"
   ],
   "mixins": [
-    "ChatStyleMixin",
+    "ChatStyle_UnderlineLinks_Mixin",
     "EssentialKeybindingRegistryMixin"
   ]
 }

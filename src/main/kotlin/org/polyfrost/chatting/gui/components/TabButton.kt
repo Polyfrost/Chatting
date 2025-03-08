@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.gui.components
 
-import cc.polyfrost.oneconfig.libs.universal.UKeyboard
-import cc.polyfrost.oneconfig.libs.universal.UResolution
+import dev.deftu.omnicore.client.OmniKeyboard
+import dev.deftu.omnicore.client.render.OmniResolution
 import org.polyfrost.chatting.chat.ChatTab
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.config.ChattingConfig
@@ -20,7 +20,7 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
     }) {
 
     override fun onMousePress() {
-        if (UKeyboard.isShiftKeyDown()) {
+        if (OmniKeyboard.isShiftKeyPressed) {
             if (ChatTabs.currentTabs.contains(chatTab)) {
                 ChatTabs.currentTabs.remove(chatTab)
             } else {
@@ -33,7 +33,7 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
     }
 
     override fun setPositionY() {
-        yPosition = UResolution.scaledHeight - 26
+        yPosition = OmniResolution.scaledHeight - 26
     }
 
     override fun isEnabled(): Boolean {

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameSettings.class)
-public class GameSettingsMixin {
+public class GameSettings_ChatScaleChangeEvent_Mixin {
     @Shadow protected Minecraft mc;
 
     @Inject(method = "setOptionFloatValue", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;chatScale:F", opcode = Opcodes.PUTFIELD, shift = At.Shift.AFTER))

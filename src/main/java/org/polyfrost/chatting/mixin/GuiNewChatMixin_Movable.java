@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import cc.polyfrost.oneconfig.hud.Position;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.oneconfig.hud.Position;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;

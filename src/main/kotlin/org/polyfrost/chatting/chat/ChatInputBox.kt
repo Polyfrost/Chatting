@@ -1,14 +1,12 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.config.annotations.Switch
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.libs.universal.UResolution
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import net.minecraft.client.renderer.GlStateManager
 import org.polyfrost.chatting.chat.ChatHooks.inputBoxRight
 import org.polyfrost.chatting.utils.ModCompatHooks
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 
-class ChatInputBox : BasicHud(true, -100f, -100f) {
+class ChatInputBox : LegacyHud() {
 
     init {
         scale = 1f
@@ -17,13 +15,13 @@ class ChatInputBox : BasicHud(true, -100f, -100f) {
     }
 
     @Switch(
-        name = "Compact Input Box",
+        title = "Compact Input Box",
         description = "Make the chat input box the same width as the chat box."
     )
     var compactInputBox = false
 
     @Switch(
-        name = "Input Field Draft",
+        title = "Input Field Draft",
         description = "Drafts the text you wrote in the input field after closing the chat and backs it up when opening the chat again."
     )
     var inputFieldDraft = false

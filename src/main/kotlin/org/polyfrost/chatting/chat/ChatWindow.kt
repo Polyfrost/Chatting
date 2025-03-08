@@ -1,20 +1,21 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.config.annotations.Button
-import cc.polyfrost.oneconfig.config.annotations.Exclude
-import cc.polyfrost.oneconfig.config.annotations.Slider
-import cc.polyfrost.oneconfig.config.annotations.Switch
-import cc.polyfrost.oneconfig.config.core.OneColor
-import cc.polyfrost.oneconfig.gui.animations.Animation
-import cc.polyfrost.oneconfig.gui.animations.DummyAnimation
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.internal.hud.HudCore
-import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.libs.universal.UResolution
-import cc.polyfrost.oneconfig.platform.Platform
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import cc.polyfrost.oneconfig.utils.dsl.nanoVG
+import org.polyfrost.oneconfig.api.config.v1.annotations.Button
+import org.polyfrost.oneconfig.api.config.v1.annotations.Exclude
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.polyui.color.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor
+import org.polyfrost.oneconfig.gui.animations.Animation
+import org.polyfrost.oneconfig.gui.animations.DummyAnimation
+import org.polyfrost.oneconfig.hud.BasicHud
+import org.polyfrost.oneconfig.internal.hud.HudCore
+import org.polyfrost.universal.UGraphics.GL
+import org.polyfrost.universal.UMatrixStack
+import org.polyfrost.universal.UResolution
+import org.polyfrost.oneconfig.api.platform.v1.Platform
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.oneconfig.utils.v1.dsl.nanoVG
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.GuiChat
@@ -25,11 +26,11 @@ import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 
-class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
+class ChatWindow : LegacyHud(true, 2f, 1080 - 27f - 45f - 12f,
     1f, true, true, 6f, 5f, 5f, OneColor(0, 0, 0, 120), false, 2f, OneColor(0, 0, 0)) {
 
-    @Exclude
     private val exampleList: List<ChatLine> = listOf(
         ChatLine(0, ChatComponentText("§bChatting"), 0),
         ChatLine(0, ChatComponentText(""), 0),
@@ -38,34 +39,24 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
         ChatLine(0, ChatComponentText("Click to drag"), 0)
     )
 
-    @Exclude
     var widthAnimation: Animation = DummyAnimation(0f)
 
-    @Exclude
     var heightAnimation: Animation = DummyAnimation(0f)
 
-    @Exclude
-    var width = 0f
+    override var width = 0f
 
-    @Exclude
-    var height = 0
+    override var height = 0f
 
-    @Exclude
     var animationWidth = 0f
 
-    @Exclude
     var animationHeight = 0f
 
-    @Exclude
     var previousAnimationWidth = 0f
 
-    @Exclude
     var previousAnimationHeight = 0f
 
-    @Exclude
     var isGuiIngame = false
 
-    @Exclude
     var wasInChatGui = false
 
     var normalScale = 1f
@@ -73,60 +64,60 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     var transferOverScale = false
 
     @Switch(
-        name = "Custom Chat Height",
+        title = "Custom Chat Height",
         description = "Set a custom height for the chat window. Allows for more customization than the vanilla chat height options."
     )
     var customChatHeight = false
 
     @Slider(
-        min = 20F, max = 2160F, name = "Focused Height (px)",
+        min = 20F, max = 2160F, title = "Focused Height (px)",
         description = "The height of the chat window when focused."
     )
     var focusedHeight = 180
         get() = field.coerceIn(20, 2160)
 
     @Slider(
-        min = 20F, max = 2160F, name = "Unfocused Height (px)",
+        min = 20F, max = 2160F, title = "Unfocused Height (px)",
         description = "The height of the chat window when unfocused."
     )
     var unfocusedHeight = 90
         get() = field.coerceIn(20, 2160)
 
     @Switch(
-        name = "Custom Chat Width",
+        title = "Custom Chat Width",
         description = "Set a custom width for the chat window. Allows for more customization than the vanilla chat width options."
     )
     var customChatWidth = false
 
     @Slider(
-        min = 20F, max = 2160F, name = "Custom Width (px)",
+        min = 20F, max = 2160F, title = "Custom Width (px)",
         description = "The width of the chat window when focused."
     )
     var customWidth = 320
         get() = field.coerceIn(20, 2160)
 
     @Switch(
-        name = "Different Opacity When Open",
+        title = "Different Opacity When Open",
         description = "Change the opacity of the chat window when it is open."
     )
     var differentOpacity = false
 
     @Slider(
-        min = 0F, max = 255F, name = "Open Background Opacity",
+        min = 0F, max = 255F, title = "Open Background Opacity",
         description = "The opacity of the chat window when it is open."
     )
     var openOpacity = 120
         get() = field.coerceIn(0, 255)
 
     @Slider(
-        min = 0F, max = 255F, name = "Open Border Opacity",
+        min = 0F, max = 255F, title = "Open Border Opacity",
         description = "The opacity of the chat window border when it is open."
     )
     var openBorderOpacity = 255
         get() = field.coerceIn(0, 255)
 
     @Button(
-        name = "Revert to Vanilla Chat Window",
+        title = "Revert to Vanilla Chat Window",
         description = "Revert the chat window to the vanilla chat window, instead of the Chattings custom chat window.",
         text = "Revert"
     )
@@ -138,7 +129,7 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     }
 
     @Button(
-        name = "Revert to Chatting Chat Window",
+        title = "Revert to Chatting Chat Window",
         description = "Revert the chat window to the Chatting custom chat window, instead of the vanilla chat window.",
         text = "Revert"
     )
@@ -252,9 +243,9 @@ class ChatWindow : BasicHud(true, 2f, 1080 - 27f - 45f - 12f,
     }
 
     fun updateMCChatScale() {
-        if (ChattingConfig.chatWindow.lastChatGuiScale != mc.gameSettings.chatScale) {
-            ChattingConfig.chatWindow.lastChatGuiScale = mc.gameSettings.chatScale
-            ChattingConfig.chatWindow.scale = ChattingConfig.chatWindow.normalScale * mc.gameSettings.chatScale
+        if (lastChatGuiScale != mc.gameSettings.chatScale) {
+            lastChatGuiScale = mc.gameSettings.chatScale
+            scale = ChattingConfig.chatWindow.normalScale * mc.gameSettings.chatScale
         }
     }
 

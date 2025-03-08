@@ -1,14 +1,14 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.config.core.ConfigUtils
 import org.polyfrost.chatting.Chatting
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.File
+import org.polyfrost.oneconfig.api.config.v1.ConfigManager
+import kotlin.io.path.*
 
 object ChatShortcuts {
-    private val oldShortcutsFile = File(Chatting.oldModDir, "chatshortcuts.json")
-    private val shortcutsFile = ConfigUtils.getProfileFile("chatshortcuts.json")
+    private val oldShortcutsFile = Chatting.oldModDir.resolve("chatshortcuts.json")
+    private val shortcutsFile = ConfigManager.active().folder.resolve("chatshortcuts.json")
     private val PARSER = JsonParser()
 
     private var initialized = false
@@ -39,10 +39,10 @@ object ChatShortcuts {
                 }
                 return
             } catch (_: Throwable) {
-                shortcutsFile.renameTo(File(shortcutsFile.parentFile, "chatshortcuts.json.bak"))
+                shortcutsFile.moveTo(shortcutsFile.parent.resolve("chatshortcuts.json.bak"))
             }
         }
-        shortcutsFile.createNewFile()
+        shortcutsFile.createFile()
         if (oldShortcutsFile.exists()) {
             shortcutsFile.writeText(
                 oldShortcutsFile.readText()

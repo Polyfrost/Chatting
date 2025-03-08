@@ -1,15 +1,14 @@
 package org.polyfrost.chatting.mixin;
 
-import org.polyfrost.chatting.Chatting;
-import org.polyfrost.chatting.chat.ChatSearchingManager;
-import org.polyfrost.chatting.chat.ChatTabs;
-import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.utils.EaseOutQuart;
-import org.polyfrost.chatting.utils.ModCompatHooks;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import org.polyfrost.chatting.chat.ChatSearchingManager;
+import org.polyfrost.chatting.chat.ChatTabs;
+import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.utils.ModCompatHooks;
+import org.polyfrost.polyui.animate.Animation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,11 +32,12 @@ public abstract class GuiNewChatMixin_SmoothMessages {
 
     @Shadow
     public abstract float getChatScale();
+
     @Unique
     private int chatting$newLines;
 
     @Unique
-    private EaseOutQuart chatting$easeOutQuart;
+    private Animation chatting$anim = Animation.Type.EaseInOutQuad.create((long) (1.0f - ChattingConfig.INSTANCE.getMessageSpeed()) * 1000L, 0f, 1f);
     @Unique
     private float chatting$animationPercent;
     @Unique
@@ -45,11 +45,11 @@ public abstract class GuiNewChatMixin_SmoothMessages {
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void modifyChatRendering(CallbackInfo ci) {
-        if (chatting$easeOutQuart != null) {
-            if (chatting$easeOutQuart.isFinished()) {
-                chatting$easeOutQuart = null;
+        if (chatting$anim != null) {
+            if (chatting$anim.isFinished()) {
+                chatting$anim = null;
             } else {
-                chatting$animationPercent = chatting$easeOutQuart.get();
+                chatting$animationPercent = chatting$anim.getValue();
             }
         } else {
             chatting$animationPercent = 1;
@@ -94,7 +94,7 @@ public abstract class GuiNewChatMixin_SmoothMessages {
             ChatTabs.INSTANCE.setHasCancelledAnimation(false);
             return;
         }
-        chatting$easeOutQuart = new EaseOutQuart((1.0f - ChattingConfig.INSTANCE.getMessageSpeed()) * 1000f, 0f, 1f, false);
+        chatting$anim = Animation.Type.EaseInOutQuad.create((long) (1.0f - ChattingConfig.INSTANCE.getMessageSpeed()) * 1000L, 0f, 1f);
     }
 
     @ModifyVariable(method = "setChatLine", at = @At("STORE"), ordinal = 0)

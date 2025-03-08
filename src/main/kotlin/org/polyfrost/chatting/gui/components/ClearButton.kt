@@ -1,10 +1,9 @@
 package org.polyfrost.chatting.gui.components
 
-import cc.polyfrost.oneconfig.libs.universal.ChatColor
-import cc.polyfrost.oneconfig.libs.universal.UChat
-import cc.polyfrost.oneconfig.libs.universal.UResolution
-import cc.polyfrost.oneconfig.utils.Multithreading
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import dev.deftu.omnicore.client.OmniChat
+import dev.deftu.omnicore.client.render.OmniResolution
+import dev.deftu.textile.*
+import dev.deftu.textile.minecraft.MinecraftTextFormat
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
@@ -13,9 +12,12 @@ import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.config.ChattingConfig.chatButtonColor
 import org.polyfrost.chatting.config.ChattingConfig.chatButtonHoveredColor
+import org.polyfrost.oneconfig.utils.v1.Multithreading
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 class ClearButton :
-    CleanButton(13379014, { if (ChattingConfig.chatSearch) UResolution.scaledWidth - 28 else UResolution.scaledWidth - 14 }, 12, 12, "",
+    CleanButton(
+        13379014, { if (ChattingConfig.chatSearch) OmniResolution.scaledWidth - 28 else OmniResolution.scaledWidth - 14 }, 12, 12, "",
         { RenderType.NONE }) {
 
     var times = 0
@@ -26,8 +28,8 @@ class ClearButton :
             times = 0
             mc.ingameGUI.chatGUI.clearChatMessages()
         } else {
-            UChat.chat(ChatColor.RED + ChatColor.BOLD.toString() + "Click again to clear the chat!")
-            Multithreading.runAsync {
+            OmniChat.sendChatMessage(SimpleMutableTextHolder("Click again to clear the chat!").format(MinecraftTextFormat.RED, MinecraftTextFormat.BOLD))
+            Multithreading.submit {
                 Thread.sleep(3000)
                 times = 0
             }
@@ -45,10 +47,10 @@ class ClearButton :
             mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "delete.png"))
             val color = if (hovered) chatButtonHoveredColor else chatButtonColor
             if (ChattingConfig.buttonShadow) {
-                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f)
+                GlStateManager.color(0f, 0f, 0f, color.alpha)
                 Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
             }
-            GlStateManager.color(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+            GlStateManager.color(color.r / 255f, color.g / 255f, color.b / 255f, color.alpha)
             Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
             GlStateManager.popMatrix()
         }

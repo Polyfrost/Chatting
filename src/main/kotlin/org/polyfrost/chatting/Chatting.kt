@@ -1,10 +1,6 @@
 package org.polyfrost.chatting
 
-import cc.polyfrost.oneconfig.libs.universal.UDesktop
-import cc.polyfrost.oneconfig.utils.Notifications
-import cc.polyfrost.oneconfig.utils.commands.CommandManager
-import cc.polyfrost.oneconfig.utils.dsl.browseLink
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import dev.deftu.omnicore.client.OmniDesktop
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
@@ -22,12 +18,8 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
+import org.polyfrost.chatting.chat.*
 import org.polyfrost.chatting.chat.ChatScrollingHook.shouldSmooth
-import org.polyfrost.chatting.chat.ChatSearchingManager
-import org.polyfrost.chatting.chat.ChatShortcuts
-import org.polyfrost.chatting.chat.ChatSpamBlock
-import org.polyfrost.chatting.chat.ChatTabs
-import org.polyfrost.chatting.command.ChattingCommand
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
@@ -35,8 +27,15 @@ import org.polyfrost.chatting.utils.ModCompatHooks
 import org.polyfrost.chatting.utils.copyToClipboard
 import org.polyfrost.chatting.utils.createBindFramebuffer
 import org.polyfrost.chatting.utils.screenshot
+import org.polyfrost.oneconfig.api.commands.v1.CommandManager
+import org.polyfrost.oneconfig.api.ui.v1.Notifications
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.oneconfig.utils.v1.dsl.openUI
+import org.polyfrost.polyui.component.extensions.onClick
 import java.awt.image.BufferedImage
 import java.io.File
+import java.net.URI
+import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -63,13 +62,15 @@ object Chatting {
     var isHychat = false
         private set
 
+    var chatWindow = ChatWindow()
+
     private var lastPressed = false;
     var peeking = false
         get() = ChattingConfig.chatPeek && field
 
     private val fileFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'")
 
-    val oldModDir = File(File(mc.mcDataDir, "W-OVERFLOW"), NAME)
+    val oldModDir = Paths.get("W-OVERFLOW", NAME)
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
@@ -78,13 +79,13 @@ object Chatting {
             ChattingConfig.enabled = true
             ChattingConfig.save()
         }
-        if (!ChattingConfig.chatWindow.transferOverScale) {
-            ChattingConfig.chatWindow.normalScale = ChattingConfig.chatWindow.scale
-            ChattingConfig.chatWindow.transferOverScale = true
+        if (!chatWindow.transferOverScale) {
+            chatWindow.normalScale = chatWindow.scale
+            chatWindow.transferOverScale = true
             ChattingConfig.save()
         }
-        ChattingConfig.chatWindow.updateMCChatScale()
-        CommandManager.INSTANCE.registerCommand(ChattingCommand())
+        chatWindow.updateMCChatScale()
+        CommandManager.register(CommandManager.literal("chatting").executes { ChattingConfig.openUI(); 1 })
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
         EVENT_BUS.register(ChatSpamBlock)
@@ -104,12 +105,11 @@ object Chatting {
     fun onForgeLoad(event: FMLLoadCompleteEvent) {
         if (ChattingConfig.informForAlternatives) {
             if (isHychat) {
-                Notifications.INSTANCE.send(
+                Notifications.enqueue(
+                    Notifications.Type.Info,
                     NAME,
                     "Hychat can be removed as it is replaced by Chatting. Click here for more information.",
-                    Runnable {
-                        UDesktop.browseLink("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")
-                    })
+                ).onClick { OmniDesktop.browse(URI("https://microcontrollersdev.github.io/Alternatives/1.8.9/hychat")) }
             }
             if (isSkytils) {
                 try {
@@ -124,12 +124,13 @@ object Chatting {
                 }
             }
             if (isBetterChat) {
-                Notifications.INSTANCE.send(
+                Notifications.enqueue(
+                    Notifications.Type.Info,
                     NAME,
                     "BetterChat can be removed as it is replaced by Chatting. Click here to open your mods folder to delete the BetterChat file.",
-                    Runnable {
-                        UDesktop.open(File("./mods"))
-                    })
+                ).onClick {
+                    OmniDesktop.open(File("./mods"))
+                }
             }
         }
     }
@@ -139,29 +140,33 @@ object Chatting {
         val chatTabs = skytilsClass.getDeclaredField("chatTabs")
         chatTabs.isAccessible = true
         if (chatTabs.getBoolean(instance)) {
-            Notifications.INSTANCE.send(
+            Notifications.enqueue(
+                Notifications.Type.Info,
                 NAME,
                 "Skytils' chat tabs can be disabled as it is replace by Chatting.\nClick here to automatically do this.",
-                Runnable {
-                    chatTabs.setBoolean(instance, false)
-                    ChattingConfig.chatTabs = true
-                    ChattingConfig.hypixelOnlyChatTabs = true
-                    ChattingConfig.save()
-                    skytilsClass.getMethod("markDirty").invoke(instance)
-                    skytilsClass.getMethod("writeData").invoke(instance)
-                })
+            ).onClick {
+                chatTabs.setBoolean(instance, false)
+                ChattingConfig.chatTabs = true
+                ChattingConfig.hypixelOnlyChatTabs = true
+                ChattingConfig.save()
+                skytilsClass.getMethod("markDirty").invoke(instance)
+                skytilsClass.getMethod("writeData").invoke(instance)
+                false
+            }
         }
         val copyChat = skytilsClass.getDeclaredField("copyChat")
         copyChat.isAccessible = true
         if (copyChat.getBoolean(instance)) {
-            Notifications.INSTANCE.send(
+            Notifications.enqueue(
+                Notifications.Type.Info,
                 NAME,
                 "Skytils' copy chat messages can be disabled as it is replace by Chatting.\nClick here to automatically do this.",
-                Runnable {
-                    copyChat.setBoolean(instance, false)
-                    skytilsClass.getMethod("markDirty").invoke(instance)
-                    skytilsClass.getMethod("writeData").invoke(instance)
-                })
+            ).onClick {
+                copyChat.setBoolean(instance, false)
+                skytilsClass.getMethod("markDirty").invoke(instance)
+                skytilsClass.getMethod("writeData").invoke(instance)
+                false
+            }
         }
     }
 
@@ -206,11 +211,11 @@ object Chatting {
     }
 
     fun getChatHeight(opened: Boolean): Int {
-        return if (opened) ChattingConfig.chatWindow.focusedHeight else ChattingConfig.chatWindow.unfocusedHeight
+        return if (opened) chatWindow.focusedHeight else chatWindow.unfocusedHeight
     }
 
     fun getChatWidth(): Int {
-        return ChattingConfig.chatWindow.customWidth
+        return chatWindow.customWidth
     }
 
     fun screenshotLine(line: ChatLine): BufferedImage? {
@@ -239,7 +244,7 @@ object Chatting {
             (chat as GuiNewChatAccessor).drawnChatLines
         )?.let { drawnLines ->
             val chatHeight =
-                if (ChattingConfig.chatWindow.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
+                if (chatWindow.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
                     mc.gameSettings.chatHeightFocused / 9
                 )
             for (i in scrollPos until drawnLines.size.coerceAtMost(scrollPos + chatHeight)) {
@@ -252,11 +257,12 @@ object Chatting {
 
     private fun screenshot(messages: HashMap<ChatLine, String>): BufferedImage? {
         if (messages.isEmpty()) {
-            Notifications.INSTANCE.send("Chatting", "Chat window is empty.")
+            Notifications.enqueue(Notifications.Type.Warning, "Chatting", "Chat window is empty.")
             return null
         }
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            Notifications.INSTANCE.send(
+            Notifications.enqueue(
+                Notifications.Type.Error,
                 "Chatting",
                 "Screenshot failed, please disable “Fast Render” in OptiFine’s “Performance” tab."
             )
@@ -276,14 +282,15 @@ object Chatting {
         val image = fb.screenshot(file)
         mc.entityRenderer.setupOverlayRendering()
         mc.framebuffer.bindFramebuffer(true)
-        Notifications.INSTANCE.send(
+        Notifications.enqueue(
+            Notifications.Type.Info,
             "Chatting",
             "Chat screenshotted successfully." + (if (ChattingConfig.copyMode != 1) "\nClick to open." else ""),
-            Runnable {
-                if (!UDesktop.open(file)) {
-                    Notifications.INSTANCE.send("Chatting", "Could not browse!")
-                }
-            })
+        ).onClick {
+            if (!OmniDesktop.open(file)) {
+                Notifications.enqueue(Notifications.Type.Error, "Chatting", "Could not browse!")
+            }
+        }
         return image
     }
 }

@@ -1,8 +1,8 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.libs.caffeine.cache.Cache
-import cc.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
-import cc.polyfrost.oneconfig.libs.universal.wrappers.message.UTextComponent
+import dev.deftu.textile.minecraft.MinecraftTextFormat
+import org.polyfrost.oneconfig.libs.caffeine.cache.Cache
+import org.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.chat.ChatTabs.currentTabs
@@ -45,7 +45,7 @@ object ChatSearchingManager {
         val cached = cache.getIfPresent(text)
         return cached ?: run {
             cache.put(text, list.filter {
-                UTextComponent.stripFormatting(it.chatComponent.unformattedText).lowercase()
+                MinecraftTextFormat.stripFormat(it.chatComponent.unformattedText).lowercase()
                     .contains(text.lowercase())
             })
             cache.getIfPresent(text)

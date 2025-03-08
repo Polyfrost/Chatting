@@ -1,6 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import org.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -27,8 +27,8 @@ public class GuiUtilsMixin {
         switch (ChattingConfig.INSTANCE.getTooltipTextRenderType()) {
             case 0:
                 return instance.drawString(text, x, y, color, false);
-            case 2:
-                return TextRenderer.drawBorderedText(text, x, y, color, 255);
+//            case 2: TODO
+//                return TextRenderer.drawBorderedText(text, x, y, color, 255);
             default:
                 return instance.drawStringWithShadow(text, x, y, color);
         }

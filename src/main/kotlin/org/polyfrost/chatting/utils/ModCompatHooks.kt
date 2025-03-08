@@ -1,11 +1,10 @@
 package org.polyfrost.chatting.utils
 
-import cc.polyfrost.oneconfig.platform.Platform
-import cc.polyfrost.oneconfig.renderer.TextRenderer
-import cc.polyfrost.oneconfig.utils.dsl.getAlpha
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import club.sk1er.patcher.config.PatcherConfig
 import com.llamalad7.betterchat.BetterChat
+import dev.deftu.omnicore.client.render.OmniGameRendering
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
@@ -17,6 +16,7 @@ import org.polyfrost.chatting.config.ChattingConfig.offsetNonPlayerMessages
 import org.polyfrost.chatting.config.ChattingConfig.showChatHeads
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
+import org.polyfrost.polyui.color.alpha
 
 // This exists because mixin doesn't like dummy classes
 object ModCompatHooks {
@@ -83,7 +83,7 @@ object ModCompatHooks {
                 GlStateManager.enableTexture2D()
                 mc.textureManager.bindTexture(networkPlayerInfo.locationSkin)
                 GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
-                GlStateManager.color(1.0f, 1.0f, 1.0f, color.getAlpha() / 255f)
+                GlStateManager.color(1.0f, 1.0f, 1.0f, color.alpha / 255f)
                 Gui.drawScaledCustomSizeModalRect(
                     (x).toInt(),
                     (y - 1f).toInt(),
@@ -111,10 +111,17 @@ object ModCompatHooks {
                 GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
             }
         }
+        val stack = OmniMatrixStack()
         return when (ChattingConfig.textRenderType) {
-            0 -> Platform.getGLPlatform().drawText(text, actualX, y, color, false).toInt()
-            1 -> Platform.getGLPlatform().drawText(text, actualX, y, color, true).toInt()
-            2 -> TextRenderer.drawBorderedText(text, actualX, y, color, color.getAlpha())
+            0 -> {
+                OmniGameRendering.drawText(stack, text, actualX, y, color, false)
+                0 // todo
+            }
+            1 -> {
+                OmniGameRendering.drawText(stack, text, actualX, y, color, true)
+                0
+            }
+//            2 -> TextRenderer.drawBorderedText(text, actualX, y, color, color.alpha / 255f) TODO
             else -> fontRenderer.drawString(text, actualX, y, color, true)
         }
     }

@@ -1,6 +1,8 @@
 package org.polyfrost.chatting.mixin;
 
-import cc.polyfrost.oneconfig.libs.universal.*;
+import dev.deftu.omnicore.client.OmniDesktop;
+import dev.deftu.omnicore.client.OmniKeyboard;
+import org.polyfrost.universal.*;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -40,7 +42,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
      */
     @Unique
     private static String chatting$getModifierKey() {
-        return (UDesktop.isMac()) ? "OPTION" : "ALT";
+        return (OmniDesktop.isMac()) ? "OPTION" : "ALT";
     }
 
     @Unique
@@ -94,7 +96,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
             }
             chatting$searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
             ChatSearchingManager.INSTANCE.setLastSearch(chatting$searchButton.getInputField().getText());
-        } else if ((Keyboard.isKeyDown(219) || Keyboard.isKeyDown(220) || Keyboard.isKeyDown(29) || Keyboard.isKeyDown(157)) && keyCode == UKeyboard.KEY_TAB) { // either macos super key or ctrl key for any os
+        } else if ((Keyboard.isKeyDown(219) || Keyboard.isKeyDown(220) || Keyboard.isKeyDown(29) || Keyboard.isKeyDown(157)) && keyCode == OmniKeyboard.KEY_TAB) { // either macos super key or ctrl key for any os
             ChatHooks.INSTANCE.switchTab();
         }
     }
@@ -159,7 +161,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Unique
     private boolean chatting$remove(ChatLine line, ChatLine chatLine) {
-        return UKeyboard.isCtrlKeyDown() ?
+        return OmniKeyboard.isCtrlKeyPressed() ?
                 ((ChatLineHook) line).chatting$getUniqueId() == ((ChatLineHook) chatLine).chatting$getUniqueId() :
                 ((ChatLineHook) ((ChatLineHook) line).chatting$getFullMessage()).chatting$getUniqueId() == ((ChatLineHook) ((ChatLineHook) chatLine).chatting$getFullMessage()).chatting$getUniqueId();
     }
