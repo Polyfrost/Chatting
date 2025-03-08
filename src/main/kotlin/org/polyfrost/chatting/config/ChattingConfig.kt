@@ -2,7 +2,9 @@ package org.polyfrost.chatting.config
 
 import club.sk1er.patcher.config.OldPatcherConfig
 import org.polyfrost.chatting.Chatting
-import org.polyfrost.chatting.chat.*
+import org.polyfrost.chatting.chat.ChatShortcuts
+import org.polyfrost.chatting.chat.ChatTab
+import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.hook.GuiChatHook
@@ -65,8 +67,15 @@ object ChattingConfig : Config(
         title = "Peek KeyBind"
     )
     var chatPeekBind = KeyBinder.Bind('z') {
-        // todo
-        true
+        if (chatPeek) {
+            if (peekMode == 0 /* HOLD */) {
+                Chatting.peeking = it
+            } else {
+                Chatting.peeking = !Chatting.peeking
+            }
+            if (!Chatting.peeking) mc.ingameGUI.chatGUI.resetScroll()
+        }
+        false
     }
 
     @RadioButton(
@@ -344,10 +353,12 @@ object ChattingConfig : Config(
 
         try {
             Class.forName("club.sk1er.patcher.config.OldPatcherConfig")
+            val chatWindow = Chatting.chatWindow
             if (!isPatcherMigrated) {
                 if (OldPatcherConfig.transparentChat) {
+
                     if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
-                        chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0 })
+                        chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0f })
                         chatWindow.differentOpacity = true
                         chatWindow.openOpacity = 0
                     } else {
@@ -355,7 +366,7 @@ object ChattingConfig : Config(
                     }
                 }
                 if (OldPatcherConfig.transparentChatInputField) {
-                    chatInput.setBackground(false)
+                    Chatting.chatInput.setBackground(false)
                 }
                 isPatcherMigrated = true
 

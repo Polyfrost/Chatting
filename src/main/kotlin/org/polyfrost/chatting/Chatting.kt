@@ -1,7 +1,9 @@
 package org.polyfrost.chatting
 
 import dev.deftu.omnicore.client.OmniDesktop
-import net.minecraft.client.gui.*
+import net.minecraft.client.gui.ChatLine
+import net.minecraft.client.gui.GuiChat
+import net.minecraft.client.gui.GuiNewChat
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.settings.KeyBinding
@@ -15,14 +17,11 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
-import org.lwjgl.input.Mouse
 import org.polyfrost.chatting.chat.*
-import org.polyfrost.chatting.chat.ChatScrollingHook.shouldSmooth
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 import org.polyfrost.chatting.utils.ModCompatHooks
-import org.polyfrost.chatting.utils.copyToClipboard
 import org.polyfrost.chatting.utils.createBindFramebuffer
 import org.polyfrost.chatting.utils.screenshot
 import org.polyfrost.oneconfig.api.commands.v1.CommandManager
@@ -35,14 +34,14 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Paths
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 
 @Mod(
     modid = Chatting.ID,
     name = Chatting.NAME,
     version = Chatting.VER,
-    modLanguageAdapter = "cc.polyfrost.oneconfig.utils.KotlinLanguageAdapter"
+    modLanguageAdapter = "org.polyfrost.oneconfig.utils.v1.forge.KotlinLanguageAdapter"
 )
 object Chatting {
 
@@ -60,9 +59,9 @@ object Chatting {
     var isHychat = false
         private set
 
-    var chatWindow = ChatWindow()
+    val chatWindow = ChatWindow()
+    val chatInput = ChatInputBox()
 
-    private var lastPressed = false;
     var peeking = false
         get() = ChattingConfig.chatPeek && field
 
@@ -78,7 +77,7 @@ object Chatting {
             ChattingConfig.save()
         }
         if (!chatWindow.transferOverScale) {
-            chatWindow.normalScale = chatWindow.scale
+            chatWindow.normalScale = chatWindow.get().scaleX
             chatWindow.transferOverScale = true
             ChattingConfig.save()
         }
@@ -177,36 +176,6 @@ object Chatting {
                     doTheThing = false
                 }
             }
-
-            var canScroll = true
-
-            val key = ChattingConfig.chatPeekBind
-            if (key.isActive != lastPressed && ChattingConfig.chatPeek) {
-                lastPressed = key.isActive
-                if (key.isActive) {
-                    peeking = !peeking
-                } else if (!ChattingConfig.peekMode) {
-                    peeking = false
-                }
-                canScroll = false
-                if (!peeking) mc.ingameGUI.chatGUI.resetScroll()
-            }
-
-            if (mc.currentScreen is GuiChat) peeking = false
-
-            if (peeking && ChattingConfig.peekScrolling) {
-                var i = Mouse.getDWheel().coerceIn(-1..1)
-
-                if (i != 0) {
-
-                    if (!GuiScreen.isShiftKeyDown()) {
-                        i *= 7
-                    }
-
-                    shouldSmooth = true
-                    if (canScroll) mc.ingameGUI.chatGUI.scroll(i)
-                }
-            }
         }
     }
 
@@ -251,7 +220,7 @@ object Chatting {
                 chatLines[drawnLines[i]] = drawnLines[i].chatComponent.formattedText
             }
 
-            screenshot(chatLines)?.copyToClipboard()
+//            screenshot(chatLines)?.copyToClipboard() todo
         }
     }
 

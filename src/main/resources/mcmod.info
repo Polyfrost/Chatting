@@ -1,9 +1,9 @@
 [
   {
-    "modid": "${id}",
-    "name": "${name}",
+    "modid": "${mod_id}",
+    "name": "${mod_name}",
     "description": "A chat mod adding utilities such as extremely customizable chat tabs, chat shortcuts, chat screenshots, and message copying.",
-    "version": "${version}",
+    "version": "${mod_version}",
     "mcversion": "1.8.9",
     "url": "",
     "updateUrl": "",

@@ -1,12 +1,12 @@
 package org.polyfrost.chatting.mixin;
 
-import dev.deftu.omnicore.client.OmniClipboard;
-import org.polyfrost.oneconfig.api.ui.v1.Notifications;
-import org.polyfrost.polyui.color.PolyColor;
-import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
-import org.polyfrost.oneconfig.api.ui.v1.notifications.Notifications;
-import org.polyfrost.oneconfig.utils.v1.color.ColorUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.chatting.Chatting;
@@ -17,13 +17,9 @@ import org.polyfrost.chatting.hook.ChatHook;
 import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hook.GuiNewChatHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
-import org.polyfrost.chatting.utils.RenderUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import org.polyfrost.oneconfig.api.ui.v1.Notifications;
+import org.polyfrost.polyui.color.PolyColor;
+import org.polyfrost.polyui.component.Drawable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -57,14 +53,19 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Shadow
     @Final
     private List<ChatLine> drawnChatLines;
+
     @Shadow
     public abstract boolean getChatOpen();
+
     @Shadow
     public abstract int getLineCount();
+
     @Shadow
     private int scrollPos;
+
     @Shadow
     public abstract int getChatWidth();
+
     @Unique
     private static final ResourceLocation chatting$COPY = new ResourceLocation("chatting:copy.png");
     @Unique
@@ -81,7 +82,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
     @ModifyArg(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;<init>(ILnet/minecraft/util/IChatComponent;I)V"))
     private IChatComponent handleAddDrawnLine(IChatComponent iChatComponent) {
-        if (!chatting$config().getShowTimestamp()) return iChatComponent;
+        if (!ChattingConfig.INSTANCE.getShowTimestamp()) return iChatComponent;
         String time = " §7["+ sdf.format(new Date(System.currentTimeMillis())) + "]§r";
         iChatComponent.appendSibling(new ChatComponentText(time));
         return iChatComponent;
@@ -95,6 +96,30 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Unique
     private long chatting$time;
 
+    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
+    private void drawClosing(int updateCounter, CallbackInfo ci) {
+        ChatWindow hud = Chatting.INSTANCE.getChatWindow();
+        Drawable theHud = hud.get();
+
+        if (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + theHud.getPadding().getY() * 2) * theHud.getScaleY() > 9 * theHud.getScaleY()) {
+            int height = (hud.getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(true) : calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused));
+            for (int m = 0; m < this.drawnChatLines.size() && m < height / 9; ++m) {
+                ChatLine chatLine = this.drawnChatLines.get(m);
+                if (chatLine != null) {
+                    int unFocusHeight = (hud.getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(false) : calculateChatboxHeight(this.mc.gameSettings.chatHeightUnfocused));
+                    boolean shouldShow = (ChattingConfig.INSTANCE.getFade() && m >= chatting$totalLines) || m >= unFocusHeight / 9;
+                    if (!getChatOpen() && shouldShow) {
+                        int q = m * 9;
+                        String string = chatLine.getChatComponent().getFormattedText();
+                        GlStateManager.enableBlend();
+                        ModCompatHooks.redirectDrawString(string, ChattingConfig.INSTANCE.getFade() ? 0 : 3, -q - 8, 0xFFFFFFFF, chatLine);
+                        GlStateManager.disableAlpha();
+                        GlStateManager.disableBlend();
+                    }
+                }
+            }
+        }
+    }
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void checkScreenshotKeybind(int j2, CallbackInfo ci) {
@@ -106,7 +131,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (chatting$lastOpen) chatting$time = Minecraft.getSystemTime();
             chatting$lastOpen = getChatOpen();
         }
-        long duration = chatting$config().getSmoothBG() ? (long) chatting$config().getBgDuration() : 0;
+        long duration = ChattingConfig.INSTANCE.getSmoothBG() ? (long) ChattingConfig.INSTANCE.getBgDuration() : 0;
         chatting$closing = (Minecraft.getSystemTime() - chatting$time <= duration);
     }
 
@@ -121,7 +146,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @ModifyVariable(method = "drawChat", at = @At("STORE"), index = 2)
     private int setChatLimitWhenYes(int linesToDraw) {
         return Chatting.INSTANCE.getDoTheThing()
-                ? calculateChatboxHeight(mc.gameSettings.chatHeightFocused) / 9
+                ? calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused) / 9
                 : linesToDraw;
     }
 
@@ -135,8 +160,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private void startCaptureHeight(int updateCounter, CallbackInfo ci) {
         int i = this.getLineCount();
         chatting$totalLines = 0;
-        List<ChatLine> list = ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), drawnChatLines);
-        if (!list.isEmpty()) {
+        List<ChatLine> list = ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), this.drawnChatLines);
+        if (list != null && !list.isEmpty()) {
             for (int m = 0; m + this.scrollPos < list.size() && m < i; ++m) {
                 ChatLine chatLine = list.get(m + this.scrollPos);
                 int o = chatting$getOpacity(updateCounter, chatLine);
@@ -145,17 +170,19 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 }
             }
         }
-        chatting$config().getChatWindow().setHeight(chatting$totalLines * 9);
-        chatting$config().getChatWindow().drawBG();
+        ChatWindow chatWindow = Chatting.INSTANCE.getChatWindow();
+        chatWindow.setHeight(chatting$totalLines * 9);
+        chatWindow.drawBG();
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;pushMatrix()V", shift = At.Shift.AFTER))
     private void startScissor(int updateCounter, CallbackInfo ci) {
-        ChatWindow hud = chatting$config().getChatWindow();
-        int mcScale = new ScaledResolution(mc).getScaleFactor();
+        ChatWindow hud = Chatting.INSTANCE.getChatWindow();
+        Drawable theHud = hud.get();
+        int mcScale = new ScaledResolution(this.mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int height = (int) hud.getAnimationHeight();
-        GL11.glScissor((int) ((hud.position.getX() - 3) * mcScale), mc.displayHeight - (int) (hud.position.getBottomY() + hud.getScale()) * mcScale, (int) ((hud.getAnimationWidth() + 3 + (ChattingConfig.INSTANCE.getExtendBG() ? 0 : 20)) * mcScale), (int) ((height + hud.getScale()) * mcScale));
+        GL11.glScissor((int) ((theHud.getX() - 3) * mcScale), this.mc.displayHeight - (int) (theHud.getY() + theHud.getHeight() + theHud.getScaleY()) * mcScale, (int) ((hud.getAnimationWidth() + 3 + (ChattingConfig.INSTANCE.getExtendBG() ? 0 : 20)) * mcScale), (int) ((height + theHud.getScaleY()) * mcScale));
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
@@ -166,7 +193,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0))
     private void captureDrawRect(Args args, int updateCounter) {
         args.set(4, 0/* Color.TRANSPARENT */);
-        if (mc.currentScreen instanceof GuiChat) {
+        if (this.mc.currentScreen instanceof GuiChat) {
             int left = args.get(0);
             int top = args.get(1);
             int right = (int) args.get(2) + ModCompatHooks.getChatHeadOffset();
@@ -176,35 +203,35 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                 chatting$lineInBounds = true;
             }
             if (chatting$isHovered(left, top, right - left, 9) || chatting$isHovered(right + 1, top, 9, 9) || chatting$isHovered(right + 11, top, 9, 9)) {
-                args.set(4, chatting$config().getHoveredChatBackgroundColor().getRGB());
+                args.set(4, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getRgba());
             }
         }
     }
 
     @ModifyVariable(method = "drawChat", at = @At(value = "STORE", ordinal = 0), ordinal = 6)
     private int fadeTime(int value) {
-        return value + 200 - (int) (chatting$config().getFadeTime() * 20);
+        return value + 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20);
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatOpen()Z"))
     private boolean noFade(GuiNewChat instance) {
-        ChatWindow hud = chatting$config().getChatWindow();
-        return !chatting$config().getFade() || instance.getChatOpen() || (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + hud.getPaddingY() * 2) * hud.getScale() > 9 * hud.getScale());
+        Drawable hud = Chatting.INSTANCE.getChatWindow().get();
+        return !ChattingConfig.INSTANCE.getFade() || instance.getChatOpen() || (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + hud.getPadding().getY() * 2) * hud.getScaleY() > 9 * hud.getScaleY());
     }
 
     @Unique
     private int chatting$getOpacity(int updateCounter, ChatLine chatLine) {
         if (chatLine != null) {
             float f = this.mc.gameSettings.chatOpacity * 0.9F + 0.1F;
-            int n = updateCounter - chatLine.getUpdatedCounter() + 200 - (int) (chatting$config().getFadeTime() * 20);
-            if (n < 200 || !chatting$config().getFade() || getChatOpen()) {
+            int n = updateCounter - chatLine.getUpdatedCounter() + 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20);
+            if (n < 200 || !ChattingConfig.INSTANCE.getFade() || getChatOpen()) {
                 double d = (double) n / 200.0;
                 d = 1.0 - d;
                 d *= 10.0;
                 d = MathHelper.clamp_double(d, 0.0, 1.0);
                 d *= d;
                 int o = (int) (255 * d);
-                if (!chatting$config().getFade() || getChatOpen()) {
+                if (!ChattingConfig.INSTANCE.getFade() || getChatOpen()) {
                     o = 255;
                 }
                 o = (int) ((float) o * f);
@@ -221,7 +248,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyArgs(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private void drawChatBox(Args args) {
-        if (mc.currentScreen instanceof GuiChat) {
+        if (this.mc.currentScreen instanceof GuiChat) {
             int left = 0;
             int top = (int) ((float) args.get(2) - 1);
             int right = MathHelper.ceiling_float_int((float) getChatWidth()) + 4 + ModCompatHooks.getChatHeadOffset();
@@ -250,19 +277,19 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @ModifyVariable(method = "setChatLine", at = @At(value = "STORE"), ordinal = 2)
     private int wrap(int value) {
-        return ChattingConfig.INSTANCE.getChatWindow().getCustomChatWidth() ? Chatting.INSTANCE.getChatWidth() : calculateChatboxWidth(mc.gameSettings.chatWidth);
+        return Chatting.INSTANCE.getChatWindow().getCustomChatWidth() ? Chatting.INSTANCE.getChatWidth() : calculateChatboxWidth(this.mc.gameSettings.chatWidth);
     }
 
     @Unique
     private boolean chatting$isHovered(int x, int y, int width, int height) {
-        ChatWindow hud = chatting$config().getChatWindow();
-        ScaledResolution scaleResolution = new ScaledResolution(mc);
+        Drawable hud = Chatting.INSTANCE.getChatWindow().get();
+        ScaledResolution scaleResolution = new ScaledResolution(this.mc);
         int scale = scaleResolution.getScaleFactor();
         int mouseX = Mouse.getX();
-        int mouseY = mc.displayHeight - Mouse.getY();
-        int actualX = (int) (((int) hud.position.getX() + (x + hud.getPaddingX()) * hud.getScale()) * scale);
-        int actualY = (int) (((int) hud.position.getBottomY() + (y - hud.getPaddingY()) * hud.getScale()) * scale);
-        return mouseX > actualX && mouseX < actualX + width * hud.getScale() * scale && mouseY > actualY && mouseY < actualY + height * hud.getScale() * scale;
+        int mouseY = this.mc.displayHeight - Mouse.getY();
+        int actualX = (int) (((int) hud.getX() + (x + hud.getPadding().getX()) * hud.getScaleX()) * scale);
+        int actualY = (int) (((int) hud.getY() + hud.getHeight() + (y - hud.getPadding().getY()) * hud.getScaleY()) * scale);
+        return mouseX > actualX && mouseX < actualX + width * hud.getScaleX() * scale && mouseY > actualY && mouseY < actualY + height * hud.getScaleY() * scale;
     }
 
     @ModifyVariable(method = "drawChat", at = @At("STORE"), ordinal = 0)
@@ -286,6 +313,11 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
      */
 
+    @Inject(method = "getChatOpen", at = @At("HEAD"), cancellable = true)
+    private void chatPeek(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(this.mc.currentScreen instanceof GuiChat || Chatting.INSTANCE.getPeeking());
+    }
+
     @Inject(method = "drawChat", at = @At("RETURN"))
     private void checkStuff(int j2, CallbackInfo ci) {
         if (!chatting$chatCheck && chatting$isHovering) {
@@ -295,7 +327,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
 
     @Inject(method = "getChatScale", at = @At("HEAD"), cancellable = true)
     private void chatScale(CallbackInfoReturnable<Float> cir) {
-        cir.setReturnValue(ChattingConfig.INSTANCE.getChatWindow().getScale());
+        cir.setReturnValue(Chatting.INSTANCE.getChatWindow().get().getScaleY());
     }
 
     @Override
@@ -319,24 +351,25 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         int posLeft = right + 1;
         int posRight = right + 10;
         if (!ChattingConfig.INSTANCE.getExtendBG()) {
-            GlStateManager.translate(chatting$config().getChatWindow().getPaddingX() * chatting$config().getChatWindow().getScale(), 0f, 0f);
+            Drawable hud = Chatting.INSTANCE.getChatWindow().get();
+            GlStateManager.translate(hud.getPadding().getX() * hud.getScaleX(), 0f, 0f);
         }
-        if (chatting$config().getChatCopy()) {
-            mc.getTextureManager().bindTexture(chatting$COPY);
+        if (ChattingConfig.INSTANCE.getChatCopy()) {
+            this.mc.getTextureManager().bindTexture(chatting$COPY);
             chatting$right = right;
             boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
-            PolyColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
-            drawRect(posLeft, top, posRight, top + 9, color.getRGB());
-            color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
+            PolyColor color = hovered ? ChattingConfig.INSTANCE.getChatButtonHoveredBackgroundColor() : ChattingConfig.INSTANCE.getChatButtonBackgroundColor();
+            drawRect(posLeft, top, posRight, top + 9, color.getRgba());
+            color = hovered ? ChattingConfig.INSTANCE.getChatButtonHoveredColor() : ChattingConfig.INSTANCE.getChatButtonColor();
             GlStateManager.pushMatrix();
             GlStateManager.enableAlpha();
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-            if (chatting$config().getButtonShadow()) {
-                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
+            if (ChattingConfig.INSTANCE.getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, color.getAlpha());
                 drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
             }
-            GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            GlStateManager.color(color.red() / 255f, color.green() / 255f, color.blue() / 255f, color.getAlpha());
             drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
             GlStateManager.disableAlpha();
             GlStateManager.disableBlend();
@@ -344,21 +377,21 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             posLeft += 10;
             posRight += 10;
         }
-        if (chatting$config().getChatDelete()) {
-            mc.getTextureManager().bindTexture(chatting$DELETE);
+        if (ChattingConfig.INSTANCE.getChatDelete()) {
+            this.mc.getTextureManager().bindTexture(chatting$DELETE);
             boolean hovered = chatting$isHovered(posLeft, top, posRight - posLeft, 9);
-            PolyColor color = hovered ? chatting$config().getChatButtonHoveredBackgroundColor() : chatting$config().getChatButtonBackgroundColor();
-            drawRect(posLeft, top, posRight, top + 9, color.getRGB());
-            color = hovered ? chatting$config().getChatButtonHoveredColor() : chatting$config().getChatButtonColor();
+            PolyColor color = hovered ? ChattingConfig.INSTANCE.getChatButtonHoveredBackgroundColor() : ChattingConfig.INSTANCE.getChatButtonBackgroundColor();
+            drawRect(posLeft, top, posRight, top + 9, color.getRgba());
+            color = hovered ? ChattingConfig.INSTANCE.getChatButtonHoveredColor() : ChattingConfig.INSTANCE.getChatButtonColor();
             GlStateManager.pushMatrix();
             GlStateManager.enableAlpha();
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-            if (chatting$config().getButtonShadow()) {
-                GlStateManager.color(0f, 0f, 0f, color.getAlpha() / 255f);
+            if (ChattingConfig.INSTANCE.getButtonShadow()) {
+                GlStateManager.color(0f, 0f, 0f, color.getAlpha());
                 drawModalRectWithCustomSizedTexture(posLeft + 1, top + 1, 0f, 0f, 9, 9, 9, 9);
             }
-            GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            GlStateManager.color(color.red() / 255f, color.green() / 255f, color.blue() / 255f, color.getAlpha());
             drawModalRectWithCustomSizedTexture(posLeft, top, 0f, 0f, 9, 9, 9, 9);
             GlStateManager.disableAlpha();
             GlStateManager.disableBlend();
@@ -373,9 +406,9 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         if (this.getChatOpen()) {
             ScaledResolution scaledresolution = new ScaledResolution(this.mc);
             int i = scaledresolution.getScaleFactor();
-            ChatWindow hud = chatting$config().getChatWindow();
-            float f = hud.getScale();
-            int k = (int) (mouseY / i - (scaledresolution.getScaledHeight() - hud.position.getBottomY() + hud.getPaddingY() * hud.getScale()) + ModCompatHooks.getYOffset());
+            Drawable hud = Chatting.INSTANCE.getChatWindow().get();
+            float f = hud.getScaleY();
+            int k = (int) (mouseY / i - (scaledresolution.getScaledHeight() - hud.getY() + hud.getHeight() + hud.getPadding().getY() * hud.getScaleY()) + ModCompatHooks.getYOffset());
             k = MathHelper.floor_float((float) k / f);
 
             if (k >= 0) {
@@ -403,7 +436,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (GuiScreen.isShiftKeyDown() && mouseButton == 0) {
                 if (fullLine != null) {
                     BufferedImage image = Chatting.INSTANCE.screenshotLine(subLine);
-                    if (image != null) RenderUtils.copyToClipboard(image);
+//                    if (image != null) RenderUtils.copyToClipboard(image); TODO
                 }
                 return null;
             }
@@ -414,11 +447,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             return new StringSelection(actualMessage);
         }
         return null;
-    }
-
-    @Unique
-    private ChattingConfig chatting$config() {
-        return ChattingConfig.INSTANCE;
     }
 
     @Override

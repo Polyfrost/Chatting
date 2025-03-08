@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage", "PropertyName")
 
 import dev.deftu.gradle.utils.GameSide
-import dev.deftu.gradle.utils.MinecraftVersion
 
 plugins {
     java
@@ -65,4 +64,5 @@ dependencies {
             modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
         }
     }
+    implementation(shade("com.github.ben-manes.caffeine:caffeine:3.2.0")!!)
 }

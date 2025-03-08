@@ -20,22 +20,22 @@ public class EntityPlayerSPMixin {
     @Redirect(method = "sendChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/NetHandlerPlayClient;addToSendQueue(Lnet/minecraft/network/Packet;)V"))
     private void handleSentMessages(NetHandlerPlayClient instance, Packet<?> packet, String value) {
         if (value.startsWith("/")) {
-            sendQueue.addToSendQueue(packet);
+            this.sendQueue.addToSendQueue(packet);
             return;
         }
         if (ChattingConfig.INSTANCE.getChatTabs() && !ChatTabs.INSTANCE.getCurrentTabs().isEmpty()) {
             boolean sent = false;
             for (ChatTab tab : ChatTabs.INSTANCE.getCurrentTabs()) {
                 if (tab.getPrefix() != null && !tab.getPrefix().isEmpty()) {
-                    sendQueue.addToSendQueue(new C01PacketChatMessage(tab.getPrefix() + value));
+                    this.sendQueue.addToSendQueue(new C01PacketChatMessage(tab.getPrefix() + value));
                     sent = true;
                 }
             }
             if (!sent) {
-                sendQueue.addToSendQueue(packet);
+                this.sendQueue.addToSendQueue(packet);
             }
         } else {
-            sendQueue.addToSendQueue(packet);
+            this.sendQueue.addToSendQueue(packet);
         }
     }
 }

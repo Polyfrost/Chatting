@@ -1,6 +1,5 @@
 package org.polyfrost.chatting.mixin;
 
-import org.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.polyfrost.chatting.config.ChattingConfig;

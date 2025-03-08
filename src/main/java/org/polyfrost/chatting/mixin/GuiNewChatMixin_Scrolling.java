@@ -7,7 +7,6 @@ import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.utils.EaseOutQuad;
 import org.polyfrost.oneconfig.gui.animations.DummyAnimation;
 import org.polyfrost.polyui.animate.Animation;
-import org.polyfrost.polyui.animate.Easing;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -30,10 +29,10 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
         if (shouldSmooth) ChatScrollingHook.INSTANCE.setShouldSmooth(false);
         if (ChattingConfig.INSTANCE.getSmoothScrolling()) {
             if (!chatting$scrollingAnimation.isFinished()) {
-                if (Math.abs(chatting$scrollingAnimation.getEnd() - scrollPos) > 1 && shouldSmooth) {
-                    chatting$scrollingAnimation = new EaseOutQuad((int) (ChattingConfig.INSTANCE.getScrollingSpeed() * 1000), chatting$scrollingAnimation.get(), scrollPos, false);
+                if (Math.abs(chatting$scrollingAnimation.getEnd() - this.scrollPos) > 1 && shouldSmooth) {
+                    chatting$scrollingAnimation = new EaseOutQuad((int) (ChattingConfig.INSTANCE.getScrollingSpeed() * 1000), chatting$scrollingAnimation.get(), this.scrollPos, false);
                 } else {
-                    chatting$scrollingAnimation = new DummyAnimation(scrollPos);
+                    chatting$scrollingAnimation = new DummyAnimation(this.scrollPos);
                 }
             }
         }
@@ -41,7 +40,7 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;scrollPos:I"))
     private int redirectPos(GuiNewChat instance) {
-        return ChattingConfig.INSTANCE.getSmoothScrolling() ? (int) chatting$scrollingAnimation.getValue() : scrollPos;
+        return ChattingConfig.INSTANCE.getSmoothScrolling() ? (int) chatting$scrollingAnimation.getValue() : this.scrollPos;
     }
 
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 1))

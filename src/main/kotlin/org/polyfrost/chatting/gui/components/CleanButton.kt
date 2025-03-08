@@ -44,7 +44,7 @@ open class CleanButton(
     }
 
     open fun setPositionY() {
-        yPosition = OmniResolution.scaledHeight - 27 + if (ChattingConfig.chatInput.compactInputBox && xPosition - ChatHooks.inputBoxRight >= 1) 13 else 0
+        yPosition = OmniResolution.scaledHeight - 27 + if (Chatting.chatInput.compactInputBox && xPosition - ChatHooks.inputBoxRight >= 1) 13 else 0
     }
 
     override fun mousePressed(mc: Minecraft, mouseX: Int, mouseY: Int): Boolean {

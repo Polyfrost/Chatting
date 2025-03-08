@@ -23,7 +23,7 @@ public abstract class ChatStyle_UnderlineLinks_Mixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void underLineAndHighlightLinks(CallbackInfo ci) {
-        if (chatClickEvent != null && chatClickEvent.getAction() == ClickEvent.Action.OPEN_URL && ChattingConfig.INSTANCE.getUnderlinedLinks()) {
+        if (this.chatClickEvent != null && this.chatClickEvent.getAction() == ClickEvent.Action.OPEN_URL && ChattingConfig.INSTANCE.getUnderlinedLinks()) {
             setUnderlined(true);
             setColor(EnumChatFormatting.BLUE);
         }

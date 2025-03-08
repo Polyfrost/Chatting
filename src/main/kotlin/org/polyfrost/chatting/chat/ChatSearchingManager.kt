@@ -1,8 +1,8 @@
 package org.polyfrost.chatting.chat
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import dev.deftu.textile.minecraft.MinecraftTextFormat
-import org.polyfrost.oneconfig.libs.caffeine.cache.Cache
-import org.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.chat.ChatTabs.currentTabs

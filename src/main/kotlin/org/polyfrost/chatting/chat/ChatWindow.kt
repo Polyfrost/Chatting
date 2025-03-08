@@ -1,21 +1,5 @@
 package org.polyfrost.chatting.chat
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.Button
-import org.polyfrost.oneconfig.api.config.v1.annotations.Exclude
-import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
-import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.polyui.color.PolyColor
-import org.polyfrost.oneconfig.api.config.v1.core.OneColor
-import org.polyfrost.oneconfig.gui.animations.Animation
-import org.polyfrost.oneconfig.gui.animations.DummyAnimation
-import org.polyfrost.oneconfig.hud.BasicHud
-import org.polyfrost.oneconfig.internal.hud.HudCore
-import org.polyfrost.universal.UGraphics.GL
-import org.polyfrost.universal.UMatrixStack
-import org.polyfrost.universal.UResolution
-import org.polyfrost.oneconfig.api.platform.v1.Platform
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.oneconfig.utils.v1.dsl.nanoVG
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.GuiChat
@@ -26,10 +10,27 @@ import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.utils.EaseOutQuart
 import org.polyfrost.chatting.utils.ModCompatHooks
+import org.polyfrost.oneconfig.api.config.v1.annotations.Button
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.oneconfig.api.platform.v1.Platform
+import org.polyfrost.oneconfig.gui.animations.Animation
+import org.polyfrost.oneconfig.gui.animations.DummyAnimation
+import org.polyfrost.oneconfig.internal.hud.HudCore
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.oneconfig.utils.v1.dsl.nanoVG
+import org.polyfrost.polyui.color.PolyColor
+import org.polyfrost.polyui.color.mutable
+import org.polyfrost.universal.UGraphics.GL
+import org.polyfrost.universal.UMatrixStack
+import org.polyfrost.universal.UResolution
 
-class ChatWindow : LegacyHud(true, 2f, 1080 - 27f - 45f - 12f,
-    1f, true, true, 6f, 5f, 5f, OneColor(0, 0, 0, 120), false, 2f, OneColor(0, 0, 0)) {
+class ChatWindow : LegacyHud(
+    true, 2f, 1080 - 27f - 45f - 12f,
+    1f, true, true, 6f, 5f, 5f, OneColor(0, 0, 0, 120), false, 2f, OneColor(0, 0, 0)
+) {
 
     private val exampleList: List<ChatLine> = listOf(
         ChatLine(0, ChatComponentText("§bChatting"), 0),
@@ -229,12 +230,12 @@ class ChatWindow : LegacyHud(true, 2f, 1080 - 27f - 45f - 12f,
         background = boolean
     }
 
-    fun getBackgroundColor(): OneColor {
+    fun getBackgroundColor(): PolyColor.Mutable {
         return bgColor
     }
 
-    fun setBackgroundColor(color: OneColor) {
-        bgColor = color
+    fun setBackgroundColor(color: PolyColor) {
+        bgColor = color.mutable()
     }
 
     override fun setScale(scale: Float, example: Boolean) {
