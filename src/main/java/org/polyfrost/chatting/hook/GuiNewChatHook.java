@@ -2,8 +2,6 @@ package org.polyfrost.chatting.hook;
 
 import net.minecraft.client.gui.ChatLine;
 
-import java.awt.datatransfer.Transferable;
-
 public interface GuiNewChatHook {
     int chatting$getRight();
 
@@ -11,7 +9,7 @@ public interface GuiNewChatHook {
 
     ChatLine chatting$getHoveredLine(int mouseY);
 
-    Transferable chatting$getChattingChatComponent(int mouseY, int mouseButton);
+    String chatting$getChattingChatComponent(int mouseY, int mouseButton);
 
     int chatting$getTextOpacity();
 }

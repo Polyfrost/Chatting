@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 import com.google.common.collect.Lists;
+import dev.deftu.omnicore.client.OmniClipboard;
 import dev.deftu.omnicore.client.OmniDesktop;
 import dev.deftu.omnicore.client.OmniKeyboard;
 import net.minecraft.client.Minecraft;
@@ -31,8 +32,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.awt.*;
-import java.awt.datatransfer.Transferable;
 import java.util.List;
 
 @Mixin(GuiChat.class)
@@ -75,10 +74,6 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
 
     @Unique
     private SearchButton chatting$searchButton;
-    @Unique
-    private ScreenshotButton chatting$screenshotButton;
-    @Unique
-    private ClearButton chatting$clearButton;
 
     @Inject(method = "initGui", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
@@ -153,14 +148,10 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         if (hook.chatting$isHovering()) {
             boolean copy = ChattingConfig.INSTANCE.getChatCopy();
             int right = (int) ((hook.chatting$getRight() + ModCompatHooks.getXOffset() + 1 + hud.getPadding().getX() * (ChattingConfig.INSTANCE.getExtendBG() ? 1f : 2f)) * hud.getScaleX() + (int) hud.getX()) * scale;
-            if (copy && x > right && x < right + 9 * hud.getScaleX() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy())) {
-                Transferable message = hook.chatting$getChattingChatComponent(Mouse.getY(), mouseButton);
+            if (copy && x > right && x < right + 9 * hud.getScaleX() * scale || (mouseButton == 1 && ChattingConfig.INSTANCE.getRightClickCopy() && (!ChattingConfig.INSTANCE.getRightClickCopyCtrl() || OmniKeyboard.isCtrlKeyPressed()))) {
+                String message = hook.chatting$getChattingChatComponent(Mouse.getY(), mouseButton);
                 if (message == null) return;
-                try {
-                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(message, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                OmniClipboard.setClipboardString(message);
             } else if (ChattingConfig.INSTANCE.getChatDelete() && x > right + (copy ? 10 : 0) * hud.getScaleX() * scale && x < right + ((copy ? 10 : 0) + 9) * hud.getScaleX() * scale) {
                 ChatLine chatLine = hook.chatting$getHoveredLine(Mouse.getY());
                 if (chatLine == null) return;
@@ -218,13 +209,13 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
         if (ChattingConfig.INSTANCE.getChatSearch()) {
             this.buttonList.add(chatting$searchButton);
         }
-        chatting$screenshotButton = new ScreenshotButton();
+        ScreenshotButton screenshot = new ScreenshotButton();
         if (ChattingConfig.INSTANCE.getChatScreenshot()) {
-            this.buttonList.add(chatting$screenshotButton);
+            this.buttonList.add(screenshot);
         }
-        chatting$clearButton = new ClearButton();
+        ClearButton clear = new ClearButton();
         if (ChattingConfig.INSTANCE.getChatDeleteHistory()) {
-            this.buttonList.add(chatting$clearButton);
+            this.buttonList.add(clear);
         }
         if (ChattingConfig.INSTANCE.getChatTabs()) {
             for (ChatTab chatTab : ChatTabs.INSTANCE.getTabs()) {

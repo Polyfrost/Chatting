@@ -29,8 +29,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -429,7 +427,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     }
 
     @Override
-    public Transferable chatting$getChattingChatComponent(int mouseY, int mouseButton) {
+    public String chatting$getChattingChatComponent(int mouseY, int mouseButton) {
         ChatLine subLine = chatting$getHoveredLine(mouseY);
         if (subLine != null) {
             ChatLine fullLine = ((ChatLineHook) subLine).chatting$getFullMessage();
@@ -443,8 +441,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             ChatLine line = GuiScreen.isCtrlKeyDown() && mouseButton == 0 ? subLine : fullLine;
             String message = line == null ? "Could not find chat message." : line.getChatComponent().getFormattedText();
             String actualMessage = GuiScreen.isAltKeyDown() ? message : EnumChatFormatting.getTextWithoutFormattingCodes(message);
-            Notifications.enqueue(Notifications.Type.Error, "Chatting", line == null ? "Could not find chat message." : "Copied following text: " + actualMessage);
-            return new StringSelection(actualMessage);
+            Notifications.enqueue(Notifications.Type.Warning, "Chatting", line == null ? "Could not find chat message." : "Copied following text: " + actualMessage);
+            return actualMessage;
         }
         return null;
     }
