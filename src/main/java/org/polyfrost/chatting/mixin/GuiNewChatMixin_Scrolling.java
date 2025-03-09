@@ -4,8 +4,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiNewChat;
 import org.polyfrost.chatting.chat.ChatScrollingHook;
 import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.utils.EaseOutQuad;
-import org.polyfrost.oneconfig.gui.animations.DummyAnimation;
 import org.polyfrost.polyui.animate.Animation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,7 +19,7 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
     private int scrollPos;
 
     @Unique
-    private Animation chatting$scrollingAnimation = Animation.Type.EaseInOutQuad.create((long) (ChattingConfig.INSTANCE.getScrollingSpeed() * 1000L), 0f, 0f);
+    private final Animation chatting$scrollingAnimation = Animation.Type.EaseInOutQuad.create((long) (ChattingConfig.INSTANCE.getScrollingSpeed() * 1000L), 0f, 0f);
 
     @Inject(method = "drawChat", at = @At("HEAD"))
     private void chatting$scrollingAnimationStart(int updateCounter, CallbackInfo ci) {
@@ -29,10 +27,12 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
         if (shouldSmooth) ChatScrollingHook.INSTANCE.setShouldSmooth(false);
         if (ChattingConfig.INSTANCE.getSmoothScrolling()) {
             if (!chatting$scrollingAnimation.isFinished()) {
-                if (Math.abs(chatting$scrollingAnimation.getEnd() - this.scrollPos) > 1 && shouldSmooth) {
-                    chatting$scrollingAnimation = new EaseOutQuad((int) (ChattingConfig.INSTANCE.getScrollingSpeed() * 1000), chatting$scrollingAnimation.get(), this.scrollPos, false);
+                if (Math.abs(chatting$scrollingAnimation.getTo() - this.scrollPos) > 1 && shouldSmooth) {
+                    chatting$scrollingAnimation.setFrom(chatting$scrollingAnimation.getValue());
+                    chatting$scrollingAnimation.setTo(this.scrollPos);
+                    chatting$scrollingAnimation.reset();
                 } else {
-                    chatting$scrollingAnimation = new DummyAnimation(this.scrollPos);
+                    chatting$scrollingAnimation.finishNow();
                 }
             }
         }

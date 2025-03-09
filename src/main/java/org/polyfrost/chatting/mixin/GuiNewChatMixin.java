@@ -99,7 +99,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         ChatWindow hud = Chatting.INSTANCE.getChatWindow();
         Drawable theHud = hud.get();
 
-        if (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + theHud.getPadding().getY() * 2) * theHud.getScaleY() > 9 * theHud.getScaleY()) {
+        if (chatting$closing && hud.get().getHeight() - (hud.get().getHeight() + theHud.getPadding().getY() * 2) * theHud.getScaleY() > 9 * theHud.getScaleY()) {
             int height = (hud.getCustomChatHeight() ? Chatting.INSTANCE.getChatHeight(true) : calculateChatboxHeight(this.mc.gameSettings.chatHeightFocused));
             for (int m = 0; m < this.drawnChatLines.size() && m < height / 9; ++m) {
                 ChatLine chatLine = this.drawnChatLines.get(m);
@@ -169,7 +169,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             }
         }
         ChatWindow chatWindow = Chatting.INSTANCE.getChatWindow();
-        chatWindow.setHeight(chatting$totalLines * 9);
+        chatWindow.get().setHeight(chatting$totalLines * 9);
         chatWindow.drawBG();
     }
 
@@ -179,8 +179,8 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         Drawable theHud = hud.get();
         int mcScale = new ScaledResolution(this.mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        int height = (int) hud.getAnimationHeight();
-        GL11.glScissor((int) ((theHud.getX() - 3) * mcScale), this.mc.displayHeight - (int) (theHud.getY() + theHud.getHeight() + theHud.getScaleY()) * mcScale, (int) ((hud.getAnimationWidth() + 3 + (ChattingConfig.INSTANCE.getExtendBG() ? 0 : 20)) * mcScale), (int) ((height + theHud.getScaleY()) * mcScale));
+        int height = (int) hud.get().getHeight();
+        GL11.glScissor((int) ((theHud.getX() - 3) * mcScale), this.mc.displayHeight - (int) (theHud.getY() + theHud.getHeight() + theHud.getScaleY()) * mcScale, (int) ((hud.get().getWidth() + 3 + (ChattingConfig.INSTANCE.getExtendBG() ? 0 : 20)) * mcScale), (int) ((height + theHud.getScaleY()) * mcScale));
     }
 
     @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
@@ -214,7 +214,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     @Redirect(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;getChatOpen()Z"))
     private boolean noFade(GuiNewChat instance) {
         Drawable hud = Chatting.INSTANCE.getChatWindow().get();
-        return !ChattingConfig.INSTANCE.getFade() || instance.getChatOpen() || (chatting$closing && hud.getAnimationHeight() - (hud.getHeight() + hud.getPadding().getY() * 2) * hud.getScaleY() > 9 * hud.getScaleY());
+        return !ChattingConfig.INSTANCE.getFade() || instance.getChatOpen() || (chatting$closing && (hud.getHeight() + hud.getPadding().getY() * 2) * hud.getScaleY() > 9 * hud.getScaleY());
     }
 
     @Unique

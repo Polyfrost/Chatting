@@ -358,11 +358,11 @@ object ChattingConfig : Config(
                 if (OldPatcherConfig.transparentChat) {
 
                     if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
-                        chatWindow.setBackgroundColor(chatWindow.getBackgroundColor().also { it.alpha = 0f })
-                        chatWindow.differentOpacity = true
+                        chatWindow.backgroundOpacity = 0f
+                        chatWindow.useDifferentOpenOpacity = true
                         chatWindow.openOpacity = 0
                     } else {
-                        chatWindow.setBackground(false)
+                        chatWindow.backgroundOpacity = 0f
                     }
                 }
                 if (OldPatcherConfig.transparentChatInputField) {

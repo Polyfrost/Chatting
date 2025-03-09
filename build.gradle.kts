@@ -64,5 +64,5 @@ dependencies {
             modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
         }
     }
-    implementation(shade("com.github.ben-manes.caffeine:caffeine:3.2.0")!!)
+    implementation(shade("com.github.ben-manes.caffeine:caffeine:2.9.3")!!)
 }

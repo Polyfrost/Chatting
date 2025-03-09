@@ -23,30 +23,30 @@ class ChatInputBox : LegacyHud() {
     var inputFieldDraft = false
 
     fun drawBG() {
-        if (!ModCompatHooks.shouldDrawInputBox) return
-        GlStateManager.enableAlpha()
-        GlStateManager.enableBlend()
-        val scale = OmniResolution.scaleFactor.toFloat()
-        drawBackground(2f, OmniResolution.scaledHeight - 14f + (if (OmniResolution.viewportHeight % 2 == 1) scale - 1 else 0f) / scale, inputBoxRight - 2f, 12f, 1f)
-        GlStateManager.disableBlend()
-        GlStateManager.disableAlpha()
+//        if (!ModCompatHooks.shouldDrawInputBox) return
+//        GlStateManager.enableAlpha()
+//        GlStateManager.enableBlend()
+//        val scale = OmniResolution.scaleFactor.toFloat()
+//        drawBackground(2f, OmniResolution.scaledHeight - 14f + (if (OmniResolution.viewportHeight % 2 == 1) scale - 1 else 0f) / scale, inputBoxRight - 2f, 12f, 1f)
+//        GlStateManager.disableBlend()
+//        GlStateManager.disableAlpha()
     }
 
     fun setBackground(boolean: Boolean) {
-        background = boolean
+//        background = boolean
     }
 
     override var height: Float
-        get() = TODO("Not yet implemented")
+        get() = 20f
         set(value) {}
     override var width: Float
-        get() = TODO("Not yet implemented")
+        get() = 100f
         set(value) {}
 
     override fun category() = Category.INFO
 
     override fun render(stack: OmniMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
-        TODO("Not yet implemented")
+
     }
 
     override fun title() = "Chat Input Box"
