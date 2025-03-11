@@ -46,9 +46,9 @@ import java.util.Date
 object Chatting {
 
     val keybind = KeyBinding("Screenshot Chat", Keyboard.KEY_NONE, "Chatting")
-    const val NAME = "@NAME@"
-    const val VER = "@VER@"
-    const val ID = "@ID@"
+    const val NAME = "@MOD_NAME@"
+    const val VER = "@MOD_VERSION@"
+    const val ID = "@MOD_ID@"
     var doTheThing = false
     var isPatcher = false
         private set
