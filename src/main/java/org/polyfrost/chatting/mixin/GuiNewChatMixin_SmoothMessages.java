@@ -84,6 +84,9 @@ public abstract class GuiNewChatMixin_SmoothMessages {
 
     @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"))
     private void resetPercentage(IChatComponent chatComponent, int chatLineId, CallbackInfo ci) {
+        if (chatLineId != 0 && ChattingConfig.INSTANCE.getDisableSmoothEdits()) {
+            return;
+        }
         if (!EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.getUnformattedText()).toLowerCase(Locale.ENGLISH).contains(ChatSearchingManager.INSTANCE.getLastSearch().toLowerCase(Locale.ENGLISH))) {
             return;
         }
