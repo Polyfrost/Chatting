@@ -105,6 +105,13 @@ object ChattingConfig : Config(
     var messageSpeed = 0.5f
 
     @Switch(
+        name = "Disable for Edits",
+        category = "Animations", subcategory = "Messages",
+        description = "Disable smooth animations for edited messages."
+    )
+    var disableSmoothEdits = true
+
+    @Switch(
         name = "Smooth Chat Background",
         category = "Animations", subcategory = "Background",
         description = "Smoothly animate chat background."
@@ -410,6 +417,7 @@ object ChattingConfig : Config(
         addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
+        addDependency("disableSmoothEdits", "smoothChat")
         addDependency("bgDuration", "smoothBG")
         addDependency("peekScrolling", "chatPeek")
         addDependency("chatPeekBind", "chatPeek")
