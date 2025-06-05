@@ -19,6 +19,7 @@ import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 import org.polyfrost.polyui.color.alpha
 
 // This exists because mixin doesn't like dummy classes
+//TODO this is no longer an issue, but its nice for organization... keep or remove?
 object ModCompatHooks {
     @JvmStatic
     val xOffset

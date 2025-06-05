@@ -2,10 +2,9 @@ package org.polyfrost.chatting.gui.components
 
 import dev.deftu.omnicore.client.OmniChat
 import dev.deftu.omnicore.client.render.OmniResolution
-import dev.deftu.textile.*
-import dev.deftu.textile.minecraft.MinecraftTextFormat
+import dev.deftu.textile.minecraft.MCSimpleTextHolder
+import dev.deftu.textile.minecraft.MCTextFormat
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
 import org.polyfrost.chatting.Chatting
@@ -28,7 +27,8 @@ class ClearButton :
             times = 0
             mc.ingameGUI.chatGUI.clearChatMessages()
         } else {
-            OmniChat.sendChatMessage(SimpleMutableTextHolder("Click again to clear the chat!").format(MinecraftTextFormat.RED, MinecraftTextFormat.BOLD))
+            OmniChat.displayClientMessage(MCSimpleTextHolder("Click again to clear the chat!").withFormatting(
+                MCTextFormat.RED, MCTextFormat.BOLD))
             Multithreading.submit {
                 Thread.sleep(3000)
                 times = 0
@@ -48,10 +48,10 @@ class ClearButton :
             val color = if (hovered) chatButtonHoveredColor else chatButtonColor
             if (ChattingConfig.buttonShadow) {
                 GlStateManager.color(0f, 0f, 0f, color.alpha)
-                Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
+                drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
             }
             GlStateManager.color(color.r / 255f, color.g / 255f, color.b / 255f, color.alpha)
-            Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
+            drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
             GlStateManager.popMatrix()
         }
     }

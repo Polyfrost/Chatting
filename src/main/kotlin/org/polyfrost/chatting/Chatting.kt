@@ -1,5 +1,7 @@
 package org.polyfrost.chatting
 
+import dev.deftu.clipboard.BufferedClipboardImage
+import dev.deftu.clipboard.Clipboard
 import dev.deftu.omnicore.client.OmniDesktop
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.GuiChat
@@ -85,7 +87,6 @@ object Chatting {
         CommandManager.register(CommandManager.literal("chatting").executes { ChattingConfig.openUI(); 1 })
         ClientRegistry.registerKeyBinding(keybind)
         EVENT_BUS.register(this)
-        EVENT_BUS.register(ChatSpamBlock)
         ChatTabs.initialize()
         ChatShortcuts.initialize()
     }
@@ -220,7 +221,7 @@ object Chatting {
                 chatLines[drawnLines[i]] = drawnLines[i].chatComponent.formattedText
             }
 
-//            screenshot(chatLines)?.copyToClipboard() todo
+            Clipboard.getInstance().setImage(BufferedClipboardImage(screenshot(chatLines)))
         }
     }
 

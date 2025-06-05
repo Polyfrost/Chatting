@@ -2,24 +2,15 @@
 
 package org.polyfrost.chatting.utils
 
-import org.polyfrost.oneconfig.utils.v1.IOUtils
-import org.polyfrost.chatting.config.ChattingConfig
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.shader.Framebuffer
-import org.apache.commons.lang3.SystemUtils
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
-import sun.awt.datatransfer.DataTransferer
-import sun.awt.datatransfer.SunClipboard
-import java.awt.Toolkit
+import org.polyfrost.chatting.config.ChattingConfig
 import java.awt.image.BufferedImage
 import java.io.File
-import java.lang.reflect.Field
-import java.lang.reflect.Method
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import javax.imageio.ImageIO
 
 /**

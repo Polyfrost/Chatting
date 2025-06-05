@@ -9,11 +9,13 @@ import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.utils.ModCompatHooks;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.polyui.component.Drawable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(GuiNewChat.class)
@@ -42,10 +44,10 @@ public abstract class GuiNewChatMixin_Movable {
         return constant;
     }
 
-//    @Inject(method = "drawChat", at = @At(value = "HEAD"), cancellable = true)
-//    private void exampleChat(int updateCounter, CallbackInfo ci) {
-//        if (HudCore.editing) ci.cancel();
-//    } TODO
+    @Inject(method = "drawChat", at = @At(value = "HEAD"), cancellable = true)
+    private void exampleChat(int updateCounter, CallbackInfo ci) {
+        if (HudManager.isPanelOpen()) ci.cancel();
+    }
 
     @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 3))
     private int mouseX(int constant) {

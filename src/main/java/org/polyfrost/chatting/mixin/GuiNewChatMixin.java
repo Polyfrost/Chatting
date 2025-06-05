@@ -1,5 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
+import dev.deftu.clipboard.BufferedClipboardImage;
+import dev.deftu.clipboard.Clipboard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
@@ -74,19 +76,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private ChatLine chatting$chatLine;
     @Unique
     private int chatting$totalLines = 0;
-
-    /*?
-    @Unique
-    private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-    @ModifyArg(method = "setChatLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ChatLine;<init>(ILnet/minecraft/util/IChatComponent;I)V"))
-    private IChatComponent handleAddDrawnLine(IChatComponent iChatComponent) {
-        if (!ChattingConfig.INSTANCE.getShowTimestamp()) return iChatComponent;
-        String time = " §7["+ sdf.format(new Date(System.currentTimeMillis())) + "]§r";
-        iChatComponent.appendSibling(new ChatComponentText(time));
-        return iChatComponent;
-    }
-
-     */
 
     @Unique
     private boolean chatting$lastOpen, chatting$closing;
@@ -298,18 +287,6 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
         }
         return chatting$closing ? 1 : value;
     }
-    /*/
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;scale(FFF)V"))
-    private void drawPre(int updateCounter, CallbackInfo ci) {
-        RenderUtils.timestampPre();
-    }
-
-    @Inject(method = "drawChat", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;popMatrix()V"))
-    private void drawPost(int updateCounter, CallbackInfo ci) {
-        RenderUtils.timestampPost();
-    }
-
-     */
 
     @Inject(method = "getChatOpen", at = @At("HEAD"), cancellable = true)
     private void chatPeek(CallbackInfoReturnable<Boolean> cir) {
@@ -434,7 +411,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
             if (GuiScreen.isShiftKeyDown() && mouseButton == 0) {
                 if (fullLine != null) {
                     BufferedImage image = Chatting.INSTANCE.screenshotLine(subLine);
-//                    if (image != null) RenderUtils.copyToClipboard(image); TODO
+                    if (image != null) Clipboard.getInstance().setImage(new BufferedClipboardImage(image));
                 }
                 return null;
             }

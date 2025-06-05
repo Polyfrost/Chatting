@@ -2,7 +2,6 @@ package org.polyfrost.chatting.chat
 
 import club.sk1er.patcher.config.PatcherConfig
 import net.minecraft.client.gui.ChatLine
-import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.gui.GuiNewChat
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.Chatting
@@ -12,8 +11,6 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Button
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
-import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.oneconfig.api.platform.v1.Platform
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.mutable
 import org.polyfrost.polyui.color.rgba
@@ -97,7 +94,7 @@ class ChatWindow : Hud<Block>() {
         description = "Revert the chat window to the vanilla chat window, instead of the Chattings custom chat window.",
         text = "Revert"
     )
-    val revertToVanilla = Runnable {
+    private fun revertToVanilla() {
         if (isReal) {
             get().padding = Vec4.ZERO
             get().radii = floatArrayOf(0f)
@@ -110,7 +107,7 @@ class ChatWindow : Hud<Block>() {
         description = "Revert the chat window to the Chatting custom chat window, instead of the vanilla chat window.",
         text = "Revert"
     )
-    val revertToChatting = Runnable {
+    private fun revertToChatting() {
         if (isReal) {
             get().padding = Vec4.of(5f, 5f, 5f, 5f)
             get().radii = floatArrayOf(5f)
@@ -183,9 +180,7 @@ class ChatWindow : Hud<Block>() {
 //        return isEnabled && (shouldShow() || Platform.getGuiPlatform().isInChat) && (isGuiIngame xor isCachingIgnored)
     }
 
-    override fun category(): Category {
-        TODO("Not yet implemented")
-    }
+    override fun category() = Category.INFO
 
     override fun create() = object : Block(color = rgba(0, 0, 0, 120f / 255f).mutable()) {
         override var width: Float
