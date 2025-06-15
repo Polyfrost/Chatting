@@ -76,7 +76,7 @@ public abstract class GuiNewChatMixin_Movable {
     @ModifyArg(method = "getChatComponent", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/MathHelper;floor_float(F)I", ordinal = 2))
     private float width(float value) {
         ChatWindow hud = ChattingConfig.INSTANCE.getChatWindow();
-        return hud.position.getX() + hud.getWidth();
+        return hud.position.getX() + hud.getWidth() / hud.getScale();
     }
 
 }
