@@ -213,11 +213,25 @@ object Chatting {
         return ChattingConfig.chatWindow.customWidth
     }
 
-    fun screenshotLine(line: ChatLine): BufferedImage? {
+    fun screenshotLine(line: ChatLine?): BufferedImage? {
+        if (line == null || line !is ChatLineHook) {
+            Notifications.INSTANCE.send("Chatting", "No chat line provided.")
+            return null
+        }
+
         return screenshot(
             linkedMapOf<ChatLine, String>().also { map ->
                 val fullMessage = (line as ChatLineHook).`chatting$getFullMessage`()
+                if (fullMessage == null) {
+                    Notifications.INSTANCE.send("Chatting", "No full message found for the provided chat line.")
+                    return null
+                }
+
                 for (chatLine in (mc.ingameGUI.chatGUI as GuiNewChatAccessor).drawnChatLines) {
+                    if (chatLine == null || chatLine !is ChatLineHook) {
+                        continue
+                    }
+
                     if ((chatLine as ChatLineHook).`chatting$getFullMessage`() == fullMessage) {
                         map[chatLine] = chatLine.chatComponent.formattedText
                     }
