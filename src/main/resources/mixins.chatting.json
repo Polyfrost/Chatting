@@ -1,35 +1,14 @@
 {
-  "compatibilityLevel": "JAVA_8",
-  "minVersion": "0.7",
+  "compatibilityLevel": "${java_version}",
+  "minVersion": "0.8",
   "package": "org.polyfrost.chatting.mixin",
   "refmap": "mixins.${mod_id}.refmap.json",
-  "verbose": true,
+  "injectors": {
+    "maxShiftBy": 5
+  },
   "client": [
-    "ChatLineMixin",
-    "ClientCommandHandlerMixin",
-    "EntityPlayerSPMixin",
-    "EntityRendererMixin",
-    "GameSettings_ChatScaleChangeEvent_Mixin",
-    "GuiChatMixin",
-    "GuiIngameForge_DrawChatAccessor",
-    "GuiContainerCreativeMixin",
-    "GuiIngameForgeMixin",
-    "GuiNewChatAccessor",
-    "GuiNewChatMixin",
-    "GuiNewChatMixin_ChatHeight",
-    "GuiNewChatMixin_ChatPeek",
-    "GuiNewChatMixin_ChatSearching",
-    "GuiNewChatMixin_ChatTabs",
-    "GuiNewChatMixin_Movable",
-    "GuiNewChatMixin_Scrolling",
-    "GuiNewChatMixin_SmoothMessages",
-    "GuiNewChatMixin_TextRendering",
-    "GuiTextFieldMixin",
-    "GuiUtilsMixin",
-    "ChatStyle_UnderlineLinks_Mixin",
-    "InventoryPlayerMixin",
-    "compat.ChatPeekMixin_SkyHanni",
-    "compat.ChatTabsMixin_SkytilsCopyChat",
-    "compat.EssentialKeybindingRegistryMixin"
-  ]
+    "ChatHudAccessor",
+    "ChatHudMixin"
+  ],
+  "verbose": true
 }

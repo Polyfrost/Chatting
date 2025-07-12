@@ -1,33 +1,26 @@
-package org.polyfrost.chatting.config
+package org.polyfrost.chatting
 
-import club.sk1er.patcher.config.OldPatcherConfig
-import org.polyfrost.chatting.Chatting
-import org.polyfrost.chatting.chat.ChatShortcuts
-import org.polyfrost.chatting.chat.ChatTab
-import org.polyfrost.chatting.chat.ChatTabs
-import org.polyfrost.chatting.gui.components.TabButton
-import org.polyfrost.chatting.hook.ChatLineHook
-import org.polyfrost.chatting.hook.GuiChatHook
-import org.polyfrost.chatting.utils.ModCompatHooks
+import dev.deftu.omnicore.client.OmniKeyboard
 import org.polyfrost.oneconfig.api.config.v1.Config
-import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindManager
 import org.polyfrost.polyui.color.rgba
-import org.polyfrost.polyui.input.KeyBinder
+import org.polyfrost.polyui.input.KeybindHelper
 
-object ChattingConfig : Config(
-    "chatting.json",
-    "/chatting_dark.svg",
-    Category.QOL,
-) {
+object ModConfig : Config("${ModConstants.ID}.json", ModConstants.NAME, Category.OTHER) {
 
     @Dropdown(
         title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"],
         description = "Specifies how text should be rendered in the chat. Full Shadow displays a shadow on all sides of the text, while Shadow only displays a shadow on the right and bottom sides of the text."
     )
     var textRenderType = 1
+
+    @Color(
+        title = "Chat Background Color", category = "General",
+        description = "The color of the chat background."
+    )
+    var chatBackgroundColor = rgba(0, 0, 0, 0.5f)
 
     @Color(
         title = "Hover Message Background Color", category = "General",
@@ -48,7 +41,7 @@ object ChattingConfig : Config(
 
     @Switch(
         title = "Inform Outdated Mods", category = "General",
-        description = "Inform the user when a mod can be replaced by Chatting.",
+        description = "Inform the user when a mod can be replaced by Chatting."
     )
     var informForAlternatives = true
 
@@ -66,27 +59,19 @@ object ChattingConfig : Config(
     @Keybind(
         title = "Peek KeyBind"
     )
-    var chatPeekBind = KeyBinder.Bind('z') {
-        if (chatPeek) {
-            if (peekMode == 0 /* HOLD */) {
-                Chatting.peeking = it
-            } else {
-                Chatting.peeking = !Chatting.peeking
-            }
-            if (!Chatting.peeking) mc.ingameGUI.chatGUI.resetScroll()
-        }
-        false
-    }
+    var chatPeekBind = KeybindHelper.builder().keys(OmniKeyboard.KEY_Z).does {
+    }.build()
 
-    @RadioButton(
-        title = "Peek Mode",
-        options = ["Held", "Toggle"],
-    )
-    var peekMode = 0
+//    @DualOption(
+//        title = "Peek Mode",
+//        left = "Held",
+//        right = "Toggle"
+//    )
+    var peekMode = false
 
     @Switch(
         title = "Underlined Links", category = "General",
-        description = "Makes clickable links in chat blue and underlined.",
+        description = "Makes clickable links in chat blue and underlined."
     )
     var underlinedLinks = false
 
@@ -104,6 +89,13 @@ object ChattingConfig : Config(
         description = "The speed at which chat messages animate."
     )
     var messageSpeed = 0.5f
+
+    @Switch(
+        title = "Disable for Edits",
+        category = "Animations", subcategory = "Messages",
+        description = "Disable smooth animations for edited messages."
+    )
+    var disableSmoothEdits = true
 
     @Switch(
         title = "Smooth Chat Background",
@@ -240,32 +232,19 @@ object ChattingConfig : Config(
     )
     var hideChatHeadOnConsecutiveMessages = true
 
-    /*/
-    @Property(
-        type = PropertyType.SWITCH,
-        title = "Show Timestamp",
-        description = "Show message timestamp.",
-        category = "General"
+    @Info(
+        title = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.",
+        category = "Player Chats",
+        description = ""
     )
-    var showTimestamp = false
+    var ignored = false
 
-    @Property(
-        type = PropertyType.SWITCH,
-        title = "Timestamp Only On Hover",
-        description = "Show timestamp only on mouse hover.",
-        category = "General"
+    @Info(
+        title = "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at. May not be accurate.",
+        category = "Player Chats",
+        description = ""
     )
-    var showTimestampHover = true
-
-     */
-
-//    @Info( TODO
-//        text = "If Chatting detects a public chat message that seems like spam, and the probability is higher than this, it will hide it.\n" + "Made for Hypixel Skyblock. Set to 100% to disable. 95% is a reasonable threshold to use it at.\n" + "Note that this is not and never will be 100% accurate; however, it's pretty much guaranteed to block most spam.",
-//        size = 2,
-//        category = "Player Chats",
-//        type = InfoType.INFO
-//    )
-//    var ignored = false
+    var ignored1 = false
 
     @Slider(
         min = 80F, max = 100F, title = "Spam Blocker Threshold", category = "Player Chats"
@@ -308,13 +287,13 @@ object ChattingConfig : Config(
     )
     var hypixelOnlyChatTabs = true
 
-//    @Info( TODO
-//        category = "Tabs",
-//        type = InfoType.INFO,
-//        text = "You can use the SHIFT key to select multiple tabs, as well as CTRL + TAB to switch to the next tab.",
-//        size = 2
-//    )
-//    var ignored2 = true
+    @Info(
+        category = "Tabs",
+        title = "You can use the SHIFT key to select multiple tabs, as well as CTRL + TAB to switch to the next tab.",
+        description = ""
+    )
+    @Transient
+    var ignored2 = true
 
     @Switch(
         title = "Chat Shortcuts", category = "Shortcuts"
@@ -346,115 +325,4 @@ object ChattingConfig : Config(
     )
     var tooltipTextRenderType = 1
 
-    var isPatcherMigrated = false
-    var isPatcherMigratedPt2CauseImStupid = false
-
-    init {
-
-        try {
-            Class.forName("club.sk1er.patcher.config.OldPatcherConfig")
-            val chatWindow = Chatting.chatWindow
-            if (!isPatcherMigrated) {
-                if (OldPatcherConfig.transparentChat) {
-
-                    if (OldPatcherConfig.transparentChatOnlyWhenClosed) {
-                        chatWindow.backgroundOpacity = 0f
-                        chatWindow.useDifferentOpenOpacity = true
-                        chatWindow.openOpacity = 0
-                    } else {
-                        chatWindow.backgroundOpacity = 0f
-                    }
-                }
-                if (OldPatcherConfig.transparentChatInputField) {
-                    Chatting.chatInput.setBackground(false)
-                }
-                isPatcherMigrated = true
-
-                save()
-            }
-            if (!isPatcherMigratedPt2CauseImStupid) {
-                if (OldPatcherConfig.transparentChat) {
-                    if (OldPatcherConfig.transparentChatOnlyWhenClosed && chatWindow.openOpacity == 255) {
-                        chatWindow.openOpacity = 0
-                    }
-                }
-
-                isPatcherMigratedPt2CauseImStupid = true
-
-                save()
-            }
-        } catch (_: ClassNotFoundException) {
-        }
-
-        addDependency("rightClickCopyCtrl", "rightClickCopy")
-        addDependency("fadeTime", "fade")
-        addDependency("offsetNonPlayerMessages", "showChatHeads")
-        addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
-        addDependency("hypixelOnlyChatTabs", "chatTabs")
-        addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
-        addDependency("scrollingSpeed", "smoothScrolling")
-        addDependency("messageSpeed", "smoothChat")
-        addDependency("bgDuration", "smoothBG")
-        addDependency("peekScrolling", "chatPeek")
-        addDependency("chatPeekBind", "chatPeek")
-        addDependency("peekMode", "chatPeek")
-        addDependency("smoothChat", "BetterChat Smooth Chat") {
-            if (!ModCompatHooks.betterChatSmoothMessages) Property.Display.HIDDEN else Property.Display.SHOWN
-        }
-        addCallback("peekMode") {
-            Chatting.peeking = false
-        }
-        addCallback("hideChatHeadOnConsecutiveMessages") {
-            ChatLineHook.`chatting$chatLines`.map { it.get() as ChatLineHook? }.forEach { it?.`chatting$updatePlayerInfo`() }
-        }
-        addCallback("chatTabs") {
-            ChatTabs.initialize()
-            if (!chatTabs) {
-                val dummy = ChatTab(
-                    true,
-                    "ALL",
-                    unformatted = false,
-                    lowercase = false,
-                    startsWith = null,
-                    contains = null,
-                    endsWith = null,
-                    equals = null,
-                    uncompiledRegex = null,
-                    ignoreStartsWith = null,
-                    ignoreContains = null,
-                    ignoreEndsWith = null,
-                    ignoreEquals = null,
-                    uncompiledIgnoreRegex = null,
-                    color = TabButton.color,
-                    hoveredColor = TabButton.hoveredColor,
-                    selectedColor = TabButton.selectedColor,
-                    prefix = ""
-                )
-                dummy.initialize()
-                ChatTabs.currentTabs.clear()
-                ChatTabs.currentTabs.add(dummy)
-            } else {
-                ChatTabs.currentTabs.clear()
-                ChatTabs.currentTabs.add(ChatTabs.tabs[0])
-            }
-        }
-        addCallback("chatShortcuts") {
-            ChatShortcuts.initialize()
-        }
-        listOf(
-            "chatSearch",
-            "chatScreenshot",
-            "chatDeleteHistory",
-            "chatTabs"
-        ).forEach {
-            addCallback(it) {
-                mc.currentScreen?.let { screen ->
-                    if (screen is GuiChatHook) {
-                        screen.`chatting$triggerButtonReset`()
-                    }
-                }
-            }
-        }
-        // addDependency("showTimestampHover", "showTimestamp")
-    }
 }
