@@ -2,7 +2,6 @@ package org.polyfrost.chatting.gui.components
 
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard
 import cc.polyfrost.oneconfig.libs.universal.UResolution
-import org.polyfrost.chatting.chat.ChatSearchingManager
 import org.polyfrost.chatting.chat.ChatTab
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.config.ChattingConfig
@@ -31,7 +30,6 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
             ChatTabs.currentTabs.clear()
             ChatTabs.currentTabs.add(chatTab)
         }
-        ChatSearchingManager.updateFilteredMessages(ChatSearchingManager.lastSearch)
     }
 
     override fun setPositionY() {
