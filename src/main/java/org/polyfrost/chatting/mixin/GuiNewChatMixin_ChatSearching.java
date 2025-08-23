@@ -15,13 +15,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(GuiNewChat.class)
 public class GuiNewChatMixin_ChatSearching {
-    @Shadow @Final private List<ChatLine> drawnChatLines;
-
     @Inject(method = "setChatLine", at = @At("HEAD"))
     private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         ChatSearchingManager.getCache().invalidateAll();
@@ -29,6 +26,6 @@ public class GuiNewChatMixin_ChatSearching {
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
     private List<ChatLine> injected(GuiNewChat instance) {
-        return ChatSearchingManager.filterMessages(drawnChatLines);
+        return ChatSearchingManager.filterMessages();
     }
 }
