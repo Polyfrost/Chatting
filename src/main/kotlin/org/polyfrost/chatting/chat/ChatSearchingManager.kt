@@ -7,7 +7,6 @@ import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.chat.ChatTabs.currentTabs
 import org.polyfrost.chatting.hook.ChatHook
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -33,12 +32,11 @@ object ChatSearchingManager {
 
     @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? {
-        val safeList = CopyOnWriteArrayList(list)
         val chatTabMessages = filterChatTabMessages(lastSearch)
         if (chatTabMessages != null) {
             return chatTabMessages
         }
-        return filterMessages2(text, safeList)
+        return filterMessages2(text, list)
     }
 
     @JvmStatic
