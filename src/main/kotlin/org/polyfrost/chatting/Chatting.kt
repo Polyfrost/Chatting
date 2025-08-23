@@ -245,8 +245,12 @@ object Chatting {
     }
 
     fun screenshotChat(scrollPos: Int) {
+        val hud = mc.ingameGUI
+        val chat = hud.chatGUI
         val chatLines = LinkedHashMap<ChatLine, String>()
-        ChatSearchingManager.filterMessages()?.let { drawnLines ->
+        ChatSearchingManager.filterMessages(
+            (chat as GuiNewChatAccessor).drawnChatLines
+        )?.let { drawnLines ->
             val chatHeight =
                 if (ChattingConfig.chatWindow.customChatHeight) getChatHeight(true) / 9 else GuiNewChat.calculateChatboxHeight(
                     mc.gameSettings.chatHeightFocused / 9

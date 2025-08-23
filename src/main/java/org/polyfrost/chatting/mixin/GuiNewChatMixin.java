@@ -132,7 +132,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
     private void startCaptureHeight(int updateCounter, CallbackInfo ci) {
         int i = this.getLineCount();
         chatting$totalLines = 0;
-        List<ChatLine> list = ChatSearchingManager.filterMessages();
+        List<ChatLine> list = ChatSearchingManager.filterMessages(drawnChatLines);
         if (!list.isEmpty()) {
             for (int m = 0; m + this.scrollPos < list.size() && m < i; ++m) {
                 ChatLine chatLine = list.get(m + this.scrollPos);
@@ -382,7 +382,7 @@ public abstract class GuiNewChatMixin extends Gui implements GuiNewChatHook {
                     int i1 = k / this.mc.fontRendererObj.FONT_HEIGHT + this.scrollPos;
 
                     if (i1 >= 0 && i1 < this.drawnChatLines.size()) {
-                        List<ChatLine> m = ChatSearchingManager.filterMessages();
+                        List<ChatLine> m = ChatSearchingManager.filterMessages(this.drawnChatLines);
                         return m != null ? m.get(i1) : null;
                     }
 
