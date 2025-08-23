@@ -31,7 +31,7 @@ object ChatSearchingManager {
     val cache: Cache<String, List<ChatLine>> = Caffeine.newBuilder().executor(POOL).maximumSize(5000).build()
 
     private val baseChatLines: List<ChatLine>
-        get() = (UMinecraft.getChatGUI() as? GuiNewChatAccessor)?.drawnChatLines?.let {ArrayList(it)} ?: emptyList()
+        get() = (UMinecraft.getChatGUI() as? GuiNewChatAccessor)?.drawnChatLines ?: emptyList()
 
     var lastSearch: String = ""
 
