@@ -2,11 +2,13 @@ package org.polyfrost.chatting.chat
 
 import cc.polyfrost.oneconfig.libs.caffeine.cache.Cache
 import cc.polyfrost.oneconfig.libs.caffeine.cache.Caffeine
+import cc.polyfrost.oneconfig.libs.universal.UMinecraft
 import cc.polyfrost.oneconfig.libs.universal.wrappers.message.UTextComponent
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import org.polyfrost.chatting.chat.ChatTabs.currentTabs
 import org.polyfrost.chatting.hook.ChatHook
+import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -31,7 +33,8 @@ object ChatSearchingManager {
     var lastSearch = ""
 
     @JvmStatic
-    fun filterMessages(list: List<ChatLine>): List<ChatLine>? {
+    fun filterMessages(): List<ChatLine>? {
+        val list: List<ChatLine> = (UMinecraft.getChatGUI() as GuiNewChatAccessor).drawnChatLines
         val chatTabMessages = filterChatTabMessages()
         if (chatTabMessages != null) {
             return chatTabMessages
