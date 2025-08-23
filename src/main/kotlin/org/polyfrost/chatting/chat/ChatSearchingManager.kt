@@ -32,11 +32,12 @@ object ChatSearchingManager {
 
     @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? {
+        val safeList = ArrayList(list)
         val chatTabMessages = filterChatTabMessages(lastSearch)
         if (chatTabMessages != null) {
             return chatTabMessages
         }
-        return filterMessages2(text, list)
+        return filterMessages2(text, safeList)
     }
 
     @JvmStatic
