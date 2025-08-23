@@ -31,29 +31,29 @@ object ChatSearchingManager {
     var lastSearch = ""
 
     @JvmStatic
-    fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? {
-        val chatTabMessages = filterChatTabMessages(lastSearch)
+    fun filterMessages(list: List<ChatLine>): List<ChatLine>? {
+        val chatTabMessages = filterChatTabMessages()
         if (chatTabMessages != null) {
             return chatTabMessages
         }
-        return filterMessages2(text, list)
+        return filterMessages2(list)
     }
 
     @JvmStatic
-    fun filterMessages2(text: String, list: List<ChatLine>): List<ChatLine>? {
-        if (text.isBlank()) return list
-        val cached = cache.getIfPresent(text)
+    fun filterMessages2(list: List<ChatLine>): List<ChatLine>? {
+        if (lastSearch.isBlank()) return list
+        val cached = cache.getIfPresent(lastSearch)
         return cached ?: run {
-            cache.put(text, list.filter {
+            cache.put(lastSearch, list.filter {
                 UTextComponent.stripFormatting(it.chatComponent.unformattedText).lowercase()
-                    .contains(text.lowercase())
+                    .contains(lastSearch.lowercase())
             })
-            cache.getIfPresent(text)
+            cache.getIfPresent(lastSearch)
         }
     }
 
     @JvmStatic
-    fun filterChatTabMessages(text: String): List<ChatLine>? {
+    fun filterChatTabMessages(): List<ChatLine>? {
         val currentTabs = currentTabs.firstOrNull()
         if (currentTabs?.messages?.isEmpty() == false) {
             val list: MutableList<ChatLine> = ArrayList()
@@ -62,7 +62,7 @@ object ChatSearchingManager {
                 list.add(ChatLine(0, ChatComponentText(message), 0))
                 ChatHook.lineVisible = false
             }
-            return filterMessages2(text, list)
+            return filterMessages2(list)
         }
         return null
     }
