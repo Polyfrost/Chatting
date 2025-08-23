@@ -29,7 +29,6 @@
     "GuiUtilsMixin",
     "HUDUtilsMixin",
     "InventoryPlayerMixin",
-    "compat.ChatPeekMixin_SkyHanni",
     "compat.ChatTabsMixin_SkytilsCopyChat",
     "compat.EssentialKeybindingRegistryMixin"
   ]
