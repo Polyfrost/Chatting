@@ -249,6 +249,7 @@ object Chatting {
         val chat = hud.chatGUI
         val chatLines = LinkedHashMap<ChatLine, String>()
         ChatSearchingManager.filterMessages(
+            ChatSearchingManager.lastSearch,
             (chat as GuiNewChatAccessor).drawnChatLines
         )?.let { drawnLines ->
             val chatHeight =
