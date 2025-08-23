@@ -26,7 +26,7 @@ class SearchButton() :
         chatBox = !chatBox
         inputField.setEnabled(chatBox)
         inputField.isFocused = chatBox
-        ChatSearchingManager.lastSearch = ""
+        ChatSearchingManager.updateFilteredMessages("")
         inputField.text = ""
     }
 

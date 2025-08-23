@@ -93,7 +93,7 @@ public abstract class GuiChatMixin extends GuiScreen implements GuiChatHook {
                 return;
             }
             chatting$searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
-            ChatSearchingManager.INSTANCE.setLastSearch(chatting$searchButton.getInputField().getText());
+            ChatSearchingManager.INSTANCE.updateFilteredMessages(chatting$searchButton.getInputField().getText());
         } else if ((Keyboard.isKeyDown(219) || Keyboard.isKeyDown(220) || Keyboard.isKeyDown(29) || Keyboard.isKeyDown(157)) && keyCode == UKeyboard.KEY_TAB) { // either macos super key or ctrl key for any os
             ChatHooks.INSTANCE.switchTab();
         }
