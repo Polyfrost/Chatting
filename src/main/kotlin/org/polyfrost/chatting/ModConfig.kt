@@ -4,7 +4,6 @@ import dev.deftu.omnicore.client.OmniKeyboard
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
-import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindManager
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.input.KeybindHelper
 
@@ -62,11 +61,10 @@ object ModConfig : Config("${ModConstants.ID}.json", ModConstants.NAME, Category
     var chatPeekBind = KeybindHelper.builder().keys(OmniKeyboard.KEY_Z).does {
     }.build()
 
-//    @DualOption(
-//        title = "Peek Mode",
-//        left = "Held",
-//        right = "Toggle"
-//    )
+    @RadioButton(
+        title = "Peek Mode",
+        options = ["Helod", "Toggle"]
+    )
     var peekMode = false
 
     @Switch(

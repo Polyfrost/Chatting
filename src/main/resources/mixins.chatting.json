@@ -10,5 +10,8 @@
     "ChatHudAccessor",
     "ChatHudMixin"
   ],
-  "verbose": true
+  "verbose": true,
+  "mixins": [
+    "HudManagerMixin"
+  ]
 }
