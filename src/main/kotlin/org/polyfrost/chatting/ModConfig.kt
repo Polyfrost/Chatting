@@ -63,9 +63,9 @@ object ModConfig : Config("${ModConstants.ID}.json", ModConstants.NAME, Category
 
     @RadioButton(
         title = "Peek Mode",
-        options = ["Helod", "Toggle"]
+        options = ["Held", "Toggle"]
     )
-    var peekMode = false
+    var peekMode = 0
 
     @Switch(
         title = "Underlined Links", category = "General",

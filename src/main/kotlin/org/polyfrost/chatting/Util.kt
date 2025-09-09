@@ -1,12 +1,24 @@
 @file:JvmName("Util")
 package org.polyfrost.chatting
 
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import dev.deftu.omnicore.client.render.OmniResolution
-import net.minecraft.client.gui.screen.ChatScreen
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.chatting.component.LegacyComponent
 
 val mcScale
     get() = OmniResolution.scaleFactor.toFloat()
 
-val inChatScreen: Boolean
-    get() = mc.currentScreen != null && mc.currentScreen is ChatScreen
+var legacyComponents = ArrayList<LegacyComponent>()
+
+fun renderLegacy(matrixStack: OmniMatrixStack) {
+    val removeQueue = mutableListOf<LegacyComponent>()
+    for (component in legacyComponents) {
+        component.render(matrixStack)
+        if (component.remove) {
+            removeQueue.add(component)
+        }
+    }
+    removeQueue.forEach {
+        legacyComponents.remove(it)
+    }
+}

@@ -2,17 +2,18 @@ package org.polyfrost.chatting.component
 
 import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.client.util.ChatMessages
+import org.polyfrost.chatting.ChatWindow
 import org.polyfrost.chatting.event.HudEditorEvent
 import org.polyfrost.chatting.event.NewMessageEvent
 import org.polyfrost.chatting.mixin.ChatHudAccessor
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
-import org.polyfrost.polyui.color.PolyColor
-import org.polyfrost.polyui.component.impl.Block
-import org.polyfrost.polyui.unit.by
+import org.polyfrost.polyui.component.Drawable
+import kotlin.math.floor
 
-class ChatComponent : Block(null, color = PolyColor.TRANSPARENT, size = 320f by 32f) {
+class ChatComponent(val window: ChatWindow) : Drawable(null) {
 
     @Transient
     val editorMessages = mutableListOf(
@@ -21,12 +22,6 @@ class ChatComponent : Block(null, color = PolyColor.TRANSPARENT, size = 320f by 
         "This is a movable chat",
         "§eDrag me around!"
     )
-
-    @Transient
-    var actualX = 0f
-
-    @Transient
-    var actualY = 0f
 
     init {
         eventHandler { event: NewMessageEvent ->
@@ -40,22 +35,27 @@ class ChatComponent : Block(null, color = PolyColor.TRANSPARENT, size = 320f by 
     fun swap(editing: Boolean) {
         removeAllMessages()
         if (editing) {
-            editorMessages.forEach { message ->
-                val line = ChatHudLine(-1, net.minecraft.text.Text.literal(message), null, null)
-                addMessage(line)
-            }
+            addExampleText()
         } else {
             addAllMessages()
         }
     }
 
+    fun addExampleText() {
+        editorMessages.forEach { message ->
+            val line = ChatHudLine(-1, net.minecraft.text.Text.literal(message), null, null)
+            addMessage(line)
+        }
+    }
+
     fun addAllMessages() {
-        (mc.inGameHud.chatHud as ChatHudAccessor).messages.forEach {
+        (mc.inGameHud.chatHud as ChatHudAccessor).messages.reversed().forEach {
             addMessage(it)
         }
     }
 
     fun removeAllMessages() {
+        if (children!!.isEmpty()) return
         for (i in 0..<children!!.size) {
             removeChild(0, false)
         }
@@ -76,18 +76,31 @@ class ChatComponent : Block(null, color = PolyColor.TRANSPARENT, size = 320f by 
                 removeChild(0)
             }
         }
-
+        window.update()
     }
 
     override fun setup(polyUI: PolyUI): Boolean {
         return super.setup(polyUI).also {
-            addAllMessages()
+            if (HudManager.panelExists) {
+                addExampleText()
+            } else {
+                addAllMessages()
+            }
         }
     }
 
     override fun preRender(delta: Long) {
-        actualX = x
-        actualY = y
+        x = floor(x)
+        y = floor(y)
         super.preRender(delta)
+    }
+
+    override var renders: Boolean
+        get() = super.renders && !children.isNullOrEmpty()
+        set(value) {
+            super.renders = value
+        }
+
+    override fun render() {
     }
 }
