@@ -9,6 +9,9 @@ import org.polyfrost.chatting.mcScale
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
+import org.polyfrost.polyui.component.extensions.onHover
+import org.polyfrost.polyui.component.extensions.onHoverExit
+import org.polyfrost.polyui.operations.Recolor
 import org.polyfrost.polyui.unit.by
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -20,19 +23,26 @@ class ChatLineComponent(val visible: ChatHudLine.Visible, val fullMessage: ChatH
     var opacity = 1f
 
     init {
+        acceptsInput = true
         color = rgba(0, 0, 0, 0.5f)
+        onHover {
+            Recolor(this, rgba(255, 255, 255, 0.5f))
+        }
+        onHoverExit {
+            Recolor(this, rgba(0, 0, 0, 0.5f))
+        }
     }
 
     fun renderLegacy(matrixStack: OmniMatrixStack) {
         if (!renders) return
         val chatComponent = this.parent as Drawable
-        val textY = chatComponent.y + (9 * index + 1) * mcScale * chatComponent.scaleY
+        val textY = chatComponent.y + (9 * index + 1) * mcScale * scaleY
         val alpha = (255 * opacity).roundToInt()
 
         if (alpha <= 3) return
         matrixStack.push()
-        matrixStack.translate(x / mcScale + 4 * chatComponent.scaleX, textY / mcScale, 0f)
-        matrixStack.scale(chatComponent.scaleX, chatComponent.scaleY, 1f)
+        matrixStack.translate(x / mcScale + 4 * scaleX, textY / mcScale, 0f)
+        matrixStack.scale(scaleX, scaleY, 1f)
         if (hasHead) {
 
             matrixStack.translate(10f, 0f, 0f)
@@ -47,7 +57,7 @@ class ChatLineComponent(val visible: ChatHudLine.Visible, val fullMessage: ChatH
     }
 
     override fun render() {
-        renderer.rect(x, y, width, height, rgba(0, 0, 0, 0.5f * opacity))
+        renderer.rect(x, y, width, height, color)
     }
 
 }

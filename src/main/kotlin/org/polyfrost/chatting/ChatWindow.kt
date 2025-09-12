@@ -7,6 +7,7 @@ import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.impl.Text
+import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.milliseconds
 import kotlin.math.pow
 
@@ -28,7 +29,6 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
 
     override fun update(): Boolean {
         if (get() is Text) return false
-        get().width = (320 + 12) * mcScale
         var index = 0
         val inChatScreen = mc.currentScreen != null && mc.currentScreen is ChatScreen
         val size = get().children!!.count {
@@ -44,12 +44,12 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
                     Math.clamp(10 - (mc.inGameHud.ticks - creationTick) / 20f, 0f, 1f).pow(2)
                 }
                 it.index = index
-                it.y = get().y + it.index * 9 * mcScale
+                it.at = it.x by get().y + it.index * 9 * mcScale * get().scaleY
                 index++
             }
             return@count canRender
         }
-        get().height = size * 9 * mcScale
+        get().size = (320 + 12) * mcScale by size * 9 * mcScale
         return true
     }
 

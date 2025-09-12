@@ -12,7 +12,6 @@
   ],
   "verbose": true,
   "mixins": [
-    "HudManagerMixin",
     "ScreenPlatformImplMixin"
   ]
 }

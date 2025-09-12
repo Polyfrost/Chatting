@@ -1,17 +1,21 @@
 package org.polyfrost.chatting.component
 
 import net.minecraft.client.gui.hud.ChatHudLine
+import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.util.ChatMessages
 import org.polyfrost.chatting.ChatWindow
-import org.polyfrost.chatting.event.HudEditorEvent
 import org.polyfrost.chatting.event.NewMessageEvent
 import org.polyfrost.chatting.mixin.ChatHudAccessor
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
+import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.unit.by
+import org.polyfrost.polyui.utils.fastEach
 import kotlin.math.floor
 
 class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
@@ -28,8 +32,13 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         eventHandler { event: NewMessageEvent ->
             addMessage(event.message)
         }
-        eventHandler { event: HudEditorEvent ->
-            swap(event.state)
+        eventHandler { event: HudEditorToggleEvent ->
+            swap(event.open)
+        }
+        eventHandler { event: MouseInputEvent.Moved ->
+            if (mc.currentScreen != null && mc.currentScreen is ChatScreen) {
+                UIManager.INSTANCE.defaultInstance.inputManager.mouseMoved(event.x, event.y)
+            }
         }
     }
 
@@ -98,9 +107,10 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
     }
 
     override fun preRender(delta: Long) {
-        x = floor(x)
-        y = floor(y)
-        super.preRender(delta)
+        children!!.fastEach {
+            (it as Drawable).scaleX = scaleX
+            (it as Drawable).scaleY = scaleY
+        }
     }
 
     override var renders: Boolean
