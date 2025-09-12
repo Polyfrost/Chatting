@@ -20,7 +20,7 @@ plugins {
 
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.140"
+        version = "1.0.0-alpha.146"
         loaderVersion = "1.1.0-alpha.49"
 
         for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "ui", "utils")) {

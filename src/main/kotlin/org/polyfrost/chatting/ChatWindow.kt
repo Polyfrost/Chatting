@@ -44,6 +44,7 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
                     Math.clamp(10 - (mc.inGameHud.ticks - creationTick) / 20f, 0f, 1f).pow(2)
                 }
                 it.index = index
+                it.y = get().y + it.index * 9 * mcScale
                 index++
             }
             return@count canRender

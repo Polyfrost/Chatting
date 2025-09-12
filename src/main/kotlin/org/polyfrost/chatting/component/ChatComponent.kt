@@ -11,9 +11,10 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.component.Drawable
+import org.polyfrost.polyui.unit.by
 import kotlin.math.floor
 
-class ChatComponent(val window: ChatWindow) : Drawable(null) {
+class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
     @Transient
     val editorMessages = mutableListOf(
@@ -67,10 +68,17 @@ class ChatComponent(val window: ChatWindow) : Drawable(null) {
         if (icon != null) {
             i -= icon.width + 4 + 2
         }
-        val lines = ChatMessages.breakRenderedChatMessageLines(message.comp_893(), i, mc.textRenderer)
+
+        val hasHead = false
+
+        if (hasHead) {
+            i -= 10
+        }
+
+        val lines = ChatMessages.breakRenderedChatMessageLines(message.comp_893, i, mc.textRenderer)
 
         lines.forEach {
-            val component = ChatLineComponent(ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last()), message)
+            val component = ChatLineComponent(ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last()), message, hasHead)
             addChild(component, recalculate = false)
             while(children!!.size > 100) {
                 removeChild(0)
