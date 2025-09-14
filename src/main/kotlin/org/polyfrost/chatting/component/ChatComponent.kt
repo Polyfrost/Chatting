@@ -45,6 +45,7 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
     init {
         eventHandler { event: NewMessageEvent ->
+            if (HudManager.panelExists) return@eventHandler
             addMessage(event.message)
         }
         eventHandler { event: HudEditorToggleEvent ->
@@ -113,17 +114,17 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
         val pendingComponent = if (hasPending) children!!.last() else null
 
-        pendingComponent?.let { removeChild(it, recalculate = false) }
+        pendingComponent?.let { removeChild(it) }
 
         lines.forEach {
             val component = ChatLineComponent(window, ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last()), message, hasHead)
-            addChild(component, recalculate = false)
+            addChild(component)
             while(children!!.size > 100) {
-                removeChild(0, recalculate = false)
+                removeChild(0)
             }
         }
 
-        pendingComponent?.let { addChild(it, recalculate = false) }
+        pendingComponent?.let { addChild(it) }
 
         window.update()
     }

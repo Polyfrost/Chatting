@@ -7,11 +7,13 @@ import net.minecraft.util.math.ColorHelper
 import org.polyfrost.chatting.ChatWindow
 import org.polyfrost.chatting.mcScale
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.polyui.color.asMutable
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.extensions.onHover
 import org.polyfrost.polyui.component.extensions.onHoverExit
 import org.polyfrost.polyui.unit.by
 import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 open class ChatLineComponent(val window: ChatWindow, val visible: ChatHudLine.Visible? = null, val fullMessage: ChatHudLine? = null, val hasHead: Boolean = false): Drawable(size = (320 + 12) * mcScale by ceil(9 * mcScale)) {
@@ -22,28 +24,27 @@ open class ChatLineComponent(val window: ChatWindow, val visible: ChatHudLine.Vi
 
     var mAlpha = 0
 
-    var bgColor = window.bgColor
+    var bgColor = window.bgColor.asMutable()
 
     var selected = false
 
     init {
         acceptsInput = true
-
         onHover {
             selected = true
-            bgColor = window.bgColor_hovered
+            bgColor = window.bgColor_hovered.asMutable()
         }
         onHoverExit {
             selected = false
-            bgColor = window.bgColor
+            bgColor = window.bgColor.asMutable()
         }
     }
 
     fun refreshColor() {
         bgColor = if (selected) {
-            window.bgColor_hovered
+            window.bgColor_hovered.asMutable()
         } else {
-            window.bgColor
+            window.bgColor.asMutable()
         }
     }
 
@@ -94,7 +95,12 @@ open class ChatLineComponent(val window: ChatWindow, val visible: ChatHudLine.Vi
         if (mAlpha <= 3) return
         val alphaTemp = bgColor.alpha
         bgColor.alpha *= opacity
-        renderer.rect(x, y, width, height, bgColor)
+        val parent = parent as ChatComponent
+        val hudScale = min(parent.scaleX, parent.scaleY)
+        val topRadius = if (this.index == 0) window.cornerRadius * hudScale else 0f
+        val bottomRadius = if (this.index == parent.children!!.size - 1) window.cornerRadius * hudScale else 0f
+        val radii = floatArrayOf(topRadius, topRadius, bottomRadius, bottomRadius)
+        renderer.rect(x, y, width, height, bgColor, radii)
         bgColor.alpha = alphaTemp
     }
 

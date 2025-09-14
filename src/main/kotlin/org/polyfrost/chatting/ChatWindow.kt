@@ -5,6 +5,7 @@ import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.component.ChatLineComponent
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -22,12 +23,19 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
     @Color(
         title = "Background Color"
     )
-    var bgColor = rgba(0, 0, 0, 0.5f).asMutable()
+    var bgColor = rgba(0, 0, 0, 0.5f)
 
     @Color(
         title = "Hovered Background Color"
     )
-    var bgColor_hovered = rgba(255, 255, 255, 0.5f).asMutable()
+    var bgColor_hovered = rgba(255, 255, 255, 0.5f)
+
+    @Slider(
+        title = "Corner Radius",
+        min = 0f,
+        max = 10f,
+    )
+    var cornerRadius = 4f
 
     var isPreview = preview
 
@@ -71,9 +79,6 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
             val hasPending = pendingCount > 0L && !HudManager.panelExists
             if (hasPending != this.hasPending) {
                 handleDelay(hasPending)
-            }
-            if (hasPending) {
-
             }
             val size = children!!.count {
                 val creationTick = (it as ChatLineComponent).visible?.comp_895 ?: -1
