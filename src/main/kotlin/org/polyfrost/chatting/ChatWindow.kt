@@ -3,17 +3,52 @@ package org.polyfrost.chatting
 import net.minecraft.client.gui.screen.ChatScreen
 import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.component.ChatLineComponent
+import org.polyfrost.oneconfig.api.config.v1.Tree
+import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.polyui.color.asMutable
+import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.impl.Text
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.milliseconds
+import org.polyfrost.polyui.utils.fastEach
 import kotlin.math.pow
 
 class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", title = "Chat", category = Category.INFO) {
 
+    @Color(
+        title = "Background Color"
+    )
+    var bgColor = rgba(0, 0, 0, 0.5f).asMutable()
+
+    @Color(
+        title = "Hovered Background Color"
+    )
+    var bgColor_hovered = rgba(255, 255, 255, 0.5f).asMutable()
+
     var isPreview = preview
+
+    override fun addCallbacks(tree: Tree) {
+        super.addCallbacks(tree)
+        tree.getProp("bgColor")?.addCallback {
+            refreshColor()
+            false
+        }
+        tree.getProp("bgColor_hovered")?.addCallback {
+            refreshColor()
+            false
+        }
+    }
+
+    fun refreshColor() {
+        if (isPreview) return
+        get().children!!.fastEach {
+            (it as ChatLineComponent).refreshColor()
+        }
+    }
 
     override fun clone(): Hud<Drawable> {
         return (super.clone() as ChatWindow).apply { isPreview = false }
@@ -29,27 +64,42 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
 
     override fun update(): Boolean {
         if (get() is Text) return false
-        var index = 0
-        val inChatScreen = mc.currentScreen != null && mc.currentScreen is ChatScreen
-        val size = get().children!!.count {
-            val creationTick = (it as ChatLineComponent).visible.comp_895
-            val fullOpacity = inChatScreen || creationTick == -1
-             (mc.inGameHud.ticks - creationTick) / 200f
-            val canRender = fullOpacity || mc.inGameHud.ticks - creationTick <= 200
-            it.renders = canRender
-            if (canRender) {
-                it.opacity = if (fullOpacity) {
-                    1f
-                } else {
-                    Math.clamp(10 - (mc.inGameHud.ticks - creationTick) / 20f, 0f, 1f).pow(2)
-                }
-                it.index = index
-                it.at = it.x by get().y + it.index * 9 * mcScale * get().scaleY
-                index++
+        with(get() as ChatComponent) {
+            var index = 0
+            val inChatScreen = mc.currentScreen != null && mc.currentScreen is ChatScreen
+            val pendingCount = mc.messageHandler.unprocessedMessageCount
+            val hasPending = pendingCount > 0L && !HudManager.panelExists
+            if (hasPending != this.hasPending) {
+                handleDelay(hasPending)
             }
-            return@count canRender
+            if (hasPending) {
+
+            }
+            val size = children!!.count {
+                val creationTick = (it as ChatLineComponent).visible?.comp_895 ?: -1
+                val fullOpacity = inChatScreen || creationTick == -1
+                (mc.inGameHud.ticks - creationTick) / 200f
+                val canRender = fullOpacity || mc.inGameHud.ticks - creationTick <= 200
+                if (it.selected && !inChatScreen && !HudManager.panelExists) {
+                    it.selected = false
+                    it.refreshColor()
+                }
+                it.renders = canRender
+                if (canRender) {
+                    it.opacity = if (fullOpacity) {
+                        1f
+                    } else {
+                        Math.clamp(10 - (mc.inGameHud.ticks - creationTick) / 20f, 0f, 1f).pow(2)
+                    }
+                    it.index = index
+                    it.update(true)
+                    index++
+                }
+                return@count canRender
+            }
+            this.size = (320 + 12) * mcScale by size * 9 * mcScale
         }
-        get().size = (320 + 12) * mcScale by size * 9 * mcScale
+
         return true
     }
 

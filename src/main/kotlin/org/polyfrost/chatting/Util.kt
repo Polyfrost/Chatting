@@ -2,28 +2,27 @@
 
 package org.polyfrost.chatting
 
-import dev.deftu.omnicore.client.render.OmniMatrixStack
 import dev.deftu.omnicore.client.render.OmniResolution
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.util.Identifier
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import java.util.function.Function
+import net.minecraft.client.gui.DrawContext
+import org.polyfrost.chatting.component.ChatComponent
+import org.polyfrost.chatting.component.ChatLineComponent
+import org.polyfrost.oneconfig.api.ui.v1.UIManager
+import org.polyfrost.polyui.component.Component
+import org.polyfrost.polyui.utils.fastEach
 
 val mcScale
     get() = OmniResolution.scaleFactor.toFloat()
 
-private fun OmniMatrixStack.drawTexture(function: Function<Identifier, RenderLayer>, identifier: Identifier, x: Int, y: Int, width: Int, height: Int, u: Float, uWidth: Float, v: Float, vHeight: Float, texWidth: Float, texHeight: Float, color: Int) {
-    val renderLayer = function.apply(identifier)
-    val matrix4f = this.toVanillaStack().peek().positionMatrix
-    val vertexConsumer = mc.bufferBuilders.entityVertexConsumers.getBuffer(renderLayer)
-    val xEnd = (x + width).toFloat()
-    val yEnd = (y + height).toFloat()
-    val uStart = u / texWidth
-    val vStart = v / texHeight
-    val uEnd = (u + uWidth) / texWidth
-    val vEnd = (v + vHeight) / texHeight
-    vertexConsumer.vertex(matrix4f, x.toFloat(), y.toFloat(), 0.0F).texture(uStart, vStart).color(color)
-    vertexConsumer.vertex(matrix4f, x.toFloat(), yEnd, 0.0F).texture(uStart, vEnd).color(color)
-    vertexConsumer.vertex(matrix4f, xEnd, yEnd, 0.0F).texture(uEnd, vEnd).color(color)
-    vertexConsumer.vertex(matrix4f, xEnd, y.toFloat(), 0.0F).texture(uEnd, vStart).color(color)
+fun renderLegacy(drawContext: DrawContext) {
+    val master = UIManager.INSTANCE.defaultInstance.master
+    val children: ArrayList<Component>? = master.children
+    if (children == null || children.isEmpty()) return
+
+    children.fastEach { child ->
+        if (child is ChatComponent) {
+            child.children!!.fastEach {
+                (it as ChatLineComponent).renderLegacy(drawContext)
+            }
+        }
+    }
 }

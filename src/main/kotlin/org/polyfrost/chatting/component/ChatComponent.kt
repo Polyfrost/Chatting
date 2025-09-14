@@ -3,8 +3,10 @@ package org.polyfrost.chatting.component
 import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.util.ChatMessages
+import net.minecraft.text.Text
 import org.polyfrost.chatting.ChatWindow
 import org.polyfrost.chatting.event.NewMessageEvent
+import org.polyfrost.chatting.mcScale
 import org.polyfrost.chatting.mixin.ChatHudAccessor
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
@@ -16,7 +18,8 @@ import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.utils.fastEach
-import kotlin.math.floor
+import kotlin.math.round
+import kotlin.math.roundToInt
 
 class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
@@ -27,6 +30,18 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         "This is a movable chat",
         "§eDrag me around!"
     )
+
+    var lastX = -1f
+
+    var lastY = -1f
+
+    var lastScaleX = -1f
+
+    var lastScaleY = -1f
+
+    var lineHeight = 0
+
+    var hasPending = false
 
     init {
         eventHandler { event: NewMessageEvent ->
@@ -42,6 +57,15 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         }
     }
 
+    fun handleDelay(pending: Boolean) {
+        if (pending) {
+            addChild(ChatPendingComponent(window))
+        } else {
+            removeChild(children!!.size - 1)
+        }
+        hasPending = pending
+    }
+
     fun swap(editing: Boolean) {
         removeAllMessages()
         if (editing) {
@@ -53,7 +77,7 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
     fun addExampleText() {
         editorMessages.forEach { message ->
-            val line = ChatHudLine(-1, net.minecraft.text.Text.literal(message), null, null)
+            val line = ChatHudLine(-1, Text.literal(message), null, null)
             addMessage(line)
         }
     }
@@ -69,6 +93,7 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         for (i in 0..<children!!.size) {
             removeChild(0, false)
         }
+        hasPending = false
     }
 
     fun addMessage(message: ChatHudLine) {
@@ -86,15 +111,28 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
         val lines = ChatMessages.breakRenderedChatMessageLines(message.comp_893, i, mc.textRenderer)
 
+        val pendingComponent = if (hasPending) children!!.last() else null
+
+        pendingComponent?.let { removeChild(it, recalculate = false) }
+
         lines.forEach {
-            val component = ChatLineComponent(ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last()), message, hasHead)
+            val component = ChatLineComponent(window, ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last()), message, hasHead)
             addChild(component, recalculate = false)
             while(children!!.size > 100) {
-                removeChild(0)
+                removeChild(0, recalculate = false)
             }
         }
+
+        pendingComponent?.let { addChild(it, recalculate = false) }
+
         window.update()
     }
+
+    override var renders: Boolean
+        get() = super.renders && !children.isNullOrEmpty()
+        set(value) {
+            super.renders = value
+        }
 
     override fun setup(polyUI: PolyUI): Boolean {
         return super.setup(polyUI).also {
@@ -107,17 +145,33 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
     }
 
     override fun preRender(delta: Long) {
-        children!!.fastEach {
-            (it as Drawable).scaleX = scaleX
-            (it as Drawable).scaleY = scaleY
+        var updateSize = false
+        var update = false
+        if (x != lastX || y != lastY) {
+            x = round(x)
+            y = round(y)
+            lastX = x
+            lastY = y
+            update = true
         }
+        if (scaleX != lastScaleX || scaleY != lastScaleY) {
+            lastScaleX = scaleX
+            lastScaleY = scaleY
+            lineHeight = (9 * mcScale * scaleY).roundToInt()
+            update = true
+            updateSize = true
+        }
+        if (update) {
+            children!!.fastEach {
+                (it as ChatLineComponent).update(updateSize)
+            }
+        }
+        scaleX = 1f
+        scaleY = 1f
+        super.preRender(delta)
+        scaleX = lastScaleX
+        scaleY = lastScaleY
     }
-
-    override var renders: Boolean
-        get() = super.renders && !children.isNullOrEmpty()
-        set(value) {
-            super.renders = value
-        }
 
     override fun render() {
     }

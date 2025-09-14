@@ -10,8 +10,5 @@
     "ChatHudAccessor",
     "ChatHudMixin"
   ],
-  "verbose": true,
-  "mixins": [
-    "ScreenPlatformImplMixin"
-  ]
+  "verbose": true
 }

@@ -1,63 +1,101 @@
 package org.polyfrost.chatting.component
 
-import dev.deftu.omnicore.client.OmniClient
-import dev.deftu.omnicore.client.render.OmniMatrixStack
-import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.hud.ChatHudLine
+import net.minecraft.text.OrderedText
 import net.minecraft.util.math.ColorHelper
+import org.polyfrost.chatting.ChatWindow
 import org.polyfrost.chatting.mcScale
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.extensions.onHover
 import org.polyfrost.polyui.component.extensions.onHoverExit
-import org.polyfrost.polyui.operations.Recolor
 import org.polyfrost.polyui.unit.by
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-class ChatLineComponent(val visible: ChatHudLine.Visible, val fullMessage: ChatHudLine, val hasHead: Boolean = false): Drawable(size = (320 + 12) * mcScale by ceil(9 * mcScale)) {
+open class ChatLineComponent(val window: ChatWindow, val visible: ChatHudLine.Visible? = null, val fullMessage: ChatHudLine? = null, val hasHead: Boolean = false): Drawable(size = (320 + 12) * mcScale by ceil(9 * mcScale)) {
 
     var index = -1
 
     var opacity = 1f
 
+    var mAlpha = 0
+
+    var bgColor = window.bgColor
+
+    var selected = false
+
     init {
         acceptsInput = true
-        color = rgba(0, 0, 0, 0.5f)
+
         onHover {
-            Recolor(this, rgba(255, 255, 255, 0.5f))
+            selected = true
+            bgColor = window.bgColor_hovered
         }
         onHoverExit {
-            Recolor(this, rgba(0, 0, 0, 0.5f))
+            selected = false
+            bgColor = window.bgColor
         }
     }
 
-    fun renderLegacy(matrixStack: OmniMatrixStack) {
+    fun refreshColor() {
+        bgColor = if (selected) {
+            window.bgColor_hovered
+        } else {
+            window.bgColor
+        }
+    }
+
+    fun renderLegacy(drawContext: DrawContext) {
         if (!renders) return
+        val text = getText() ?: return
         val chatComponent = this.parent as Drawable
-        val textY = chatComponent.y + (9 * index + 1) * mcScale * scaleY
-        val alpha = (255 * opacity).roundToInt()
 
-        if (alpha <= 3) return
-        matrixStack.push()
-        matrixStack.translate(x / mcScale + 4 * scaleX, textY / mcScale, 0f)
-        matrixStack.scale(scaleX, scaleY, 1f)
+        if (mAlpha <= 3) return
+        val matrices = drawContext.matrices
+        matrices.push()
+        matrices.translate(x / mcScale, y / mcScale, 0f)
+        matrices.scale(chatComponent.scaleX, chatComponent.scaleY, 1f)
         if (hasHead) {
-
-            matrixStack.translate(10f, 0f, 0f)
+            matrices.translate(10f, 0f, 0f)
         }
-        OmniClient.fontRenderer.draw(visible.comp_896, 0f, 0f, ColorHelper.withAlpha(alpha, -1), true, matrixStack.toVanillaStack().peek().positionMatrix, mc.bufferBuilders.entityVertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, 15728880)
-        matrixStack.pop()
+
+        val indicator = visible?.indicator
+        if (indicator != null) {
+            val c = indicator.comp_899() or (mAlpha shl 24)
+            drawContext.fill(0, 0, 2, 9, c)
+        }
+
+        drawContext.drawTextWithShadow(mc.textRenderer, text, 4, 1, getTextColor())
+
+        matrices.pop()
     }
 
-    override fun preRender(delta: Long) {
-        size = (320 + 12) * mcScale by ceil(9 * mcScale)
-        super.preRender(delta)
+    open fun getText(): OrderedText? {
+        return visible?.comp_896
+    }
+
+    open fun getTextColor(): Int {
+        return ColorHelper.withAlpha(mAlpha, -1)
+    }
+
+    fun update(size: Boolean) {
+        val parent = parent as ChatComponent
+        at = parent.x by parent.y + parent.lineHeight * index
+        if (size) {
+            width = parent.width * parent.scaleX
+            height = parent.lineHeight.toFloat()
+        }
     }
 
     override fun render() {
-        renderer.rect(x, y, width, height, color)
+        mAlpha = (opacity * 255).roundToInt()
+        if (mAlpha <= 3) return
+        val alphaTemp = bgColor.alpha
+        bgColor.alpha *= opacity
+        renderer.rect(x, y, width, height, bgColor)
+        bgColor.alpha = alphaTemp
     }
 
 }
