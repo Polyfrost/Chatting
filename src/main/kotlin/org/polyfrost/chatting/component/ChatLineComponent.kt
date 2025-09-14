@@ -98,7 +98,7 @@ open class ChatLineComponent(val window: ChatWindow, val visible: ChatHudLine.Vi
         val parent = parent as ChatComponent
         val hudScale = min(parent.scaleX, parent.scaleY)
         val topRadius = if (this.index == 0) window.cornerRadius * hudScale else 0f
-        val bottomRadius = if (this.index == parent.children!!.size - 1) window.cornerRadius * hudScale else 0f
+        val bottomRadius = if (this.index == window.length - 1) window.cornerRadius * hudScale else 0f
         val radii = floatArrayOf(topRadius, topRadius, bottomRadius, bottomRadius)
         renderer.rect(x, y, width, height, bgColor, radii)
         bgColor.alpha = alphaTemp
