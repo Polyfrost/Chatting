@@ -1,10 +1,12 @@
 package org.polyfrost.chatting
 
 import dev.deftu.omnicore.client.OmniScreen
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
@@ -12,8 +14,9 @@ import org.polyfrost.polyui.component.impl.Text
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.milliseconds
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
-class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", title = "Chat", category = Category.INFO) {
+class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = "Chat", category = Category.INFO) {
 
     @Color(
         title = "Background Color"
@@ -42,7 +45,9 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
     var length = 0
 
     override fun clone(): Hud<Drawable> {
-        return (super.clone() as ChatWindow).apply { isPreview = false }
+        return (super.clone() as ChatWindow).apply {
+            isPreview = false
+        }
     }
 
     override fun create(): Drawable {
@@ -51,6 +56,15 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
 
     override fun updateFrequency(): Long {
         return 25.milliseconds
+    }
+
+    override var width = 0f
+
+    override var height = 0f
+
+    override fun renderLegacy(stack: OmniMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+        if (isPreview) return
+        (get() as ChatComponent).drawLegacy(stack)
     }
 
     override fun update(): Boolean {
@@ -72,6 +86,7 @@ class ChatWindow(preview: Boolean = false) : Hud<Drawable>(id = "chat.yml", titl
                 }
                 return@count canRender
             }
+            lineHeight = (9 * mcScale * scaleY).roundToInt()
             this.size = (320 + 12) * mcScale by length * 9 * mcScale
         }
 

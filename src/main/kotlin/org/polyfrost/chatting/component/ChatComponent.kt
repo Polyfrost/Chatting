@@ -1,32 +1,40 @@
 package org.polyfrost.chatting.component
 
+import dev.deftu.omnicore.client.OmniKeyboard
 import dev.deftu.omnicore.client.OmniMouse
-import net.minecraft.client.gui.DrawContext
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.client.util.ChatMessages
 import net.minecraft.text.Text
 import org.polyfrost.chatting.ChatWindow
+import org.polyfrost.chatting.copyToClipboard
+import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.chatting.event.NewMessageEvent
 import org.polyfrost.chatting.mcScale
 import org.polyfrost.chatting.mixin.ChatHudAccessor
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
-import org.polyfrost.polyui.component.Drawable
-import org.polyfrost.polyui.component.extensions.onClick
+import org.polyfrost.polyui.color.argb
+import org.polyfrost.polyui.color.asMutable
+import org.polyfrost.polyui.component.Component
 import org.polyfrost.polyui.component.extensions.onHover
 import org.polyfrost.polyui.component.extensions.onHoverExit
 import org.polyfrost.polyui.unit.by
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.round
 
-class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
+class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(window, null, size = 1f by 1f) {
 
     @Transient
     val editorMessages = mutableListOf(
-        "§bChatting",
+        "§b§lChatting",
         "",
         "This is a movable chat",
         "§eDrag me around!"
@@ -34,15 +42,19 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
     var elements = ArrayList<ChatLineElement>()
 
-    var selectedElements = ArrayList<ChatLineElement>()
+    var selectedElements = ArrayList<Int>()
 
-    var currentHovered: ChatLineElement? = null
+    var currentHovered = -1
+
+    var lastSelected = -1
 
     var hovered = false
 
+    var lineHeight = 0
+
     init {
         eventHandler { event: NewMessageEvent ->
-            if (HudManager.panelExists) return@eventHandler
+            if (HudManager.isEditing) return@eventHandler
             addMessage(event.message, true)
         }
         eventHandler { event: HudEditorToggleEvent ->
@@ -52,6 +64,18 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
             if (!hovered) return@eventHandler
             getCurrentElement(event.x, event.y)
         }
+        eventHandler { event: MouseActionEvent.Companion.Click ->
+            if (event.mouseOver == null) {
+                selectedElements.clear()
+            } else {
+                if (event.mouseOver == this) {
+                    when (event.button) {
+                        0 -> leftClick()
+                        1 -> rightClick()
+                    }
+                }
+            }
+        }
         onHover {
             getCurrentElement()
             hovered = true
@@ -59,23 +83,53 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         onHoverExit {
             hoverExit()
         }
-        onClick {
-            if (currentHovered == null) return@onClick
-            println("select $currentHovered")
-            selectedElements.add(currentHovered!!)
+    }
+
+    fun leftClick() {
+        if (currentHovered == -1) return
+        if (OmniKeyboard.isShiftKeyPressed) {
+            selectedElements.clear()
+            val currentIndex = currentHovered
+            val lastIndex = if (lastSelected == -1) 0 else lastSelected
+            for (i in min(lastIndex, currentIndex)..max(lastIndex, currentIndex)) {
+                selectedElements.add(i)
+            }
+        } else {
+            if (!OmniKeyboard.isCtrlKeyPressed || !OmniKeyboard.isAltKeyPressed) {
+                selectedElements.clear()
+            }
+            selectedElements.add(currentHovered)
+            lastSelected = currentHovered
+        }
+    }
+
+    fun rightClick() {
+        if (selectedElements.isEmpty()) {
+            if (currentHovered == -1) return
+            elements[currentHovered].message.copyToClipboard()
+        } else {
+            val stringBuilder = StringBuilder()
+            for (index in selectedElements) {
+                stringBuilder.append(elements[index].message)
+                if (index != selectedElements.last()) {
+                    stringBuilder.append("\n")
+                }
+            }
+            stringBuilder.toString().copyToClipboard()
+            selectedElements.clear()
         }
     }
 
     fun hoverExit() {
         hovered = false
-        currentHovered = null
+        currentHovered = -1
     }
 
     fun getCurrentElement(mouseX: Float = OmniMouse.rawX.toFloat(), mouseY: Float = OmniMouse.rawY.toFloat()) {
         if (elements.isEmpty()) return
         val index = floor((mouseY - y) / (9 * mcScale * scaleY)).toInt()
-        if (index < elements.size - 1) return
-        currentHovered = elements[index]
+        if (index < 0 || index >= elements.size) return
+        currentHovered = index
     }
 
     fun swap(editing: Boolean) {
@@ -135,7 +189,7 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
     override fun setup(polyUI: PolyUI): Boolean {
         return super.setup(polyUI).also {
-            if (HudManager.panelExists) {
+            if (HudManager.isEditing) {
                 addExampleText()
             } else {
                 addAllMessages()
@@ -143,43 +197,64 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         }
     }
 
-    fun renderLegacy(drawContext: DrawContext) {
+    fun drawLegacy(stack: OmniMatrixStack) {
         if (elements.isEmpty()) return
-        val matrices = drawContext.matrices
-        matrices.push()
-        matrices.translate(x / mcScale, y / mcScale, 0f)
-        matrices.scale(scaleX, scaleY, 1f)
-        matrices.translate(4f, 1f, 0f)
+        stack.push()
+        stack.translate(x / mcScale, y / mcScale, 0f)
+        stack.scale(scaleX, scaleY, 1f)
+        stack.translate(4f, 1f, 0f)
         for (element in elements) {
             if (!element.renders) continue
-            element.render(drawContext)
-            matrices.translate(0f, 9f, 0f)
+            element.render(stack)
+            stack.translate(0f, 9f, 0f)
         }
-        matrices.pop()
+        stack.pop()
+    }
+
+    override var width = (this as Component).width
+
+    override var height = (this as Component).height
+
+    override fun preRender(delta: Long) {
+        val tempScaleX = scaleX
+        val tempScaleY = scaleY
+        x = round(x)
+        y = round(y)
+        scaleX = 1f
+        scaleY = 1f
+        super.preRender(delta)
+        scaleX = tempScaleX
+        scaleY = tempScaleY
     }
 
     override fun render() {
         val radius = window.cornerRadius * (scaleX + scaleY) / 2f
-        val lineHeight = 9 * mcScale
-
         if (radius > 0f) {
             renderer.rect(x, y, width, height, window.bgColor, radius)
         } else {
-            for (element in elements) {
+            for ((index, element) in elements.withIndex()) {
                 if (!element.renders) continue
-                val color = when (element) {
-                    currentHovered -> {
-                        window.bgcolorHovered
-                    }
+                val color = when ((index)) {
                     in selectedElements -> {
                         window.bgColorSelected
+                    }
+                    currentHovered -> {
+                        window.bgcolorHovered
                     }
                     else -> {
                         window.bgColor
                     }
+                }.asMutable()
+//                val alpha = color.alpha
+//                color.alpha *= element.opacity.toFloat()
+                renderer.rect(x, y, width * scaleX, lineHeight.toFloat(), color)
+                val indicator = element.visible.indicator
+                if (indicator != null) {
+                    val ac = indicator.comp_899 or (element.alpha shl 24)
+                    renderer.rect(x, y, 2 * mcScale * scaleX, lineHeight.toFloat(), argb(ac))
                 }
-                renderer.rect(x, y, width, lineHeight, color)
-                renderer.translate(0f, lineHeight)
+                renderer.translate(0f, lineHeight.toFloat())
+//                color.alpha = alpha
             }
         }
     }

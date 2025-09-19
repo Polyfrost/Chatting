@@ -2,7 +2,12 @@ package org.polyfrost.chatting
 
 import dev.deftu.omnicore.client.OmniScreen
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
+import net.minecraft.client.gui.screen.ChatScreen
+import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.oneconfig.api.commands.v1.CommandManager
+import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -18,14 +23,12 @@ object Chatting : ClientModInitializer {
             if (!OmniScreen.isInScreen || !OmniScreen.isInChat) return@eventHandler
             UIManager.INSTANCE.defaultInstance.inputManager.mouseMoved(event.x, event.y)
         }
-        eventHandler { event: MouseInputEvent ->
-            if (!OmniScreen.isInScreen || !OmniScreen.isInChat) return@eventHandler
-            if (event.state == 0) {
-                println("released ${event.button}")
-                UIManager.INSTANCE.defaultInstance.inputManager.mouseReleased(event.button)
-            } else {
-                println("pressed ${event.button}")
-                UIManager.INSTANCE.defaultInstance.inputManager.mousePressed(event.button)
+        ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
+            if (screen !is ChatScreen) return@register
+            ScreenMouseEvents.afterMouseClick(screen).register { screen, mouseX, mouseY, button ->
+                UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
+                    EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, button))
+                }
             }
         }
     }

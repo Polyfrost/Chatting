@@ -19,9 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ChatHudMixin {
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void onRender(DrawContext drawContext, int i, int j, int k, boolean bl, CallbackInfo ci) {
-        Util.renderLegacy(drawContext);
-//        ci.cancel();
+    private void onRender(CallbackInfo ci) {
+        ci.cancel();
     }
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("TAIL"))
