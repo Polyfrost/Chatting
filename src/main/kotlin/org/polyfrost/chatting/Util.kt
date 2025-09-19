@@ -5,7 +5,6 @@ package org.polyfrost.chatting
 import dev.deftu.omnicore.client.render.OmniResolution
 import net.minecraft.client.gui.DrawContext
 import org.polyfrost.chatting.component.ChatComponent
-import org.polyfrost.chatting.component.ChatLineComponent
 import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.polyui.component.Component
 import org.polyfrost.polyui.utils.fastEach
@@ -20,9 +19,7 @@ fun renderLegacy(drawContext: DrawContext) {
 
     children.fastEach { child ->
         if (child is ChatComponent) {
-            child.children!!.fastEach {
-                (it as ChatLineComponent).renderLegacy(drawContext)
-            }
+            child.renderLegacy(drawContext)
         }
     }
 }

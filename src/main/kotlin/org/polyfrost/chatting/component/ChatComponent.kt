@@ -1,7 +1,8 @@
 package org.polyfrost.chatting.component
 
+import dev.deftu.omnicore.client.OmniMouse
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.hud.ChatHudLine
-import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.util.ChatMessages
 import net.minecraft.text.Text
 import org.polyfrost.chatting.ChatWindow
@@ -12,14 +13,14 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
-import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.component.Drawable
+import org.polyfrost.polyui.component.extensions.onClick
+import org.polyfrost.polyui.component.extensions.onHover
+import org.polyfrost.polyui.component.extensions.onHoverExit
 import org.polyfrost.polyui.unit.by
-import org.polyfrost.polyui.utils.fastEach
-import kotlin.math.round
-import kotlin.math.roundToInt
+import kotlin.math.floor
 
 class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
@@ -31,44 +32,54 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         "§eDrag me around!"
     )
 
-    var lastX = -1f
+    var elements = ArrayList<ChatLineElement>()
 
-    var lastY = -1f
+    var selectedElements = ArrayList<ChatLineElement>()
 
-    var lastScaleX = -1f
+    var currentHovered: ChatLineElement? = null
 
-    var lastScaleY = -1f
-
-    var lineHeight = 0
-
-    var hasPending = false
+    var hovered = false
 
     init {
         eventHandler { event: NewMessageEvent ->
             if (HudManager.panelExists) return@eventHandler
-            addMessage(event.message)
+            addMessage(event.message, true)
         }
         eventHandler { event: HudEditorToggleEvent ->
             swap(event.open)
         }
         eventHandler { event: MouseInputEvent.Moved ->
-            if (mc.currentScreen != null && mc.currentScreen is ChatScreen) {
-                UIManager.INSTANCE.defaultInstance.inputManager.mouseMoved(event.x, event.y)
-            }
+            if (!hovered) return@eventHandler
+            getCurrentElement(event.x, event.y)
+        }
+        onHover {
+            getCurrentElement()
+            hovered = true
+        }
+        onHoverExit {
+            hoverExit()
+        }
+        onClick {
+            if (currentHovered == null) return@onClick
+            println("select $currentHovered")
+            selectedElements.add(currentHovered!!)
         }
     }
 
-    fun handleDelay(pending: Boolean) {
-        if (pending) {
-            addChild(ChatPendingComponent(window))
-        } else {
-            removeChild(children!!.size - 1)
-        }
-        hasPending = pending
+    fun hoverExit() {
+        hovered = false
+        currentHovered = null
+    }
+
+    fun getCurrentElement(mouseX: Float = OmniMouse.rawX.toFloat(), mouseY: Float = OmniMouse.rawY.toFloat()) {
+        if (elements.isEmpty()) return
+        val index = floor((mouseY - y) / (9 * mcScale * scaleY)).toInt()
+        if (index < elements.size - 1) return
+        currentHovered = elements[index]
     }
 
     fun swap(editing: Boolean) {
-        removeAllMessages()
+        removeAllMessages(false)
         if (editing) {
             addExampleText()
         } else {
@@ -81,23 +92,24 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
             val line = ChatHudLine(-1, Text.literal(message), null, null)
             addMessage(line)
         }
+        window.update()
     }
 
     fun addAllMessages() {
         (mc.inGameHud.chatHud as ChatHudAccessor).messages.reversed().forEach {
             addMessage(it)
         }
+        window.update()
     }
 
-    fun removeAllMessages() {
-        if (children!!.isEmpty()) return
-        for (i in 0..<children!!.size) {
-            removeChild(0, false)
+    fun removeAllMessages(update: Boolean) {
+        elements.clear()
+        if (update) {
+            window.update()
         }
-        hasPending = false
     }
 
-    fun addMessage(message: ChatHudLine) {
+    fun addMessage(message: ChatHudLine, update: Boolean = false) {
         var i = 320
         val icon = message.icon
         if (icon != null) {
@@ -112,28 +124,14 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
 
         val lines = ChatMessages.breakRenderedChatMessageLines(message.comp_893, i, mc.textRenderer)
 
-        val pendingComponent = if (hasPending) children!!.last() else null
-
-        pendingComponent?.let { removeChild(it) }
-
         lines.forEach {
-            val component = ChatLineComponent(window, ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last()), message, hasHead)
-            addChild(component)
-            while(children!!.size > 100) {
-                removeChild(0)
-            }
+            val visible = ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last())
+            val element = ChatLineElement(visible)
+            elements.add(element)
         }
 
-        pendingComponent?.let { addChild(it) }
-
-        window.update()
+        if (update) window.update()
     }
-
-    override var renders: Boolean
-        get() = super.renders && !children.isNullOrEmpty()
-        set(value) {
-            super.renders = value
-        }
 
     override fun setup(polyUI: PolyUI): Boolean {
         return super.setup(polyUI).also {
@@ -145,35 +143,44 @@ class ChatComponent(val window: ChatWindow) : Drawable(null, size = 1f by 1f) {
         }
     }
 
-    override fun preRender(delta: Long) {
-        var updateSize = false
-        var update = false
-        if (x != lastX || y != lastY) {
-            x = round(x)
-            y = round(y)
-            lastX = x
-            lastY = y
-            update = true
+    fun renderLegacy(drawContext: DrawContext) {
+        if (elements.isEmpty()) return
+        val matrices = drawContext.matrices
+        matrices.push()
+        matrices.translate(x / mcScale, y / mcScale, 0f)
+        matrices.scale(scaleX, scaleY, 1f)
+        matrices.translate(4f, 1f, 0f)
+        for (element in elements) {
+            if (!element.renders) continue
+            element.render(drawContext)
+            matrices.translate(0f, 9f, 0f)
         }
-        if (scaleX != lastScaleX || scaleY != lastScaleY) {
-            lastScaleX = scaleX
-            lastScaleY = scaleY
-            lineHeight = (9 * mcScale * scaleY).roundToInt()
-            update = true
-            updateSize = true
-        }
-        if (update) {
-            children!!.fastEach {
-                (it as ChatLineComponent).update(updateSize)
-            }
-        }
-        scaleX = 1f
-        scaleY = 1f
-        super.preRender(delta)
-        scaleX = lastScaleX
-        scaleY = lastScaleY
+        matrices.pop()
     }
 
     override fun render() {
+        val radius = window.cornerRadius * (scaleX + scaleY) / 2f
+        val lineHeight = 9 * mcScale
+
+        if (radius > 0f) {
+            renderer.rect(x, y, width, height, window.bgColor, radius)
+        } else {
+            for (element in elements) {
+                if (!element.renders) continue
+                val color = when (element) {
+                    currentHovered -> {
+                        window.bgcolorHovered
+                    }
+                    in selectedElements -> {
+                        window.bgColorSelected
+                    }
+                    else -> {
+                        window.bgColor
+                    }
+                }
+                renderer.rect(x, y, width, lineHeight, color)
+                renderer.translate(0f, lineHeight)
+            }
+        }
     }
 }
