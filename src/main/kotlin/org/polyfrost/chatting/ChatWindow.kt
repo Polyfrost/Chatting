@@ -5,6 +5,7 @@ import dev.deftu.omnicore.client.render.OmniMatrixStack
 import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -13,6 +14,7 @@ import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.impl.Text
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.milliseconds
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -39,6 +41,13 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
         max = 10f,
     )
     var cornerRadius = 0f
+
+    @Switch(
+        title = "Smooth Scrolling"
+    )
+    var smoothScrolling = false
+
+    var lineLimit = 10
 
     var isPreview = preview
 
@@ -87,9 +96,8 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
                 return@count canRender
             }
             lineHeight = (9 * mcScale * scaleY).roundToInt()
-            this.size = (320 + 12) * mcScale by length * 9 * mcScale
+            this.size = (320 + 12) * mcScale by min(length, lineLimit) * 9 * mcScale
         }
-
         return true
     }
 

@@ -13,6 +13,13 @@ import org.polyfrost.polyui.unit.seconds
 val mcScale
     get() = OmniResolution.scaleFactor.toFloat()
 
+val editorMessages = mutableListOf(
+    "§b§lChatting",
+    "",
+    "This is a movable chat",
+    "§eDrag me around!"
+)
+
 fun OrderedText.asString(): String {
     val sb = StringBuilder()
     var lastStyle = Style.EMPTY

@@ -5,6 +5,7 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.gui.screen.ChatScreen
+import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.oneconfig.api.commands.v1.CommandManager
 import org.polyfrost.oneconfig.api.event.v1.EventManager
@@ -25,9 +26,16 @@ object Chatting : ClientModInitializer {
         }
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             if (screen !is ChatScreen) return@register
-            ScreenMouseEvents.afterMouseClick(screen).register { screen, mouseX, mouseY, button ->
+            ScreenMouseEvents.afterMouseClick(screen).register { _, _, _, button ->
                 UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
                     EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, button))
+                }
+            }
+            ScreenMouseEvents.afterMouseScroll(screen).register { _, _, mouseY, horizontalAmount, verticalAmount ->
+                UIManager.INSTANCE.defaultInstance.inputManager.mouseOver?.let {
+                    if (it is ChatComponent) {
+                        it.scroll(verticalAmount.toFloat())
+                    }
                 }
             }
         }
