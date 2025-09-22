@@ -1,17 +1,18 @@
 package org.polyfrost.chatting.component
 
-import dev.deftu.omnicore.client.render.OmniGameRendering
-import dev.deftu.omnicore.client.render.OmniMatrixStack
+import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import net.minecraft.client.gui.hud.ChatHudLine
-import net.minecraft.util.math.ColorHelper
+import org.polyfrost.chatting.WHITE
 import org.polyfrost.chatting.asString
+import org.polyfrost.polyui.data.PolyImage
 import kotlin.math.roundToInt
 
-class ChatLineElement(val visible: ChatHudLine.Visible) {
+class ChatLineElement(val visible: ChatHudLine.Visible, val hasHead: Boolean, val head: PolyImage?) {
 
     val message = visible.comp_896.asString()
 
     var opacity = 0.0
+        get() = field
         set(value) {
             field = value
             alpha = (255 * value).roundToInt()
@@ -21,8 +22,9 @@ class ChatLineElement(val visible: ChatHudLine.Visible) {
 
     var renders = false
 
-    fun render(stack: OmniMatrixStack) {
+    fun render(ctx: OmniRenderingContext) {
         if (alpha <= 3) return
-        OmniGameRendering.drawText(stack, message, 0f, 0f, ColorHelper.withAlpha(alpha, -1), true)
+        val x = if (hasHead) 10f else 0f
+        ctx.renderText(message, x, 0f, WHITE.withAlpha(alpha), true)
     }
 }

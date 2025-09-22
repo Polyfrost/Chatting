@@ -1,7 +1,8 @@
 package org.polyfrost.chatting
 
-import dev.deftu.omnicore.client.OmniScreen
-import dev.deftu.omnicore.client.render.OmniMatrixStack
+import dev.deftu.omnicore.api.client.render.OmniRenderingContext
+import dev.deftu.omnicore.api.client.screen.isInChatScreen
+import dev.deftu.omnicore.api.client.screen.isInScreen
 import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -71,15 +72,14 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
 
     override var height = 0f
 
-    override fun renderLegacy(stack: OmniMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
-        if (isPreview) return
-        (get() as ChatComponent).drawLegacy(stack)
+    override fun renderLegacy(ctx: OmniRenderingContext, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+        (get() as ChatComponent).drawLegacy(ctx)
     }
 
     override fun update(): Boolean {
         if (get() is Text) return false
         with(get() as ChatComponent) {
-            val inChat = OmniScreen.isInScreen && OmniScreen.isInChat
+            val inChat = isInScreen && isInChatScreen
             length = elements.count {
                 val creationTick = it.visible.comp_895
                 val fullOpacity = inChat || creationTick == -1

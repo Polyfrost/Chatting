@@ -1,6 +1,7 @@
 package org.polyfrost.chatting
 
-import dev.deftu.omnicore.client.OmniScreen
+import dev.deftu.omnicore.api.client.screen.isInChatScreen
+import dev.deftu.omnicore.api.client.screen.isInScreen
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
@@ -20,10 +21,12 @@ object Chatting : ClientModInitializer {
         ModConfig.preload()
         CommandManager.register(ModCommand)
         HudManager.register(ChatWindow(preview = true))
+
         eventHandler { event: MouseInputEvent.Moved ->
-            if (!OmniScreen.isInScreen || !OmniScreen.isInChat) return@eventHandler
+            if (!isInScreen || !isInChatScreen) return@eventHandler
             UIManager.INSTANCE.defaultInstance.inputManager.mouseMoved(event.x, event.y)
         }
+
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             if (screen !is ChatScreen) return@register
             ScreenMouseEvents.afterMouseClick(screen).register { _, _, _, button ->

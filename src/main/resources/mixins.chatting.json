@@ -8,7 +8,12 @@
   },
   "client": [
     "ChatHudAccessor",
-    "ChatHudMixin"
+    "ChatHudLineMixin",
+    "ChatHudMixin",
+    "MessageHandlerMixin"
   ],
-  "verbose": true
+  "verbose": true,
+  "mixins": [
+    "RendererImplMixin"
+  ]
 }

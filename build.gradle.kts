@@ -14,13 +14,25 @@ plugins {
     id("dev.deftu.gradle.tools.minecraft.releases") version(dgtVersion) // Applies the Minecraft auto-releasing plugin, which allows you to automatically release your mod to CurseForge and Modrinth.
 }
 
-//dependencies {
-//    compileOnly("dev.deftu:omnicore-1.21.5-fabric:0.34.0")
-//}
+dependencies {
+    implementation("dev.deftu:copycat:0.1.3")
+    listOf(
+        "windows-x64",
+        "windows-x86",
+        "linux-x64",
+        "linux-x86",
+        "linux-arm",
+        "linux-arm64",
+        "osx-x64",
+        "osx-arm64"
+    ).forEach { target ->
+        runtimeOnly("dev.deftu:copycat-natives-$target:0.1.3")
+    }
+}
 
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.149"
+        version = "1.0.0-alpha.150"
         loaderVersion = "1.1.0-alpha.49"
 
         for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "ui", "utils")) {

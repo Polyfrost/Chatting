@@ -1,11 +1,11 @@
 package org.polyfrost.chatting
 
-import dev.deftu.omnicore.client.OmniKeyboard
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.input.KeybindHelper
+import org.polyfrost.polyui.input.Keys
 
 object ModConfig : Config("${ModConstants.ID}.json", ModConstants.NAME, Category.OTHER) {
 
@@ -58,7 +58,7 @@ object ModConfig : Config("${ModConstants.ID}.json", ModConstants.NAME, Category
     @Keybind(
         title = "Peek KeyBind"
     )
-    var chatPeekBind = KeybindHelper.builder().keys(OmniKeyboard.KEY_Z).does {
+    var chatPeekBind = KeybindHelper.builder().keys(Keys.Z).does {
     }.build()
 
     @RadioButton(

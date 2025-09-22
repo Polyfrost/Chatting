@@ -2,13 +2,24 @@
 
 package org.polyfrost.chatting
 
-import dev.deftu.omnicore.client.render.OmniResolution
+import com.mojang.authlib.GameProfile
+import dev.deftu.clipboard.Clipboard
+import dev.deftu.omnicore.api.client.render.OmniResolution
+import dev.deftu.omnicore.api.client.resourceManager
+import dev.deftu.omnicore.api.color.OmniColor
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Style
 import net.minecraft.util.Formatting
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
+import org.polyfrost.oneconfig.internal.DynamicPolyImage
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.polyui.data.PolyImage
 import org.polyfrost.polyui.unit.seconds
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
+import javax.imageio.ImageIO
 
 val mcScale
     get() = OmniResolution.scaleFactor.toFloat()
@@ -19,6 +30,11 @@ val editorMessages = mutableListOf(
     "This is a movable chat",
     "§eDrag me around!"
 )
+
+val WHITE = OmniColor(-1)
+
+@JvmField
+var currentSender: GameProfile? = null
 
 fun OrderedText.asString(): String {
     val sb = StringBuilder()
@@ -69,7 +85,27 @@ private fun getFormattingCodes(style: Style, old: Style): String {
     return stringBuilder.toString()
 }
 
+// messy code
+@Throws(IOException::class)
+fun InputStream.cropToInputStream(x: Int, y: Int, width: Int, height: Int): InputStream {
+    ByteArrayOutputStream().use { stream ->
+        ImageIO.write(ImageIO.read(this).getSubimage(x, y, width, height), "png", stream)
+        stream.flush()
+        return ByteArrayInputStream(stream.toByteArray())
+    }
+}
+
+fun getSkinFromProfile(gameProfile: GameProfile?): PolyImage? {
+    val profile = gameProfile ?: return null
+    mc.networkHandler?.getPlayerListEntry(profile.id)?.let {
+        resourceManager.open(it.skinTextures.comp_1626).cropToInputStream(8, 8, 8, 8).let { stream ->
+            return DynamicPolyImage("chatHead_${gameProfile.name}", stream, PolyImage.Type.Raster)
+        }
+    }
+    return null
+}
+
 fun String.copyToClipboard() {
-    mc.keyboard.clipboard = this
+    Clipboard.getInstance().string = this
     Notifications.enqueue(Notifications.Type.Info, "Chatting", "Copied \"$this\" to clipboard.", 3.seconds)
 }
