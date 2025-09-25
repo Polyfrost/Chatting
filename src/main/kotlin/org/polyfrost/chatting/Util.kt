@@ -13,6 +13,7 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.Style
 import net.minecraft.util.Formatting
 import org.polyfrost.chatting.component.ChatComponent
+import org.polyfrost.chatting.component.ChatLineElement
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
 import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.oneconfig.internal.DynamicPolyImage
@@ -90,20 +91,25 @@ private fun getFormattingCodes(style: Style, old: Style): String {
     return stringBuilder.toString()
 }
 
+fun getLineMouseX(chatComponent: ChatComponent, chatLineElement: ChatLineElement): Int {
+    return ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4 - if (chatLineElement.hasHead) 10 else 0
+}
+
 fun getIndicator(): MessageIndicator? {
     val chatComponent = (UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null) as ChatComponent? ?: return null
     if (chatComponent.currentHovered == -1) return null
-    val indicator = chatComponent.elements[chatComponent.currentHovered].visible.indicator ?: return null
-    val mouseX = ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4
-    if (mouseX >= 0) return null
+    val element = chatComponent.elements[chatComponent.currentHovered]
+    val indicator = element.visible.indicator ?: return null
+    if (getLineMouseX(chatComponent, element) >= 0) return null
     return indicator
 }
 
 fun getStyle(): Style? {
     val chatComponent = (UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null) as ChatComponent? ?: return null
     if (chatComponent.currentHovered != -1) {
-        val mouseX = ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4
-        return mc.textRenderer.textHandler.getStyleAt(chatComponent.elements[chatComponent.currentHovered].visible.comp_896, mouseX)
+        val element = chatComponent.elements[chatComponent.currentHovered]
+        val mouseX = getLineMouseX(chatComponent, element)
+        return mc.textRenderer.textHandler.getStyleAt(element.visible.comp_896, mouseX)
     }
     return null
 }

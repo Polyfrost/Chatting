@@ -4,12 +4,16 @@ import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import net.minecraft.client.gui.hud.ChatHudLine
 import org.polyfrost.chatting.WHITE
 import org.polyfrost.chatting.asString
+import org.polyfrost.polyui.color.asMutable
+import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.data.PolyImage
 import kotlin.math.roundToInt
 
 class ChatLineElement(val visible: ChatHudLine.Visible, val hasHead: Boolean, val head: PolyImage?) {
 
     val message = visible.comp_896.asString()
+
+    var color = rgba(0, 0, 0, 0f).asMutable()
 
     var opacity = 0.0
         get() = field

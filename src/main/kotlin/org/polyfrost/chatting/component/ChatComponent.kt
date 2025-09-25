@@ -26,15 +26,13 @@ import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.animate.Animation
 import org.polyfrost.polyui.animate.Linear
 import org.polyfrost.polyui.color.argb
-import org.polyfrost.polyui.color.asMutable
-import org.polyfrost.polyui.component.Component
 import org.polyfrost.polyui.component.extensions.onHover
 import org.polyfrost.polyui.component.extensions.onHoverExit
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.ms
 import kotlin.math.*
 
-class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(window, null, size = 10f by 10f) {
+class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(window, size = 100f by 100f) {
 
     var elements = ArrayList<ChatLineElement>()
 
@@ -226,9 +224,9 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         }
     }
 
-    override var width = (this as Component).width
+    override var width = 1f
 
-    override var height = (this as Component).height
+    override var height = 1f
 
     override fun preRender(delta: Long) {
         if (hovered && !scrollAmount.isFinished) getCurrentElement()
@@ -269,10 +267,12 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
                 else -> {
                     window.bgColor
                 }
-            }.asMutable()
-            renderer.rect(0f, 0f, width * scaleX, lineHeight.toFloat(), color)
+            }
+            element.color.recolor(color)
+            element.color.alpha *= element.opacity.toFloat()
+            renderer.rect(0f, 0f, width * scaleX, lineHeight.toFloat(), element.color)
             if (element.hasHead) {
-                renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale * scaleX, 8f * mcScale * scaleY)
+                renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale * scaleX, 8f * mcScale * scaleY, colorMask = 0xFFFFFF or (element.alpha shl 24))
             }
             element.visible.indicator?.let { indicator ->
                 val ac = indicator.comp_899 or (element.alpha shl 24)
