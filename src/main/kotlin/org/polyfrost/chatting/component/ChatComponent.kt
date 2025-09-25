@@ -17,10 +17,10 @@ import org.polyfrost.chatting.mcScale
 import org.polyfrost.chatting.mixin.ChatHudAccessor
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
+import org.polyfrost.oneconfig.api.event.v1.events.ScreenOpenEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
-import org.polyfrost.oneconfig.api.ui.v1.internal.GLRendererImpl
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.animate.Animation
@@ -80,6 +80,11 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
                 }
             }
         }
+        eventHandler { event: ScreenOpenEvent ->
+            if (event.getScreen<Any>() == null) {
+                onClose()
+            }
+        }
         onHover {
             getCurrentElement()
             hovered = true
@@ -87,6 +92,12 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         onHoverExit {
             hoverExit()
         }
+    }
+
+    fun onClose() {
+        hoverExit()
+        selectedElements.clear()
+        scrollAmount = DummyAnimation(0f)
     }
 
     fun leftClick() {
@@ -244,7 +255,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     override fun render() {
         renderer.pushScissor(x, y, width * scaleX, height * scaleY)
-        renderer.translate(x, y -translateAmount * lineHeight)
+        renderer.translate(x, y - translateAmount * lineHeight)
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
             if (index !in drawingStart..drawingEnd) continue
@@ -274,19 +285,19 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun drawLegacy(ctx: OmniRenderingContext) {
         if (elements.isEmpty()) return
-        ctx.withScissor(20, 20, 20, 20) {
-            val matrices = ctx.matrices
-            matrices.push()
-            matrices.translate(x / mcScale, y / mcScale, 0f)
-            matrices.scale(scaleX, scaleY, 1f)
-            matrices.translate(4f, -translateAmount * 9 + 1f, 0f)
-            for ((index, element) in elements.withIndex()) {
-                if (!element.renders) continue
-                if (index !in drawingStart..drawingEnd) continue
-                element.render(ctx)
-                matrices.translate(0f, 9f, 0f)
-            }
-            matrices.pop()
+        val matrices = ctx.matrices
+        matrices.push()
+        matrices.translate(x / mcScale, y / mcScale, 0f)
+        matrices.scale(scaleX, scaleY, 1f)
+        matrices.translate(4f, -translateAmount * 9 + 1f, 0f)
+        ctx.pushScissor(0, 0, 5, 5)
+        for ((index, element) in elements.withIndex()) {
+            if (!element.renders) continue
+            if (index !in drawingStart..drawingEnd) continue
+            element.render(ctx)
+            matrices.translate(0f, 9f, 0f)
         }
+        ctx.popScissor()
+        matrices.pop()
     }
 }

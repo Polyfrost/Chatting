@@ -31,7 +31,9 @@ object Chatting : ClientModInitializer {
             if (screen !is ChatScreen) return@register
             ScreenMouseEvents.afterMouseClick(screen).register { _, _, _, button ->
                 UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
-                    EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, button))
+//                    if (it is ChatComponent) {
+                        EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, button))
+//                    }
                 }
             }
             ScreenMouseEvents.afterMouseScroll(screen).register { _, _, mouseY, horizontalAmount, verticalAmount ->

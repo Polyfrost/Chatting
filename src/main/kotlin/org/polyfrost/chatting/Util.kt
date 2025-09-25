@@ -4,13 +4,17 @@ package org.polyfrost.chatting
 
 import com.mojang.authlib.GameProfile
 import dev.deftu.clipboard.Clipboard
+import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniResolution
 import dev.deftu.omnicore.api.client.resourceManager
 import dev.deftu.omnicore.api.color.OmniColor
+import net.minecraft.client.gui.hud.MessageIndicator
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Style
 import net.minecraft.util.Formatting
+import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
+import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.oneconfig.internal.DynamicPolyImage
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.data.PolyImage
@@ -20,6 +24,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import javax.imageio.ImageIO
+import kotlin.math.max
 
 val mcScale
     get() = OmniResolution.scaleFactor.toFloat()
@@ -83,6 +88,24 @@ private fun getFormattingCodes(style: Style, old: Style): String {
     if (style.isObfuscated) stringBuilder.append("§k")
 
     return stringBuilder.toString()
+}
+
+fun getIndicator(): MessageIndicator? {
+    val chatComponent = (UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null) as ChatComponent? ?: return null
+    if (chatComponent.currentHovered == -1) return null
+    val indicator = chatComponent.elements[chatComponent.currentHovered].visible.indicator ?: return null
+    val mouseX = ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4
+    if (mouseX >= 0) return null
+    return indicator
+}
+
+fun getStyle(): Style? {
+    val chatComponent = (UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null) as ChatComponent? ?: return null
+    if (chatComponent.currentHovered != -1) {
+        val mouseX = ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4
+        return mc.textRenderer.textHandler.getStyleAt(chatComponent.elements[chatComponent.currentHovered].visible.comp_896, mouseX)
+    }
+    return null
 }
 
 // messy code

@@ -14,25 +14,9 @@ plugins {
     id("dev.deftu.gradle.tools.minecraft.releases") version(dgtVersion) // Applies the Minecraft auto-releasing plugin, which allows you to automatically release your mod to CurseForge and Modrinth.
 }
 
-dependencies {
-    implementation("dev.deftu:copycat:0.1.3")
-    listOf(
-        "windows-x64",
-        "windows-x86",
-        "linux-x64",
-        "linux-x86",
-        "linux-arm",
-        "linux-arm64",
-        "osx-x64",
-        "osx-arm64"
-    ).forEach { target ->
-        runtimeOnly("dev.deftu:copycat-natives-$target:0.1.3")
-    }
-}
-
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.150"
+        version = "1.0.0-alpha.151"
         loaderVersion = "1.1.0-alpha.49"
 
         for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "ui", "utils")) {
@@ -41,7 +25,7 @@ toolkitLoomHelper {
     }
 
     useDevAuth("1.2.1")
-    useMixinExtras("0.4.1")
+    useMixinExtras("0.5.0")
 
     // Turns off the server-side run configs, as we're building a client-sided mod.
     disableRunConfigs(GameSide.SERVER)

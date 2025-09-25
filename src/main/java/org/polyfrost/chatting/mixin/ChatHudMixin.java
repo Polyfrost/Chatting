@@ -5,6 +5,7 @@ import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.network.message.MessageSignatureData;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.polyfrost.chatting.Util;
 import org.polyfrost.chatting.event.NewMessageEvent;
@@ -14,19 +15,36 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ChatHud.class)
 public class ChatHudMixin {
 
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void onRender(CallbackInfo ci) {
-        ci.cancel();
-    }
+//    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+//    private void onRender(CallbackInfo ci) {
+//        ci.cancel();
+//    }
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("TAIL"))
     private void createMessage(Text text, MessageSignatureData messageSignatureData, MessageIndicator messageIndicator, CallbackInfo ci, @Local(ordinal = 0) ChatHudLine chatHudLine) {
         ((ChatHudLineHook) (Object) chatHudLine).chatting$setHead(Util.getSkinFromProfile(Util.currentSender));
         EventManager.INSTANCE.post(new NewMessageEvent(chatHudLine));
+    }
+
+    @Inject(method = "getTextStyleAt", at = @At("HEAD"), cancellable = true)
+    private void styleAt(double d, double e, CallbackInfoReturnable<Style> cir) {
+        Style style = Util.getStyle();
+        if (style != null) {
+            cir.setReturnValue(style);
+        }
+    }
+
+    @Inject(method = "getIndicatorAt", at = @At("HEAD"), cancellable = true)
+    private void indicatorAt(double d, double e, CallbackInfoReturnable<MessageIndicator> cir) {
+        MessageIndicator indicator = Util.getIndicator();
+        if (indicator != null) {
+            cir.setReturnValue(indicator);
+        }
     }
 
 }
