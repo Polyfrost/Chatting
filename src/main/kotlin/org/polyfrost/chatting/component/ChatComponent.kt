@@ -3,25 +3,22 @@ package org.polyfrost.chatting.component
 import dev.deftu.omnicore.api.client.input.OmniKeyboard
 import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
-import net.minecraft.client.gui.hud.ChatHudLine
-import net.minecraft.client.util.ChatMessages
-import net.minecraft.text.Text
+import dev.deftu.textile.minecraft.MCSimpleTextHolder
 import org.polyfrost.chatting.ChatWindow
 import org.polyfrost.chatting.animation.DummyAnimation
 import org.polyfrost.chatting.copyToClipboard
 import org.polyfrost.chatting.editorMessages
 import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.chatting.event.NewMessageEvent
-import org.polyfrost.chatting.hook.ChatHudLineHook
 import org.polyfrost.chatting.mcScale
-import org.polyfrost.chatting.mixin.ChatHudAccessor
+import org.polyfrost.chatting.util.McChat
+import org.polyfrost.chatting.util.MessageInfo
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.event.v1.events.ScreenOpenEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.animate.Animation
 import org.polyfrost.polyui.animate.Linear
@@ -57,7 +54,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     init {
         eventHandler { event: NewMessageEvent ->
             if (HudManager.isEditing) return@eventHandler
-            addMessage(event.message, true)
+            addMessage(event.messageInfo, true)
         }
         eventHandler { event: HudEditorToggleEvent ->
             swap(event.open)
@@ -119,11 +116,11 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     fun rightClick() {
         if (selectedElements.isEmpty()) {
             if (currentHovered == -1) return
-            elements[currentHovered].message.copyToClipboard()
+            elements[currentHovered].messageInfo.string.copyToClipboard()
         } else {
             val stringBuilder = StringBuilder()
             for (index in selectedElements) {
-                stringBuilder.append(elements[index].message)
+                stringBuilder.append(elements[index].messageInfo.string)
                 if (index != selectedElements.last()) {
                     stringBuilder.append("\n")
                 }
@@ -173,14 +170,14 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun addExampleText() {
         editorMessages.forEach { message ->
-            val line = ChatHudLine(-1, Text.literal(message), null, null)
+            val line = MessageInfo(MCSimpleTextHolder(message), null)
             addMessage(line)
         }
         window.update()
     }
 
     fun addAllMessages() {
-        (mc.inGameHud.chatHud as ChatHudAccessor).messages.reversed().forEach {
+        McChat.messages.reversed().forEach {
             addMessage(it)
         }
         window.update()
@@ -193,23 +190,29 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         }
     }
 
-    fun addMessage(message: ChatHudLine, update: Boolean = false) {
-        var i = 320
-        val icon = message.icon
-        if (icon != null) {
-            i -= icon.width + 4 + 2
-        }
-        val head = (message as ChatHudLineHook).`chatting$getHead`()
-        val hasHead = head != null
-        if (hasHead) {
-            i -= 10
-        }
-        val lines = ChatMessages.breakRenderedChatMessageLines(message.comp_893, i, mc.textRenderer)
-        lines.forEach {
-            val visible = ChatHudLine.Visible(message.creationTick(), it, message.indicator(), it == lines.last())
-            val element = ChatLineElement(visible, hasHead && it == lines.first(), head)
-            elements.add(element)
-        }
+    fun addMessage(messageInfo: MessageInfo, update: Boolean = false) {
+//        var i = 320
+//        val icon = message.icon
+//        if (icon != null) {
+//            i -= icon.width + 4 + 2
+//        }
+//        val head = (message as ChatLineHook).`chatting$getHead`()
+//        val head = null
+//        val hasHead = head != null
+//        if (hasHead) {
+//            i -= 10
+//        }
+
+//        val lines = ChatMessages.breakRenderedChatMessageLines(messageInfo.text.asVanilla(), i, mc.textRenderer)
+//        lines.forEach {
+//            OmniTextRenderer.width()
+//            val info = MessageInfo()
+////            val visible = ChatHudLine.Visible(messageInfo.creationTick, it, message.indicator(), it == lines.last())
+//            val element = ChatLineElement(visible, hasHead && it == lines.first(), head)
+//            elements.add(element)
+//        }
+        val element = ChatLineElement(messageInfo, false, null)
+        elements.add(element)
 
         if (update) window.update()
     }
@@ -274,10 +277,12 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             if (element.hasHead) {
                 renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale * scaleX, 8f * mcScale * scaleY, colorMask = 0xFFFFFF or (element.alpha shl 24))
             }
-            element.visible.indicator?.let { indicator ->
-                val ac = indicator.comp_899 or (element.alpha shl 24)
+            //#if MC > 11202
+            element.messageInfo.indicator?.let { indicator ->
+                val ac = (indicator as net.minecraft.client.gui.hud.MessageIndicator).comp_899 or (element.alpha shl 24)
                 renderer.rect(0f, 0f, 2 * mcScale * scaleX, lineHeight.toFloat(), argb(ac))
             }
+            //#endif
             renderer.translate(0f, lineHeight.toFloat())
         }
         renderer.popScissor()

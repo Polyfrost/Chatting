@@ -1,10 +1,8 @@
-@file:Suppress("PropertyName")
-
 import groovy.lang.MissingPropertyException
 
 pluginManagement {
     repositories {
-        // Releases
+        // Repositories
         maven("https://maven.deftu.dev/releases")
         maven("https://maven.fabricmc.net")
         maven("https://maven.architectury.dev/")
@@ -17,14 +15,32 @@ pluginManagement {
         maven("https://maven.deftu.dev/snapshots")
         mavenLocal()
 
-        // Default
+        // Default repositories
         gradlePluginPortal()
         mavenCentral()
+    }
+
+    plugins {
+        kotlin("jvm") version ("2.2.10")
+        id("dev.deftu.gradle.multiversion-root") version ("2.55.0")
     }
 }
 
 val projectName: String = extra["mod.name"]?.toString()
     ?: throw MissingPropertyException("mod.name has not been set.")
-
-// Configures the root project Gradle name based on the value in `gradle.properties`
 rootProject.name = projectName
+
+rootProject.buildFileName = "root.gradle.kts"
+
+// Adds all of our build target versions to the classpath if we need to add version-specific code.
+listOf(
+    "1.8.9-forge",
+    "1.8.9-fabric",
+    "1.21.5-fabric"
+).forEach { version ->
+    include(":$version")
+    project(":$version").apply {
+        projectDir = file("versions/$version")
+        buildFileName = "../../build.gradle.kts"
+    }
+}

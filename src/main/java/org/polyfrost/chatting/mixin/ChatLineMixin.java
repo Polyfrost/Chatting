@@ -1,14 +1,17 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.hud.ChatHudLine;
 import org.jetbrains.annotations.Nullable;
-import org.polyfrost.chatting.hook.ChatHudLineHook;
+import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.polyui.data.PolyImage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(ChatHudLine.class)
-public class ChatHudLineMixin implements ChatHudLineHook {
+//#if FORGE
+//$$ @Mixin(net.minecraft.client.gui.ChatLine.class)
+//#else
+@Mixin(net.minecraft.client.gui.hud.ChatHudLine.class)
+//#endif
+public class ChatLineMixin implements ChatLineHook {
 
     @Unique private PolyImage chatting$head;
 

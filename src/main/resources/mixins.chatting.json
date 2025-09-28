@@ -7,13 +7,10 @@
     "maxShiftBy": 5
   },
   "client": [
-    "ChatHudAccessor",
-    "ChatHudLineMixin",
-    "ChatHudMixin",
+    "ChatAccessor",
+    "ChatLineMixin",
+    "ChatMixin",
     "MessageHandlerMixin"
   ],
-  "verbose": true,
-  "mixins": [
-    "RendererImplMixin"
-  ]
+  "verbose": true
 }

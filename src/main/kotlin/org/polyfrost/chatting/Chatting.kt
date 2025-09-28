@@ -2,11 +2,6 @@ package org.polyfrost.chatting
 
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
-import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import net.minecraft.client.gui.screen.ChatScreen
-import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.oneconfig.api.commands.v1.CommandManager
 import org.polyfrost.oneconfig.api.event.v1.EventManager
@@ -15,9 +10,29 @@ import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.ui.v1.UIManager
 
-object Chatting : ClientModInitializer {
+//#if FORGE
+//$$ @net.minecraftforge.fml.common.Mod(
+//#if MC >=1.20.1 || MC <=1.12.2
+//$$     modid = Chatting.MODID,
+//$$     name = Chatting.NAME,
+//$$     version = Chatting.VERSION,
+//$$     modLanguageAdapter = "org.polyfrost.oneconfig.utils.v1.forge.KotlinLanguageAdapter"
+//#else
+//$$     value = Chatting.MODID
+//#endif
+//$$ )
+//#endif
+object Chatting
+//#if FABRIC
+    : net.fabricmc.api.ClientModInitializer
+//#endif
+{
 
-    override fun onInitializeClient() {
+    const val MODID = "@MOD_ID@"
+    const val NAME = "@MOD_NAME@"
+    const val VERSION = "@MOD_VERSION@"
+
+    fun initialize() {
         ModConfig.preload()
         CommandManager.register(ModCommand)
         HudManager.register(ChatWindow(preview = true))
@@ -27,23 +42,25 @@ object Chatting : ClientModInitializer {
             UIManager.INSTANCE.defaultInstance.inputManager.mouseMoved(event.x, event.y)
         }
 
-        ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
-            if (screen !is ChatScreen) return@register
-            ScreenMouseEvents.afterMouseClick(screen).register { _, _, _, button ->
-                UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
-//                    if (it is ChatComponent) {
-                        EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, button))
-//                    }
-                }
-            }
-            ScreenMouseEvents.afterMouseScroll(screen).register { _, _, mouseY, horizontalAmount, verticalAmount ->
-                UIManager.INSTANCE.defaultInstance.inputManager.mouseOver?.let {
-                    if (it is ChatComponent) {
-                        it.scroll(verticalAmount.toFloat())
-                    }
-                }
+        eventHandler { event: MouseInputEvent ->
+            println(event.button)
+            if (event.state != 0) return@eventHandler
+            if (!isInScreen || !isInChatScreen) return@eventHandler
+            UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
+                EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, event.button))
             }
         }
     }
+
+    //#if FORGE
+    //$$ @net.minecraftforge.fml.common.Mod.EventHandler
+    //$$ fun onFMLInit(event: net.minecraftforge.fml.common.event.FMLInitializationEvent) {
+    //$$     initialize()
+    //$$ }
+    //#else
+    override fun onInitializeClient() {
+        initialize()
+    }
+    //#endif
 
 }

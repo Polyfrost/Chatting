@@ -1,0 +1,18 @@
+[
+	{
+		"modid": "${mod_id}",
+		"name": "${mod_name}",
+		"description": "",
+		"version": "${mod_version}",
+		"mcversion": "${mc_version}",
+		"url": "",
+		"updateUrl": "",
+		"authorList": [
+			"Polyfrost"
+		],
+		"credits": "",
+		"logoFile": "",
+		"screenshots": [],
+		"dependencies": []
+	}
+]

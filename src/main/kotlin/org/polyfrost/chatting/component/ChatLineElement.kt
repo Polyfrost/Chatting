@@ -1,17 +1,14 @@
 package org.polyfrost.chatting.component
 
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
-import net.minecraft.client.gui.hud.ChatHudLine
 import org.polyfrost.chatting.WHITE
-import org.polyfrost.chatting.asString
+import org.polyfrost.chatting.util.MessageInfo
 import org.polyfrost.polyui.color.asMutable
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.data.PolyImage
 import kotlin.math.roundToInt
 
-class ChatLineElement(val visible: ChatHudLine.Visible, val hasHead: Boolean, val head: PolyImage?) {
-
-    val message = visible.comp_896.asString()
+class ChatLineElement(val messageInfo: MessageInfo, val hasHead: Boolean, val head: PolyImage?) {
 
     var color = rgba(0, 0, 0, 0f).asMutable()
 
@@ -29,6 +26,6 @@ class ChatLineElement(val visible: ChatHudLine.Visible, val hasHead: Boolean, va
     fun render(ctx: OmniRenderingContext) {
         if (alpha <= 3) return
         val x = if (hasHead) 10f else 0f
-        ctx.renderText(message, x, 0f, WHITE.withAlpha(alpha), true)
+        ctx.renderText(messageInfo.string, x, 0f, WHITE.withAlpha(alpha), true)
     }
 }

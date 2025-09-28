@@ -7,7 +7,7 @@ import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.input.KeybindHelper
 import org.polyfrost.polyui.input.Keys
 
-object ModConfig : Config("${ModConstants.ID}.json", ModConstants.NAME, Category.OTHER) {
+object ModConfig : Config("${Chatting.MODID}.json", Chatting.NAME, Category.OTHER) {
 
     @Dropdown(
         title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"],

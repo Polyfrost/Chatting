@@ -4,17 +4,18 @@ import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
 import org.polyfrost.chatting.component.ChatComponent
+import org.polyfrost.chatting.util.getCurrentTick
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.impl.Text
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.milliseconds
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -81,16 +82,18 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
         with(get() as ChatComponent) {
             val inChat = isInScreen && isInChatScreen
             length = elements.count {
-                val creationTick = it.visible.comp_895
+                val creationTick = it.messageInfo.creationTick
+                val currentTick = getCurrentTick()
                 val fullOpacity = inChat || creationTick == -1
-                (mc.inGameHud.ticks - creationTick) / 200f
-                val canRender = fullOpacity || mc.inGameHud.ticks - creationTick <= 200
+                (currentTick - creationTick) / 200f
+                val canRender = fullOpacity || currentTick - creationTick <= 200
                 it.renders = canRender
                 if (canRender) {
                     it.opacity = if (fullOpacity) {
                         1.0
                     } else {
-                        Math.clamp(10 - (mc.inGameHud.ticks - creationTick) / 20.0, 0.0, 1.0).pow(2)
+                        val opacity = (10 - (currentTick - creationTick) / 20.0)
+                        min(max(opacity, 0.0), 1.0).pow(2)
                     }
                 }
                 return@count canRender

@@ -8,10 +8,6 @@ import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniResolution
 import dev.deftu.omnicore.api.client.resourceManager
 import dev.deftu.omnicore.api.color.OmniColor
-import net.minecraft.client.gui.hud.MessageIndicator
-import net.minecraft.text.OrderedText
-import net.minecraft.text.Style
-import net.minecraft.util.Formatting
 import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.component.ChatLineElement
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
@@ -42,77 +38,83 @@ val WHITE = OmniColor(-1)
 @JvmField
 var currentSender: GameProfile? = null
 
-fun OrderedText.asString(): String {
-    val sb = StringBuilder()
-    var lastStyle = Style.EMPTY
+//fun OrderedText.asString(): String {
+//    val sb = StringBuilder()
+//    var lastStyle = Style.EMPTY
+//
+//    this.accept { _, style, codePoint ->
+//        if (style != lastStyle) {
+//            sb.append(getFormattingCodes(style, lastStyle))
+//            lastStyle = style
+//        }
+//        sb.appendCodePoint(codePoint)
+//        true
+//    }
+//
+//    return sb.toString()
+//}
+//
+//private fun getFormattingCodes(style: Style, old: Style): String {
+//    val stringBuilder = StringBuilder()
+//
+//    if (!style.isBold && old.isBold ||
+//        !style.isItalic && old.isItalic ||
+//        !style.isUnderlined && old.isUnderlined ||
+//        !style.isStrikethrough && old.isStrikethrough ||
+//        !style.isObfuscated && old.isObfuscated ||
+//        (style.color != old.color && style.color == null)) {
+//        stringBuilder.append("§r")
+//    }
+//
+//    val color = style.color
+//    if (color != null) {
+//        val format = Formatting.byName(color.name)
+//        if (format != null) {
+//            stringBuilder.append('§').append(format.code)
+//        } else {
+//            val hex = String.format("%06x", color.rgb)
+//            stringBuilder.append("§x")
+//            for (c in hex) stringBuilder.append('§').append(c)
+//        }
+//    }
+//
+//    if (style.isBold) stringBuilder.append("§l")
+//    if (style.isItalic) stringBuilder.append("§o")
+//    if (style.isUnderlined) stringBuilder.append("§n")
+//    if (style.isStrikethrough) stringBuilder.append("§m")
+//    if (style.isObfuscated) stringBuilder.append("§k")
+//
+//    return stringBuilder.toString()
+//}
 
-    this.accept { _, style, codePoint ->
-        if (style != lastStyle) {
-            sb.append(getFormattingCodes(style, lastStyle))
-            lastStyle = style
-        }
-        sb.appendCodePoint(codePoint)
-        true
-    }
+//fun getHoveredComponent(): ChatComponent? {
+//    val mouseOver = UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null
+//    if (mouseOver !is ChatComponent) return null
+//    return mouseOver
+//}
+//
+//fun getLineMouseX(chatComponent: ChatComponent, chatLineElement: ChatLineElement): Int {
+//    return ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4 - if (chatLineElement.hasHead) 10 else 0
+//}
 
-    return sb.toString()
-}
-
-private fun getFormattingCodes(style: Style, old: Style): String {
-    val stringBuilder = StringBuilder()
-
-    if (!style.isBold && old.isBold ||
-        !style.isItalic && old.isItalic ||
-        !style.isUnderlined && old.isUnderlined ||
-        !style.isStrikethrough && old.isStrikethrough ||
-        !style.isObfuscated && old.isObfuscated ||
-        (style.color != old.color && style.color == null)) {
-        stringBuilder.append("§r")
-    }
-
-    val color = style.color
-    if (color != null) {
-        val format = Formatting.byName(color.name)
-        if (format != null) {
-            stringBuilder.append('§').append(format.code)
-        } else {
-            val hex = String.format("%06x", color.rgb)
-            stringBuilder.append("§x")
-            for (c in hex) stringBuilder.append('§').append(c)
-        }
-    }
-
-    if (style.isBold) stringBuilder.append("§l")
-    if (style.isItalic) stringBuilder.append("§o")
-    if (style.isUnderlined) stringBuilder.append("§n")
-    if (style.isStrikethrough) stringBuilder.append("§m")
-    if (style.isObfuscated) stringBuilder.append("§k")
-
-    return stringBuilder.toString()
-}
-
-fun getLineMouseX(chatComponent: ChatComponent, chatLineElement: ChatLineElement): Int {
-    return ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4 - if (chatLineElement.hasHead) 10 else 0
-}
-
-fun getIndicator(): MessageIndicator? {
-    val chatComponent = (UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null) as ChatComponent? ?: return null
-    if (chatComponent.currentHovered == -1) return null
-    val element = chatComponent.elements[chatComponent.currentHovered]
-    val indicator = element.visible.indicator ?: return null
-    if (getLineMouseX(chatComponent, element) >= 0) return null
-    return indicator
-}
-
-fun getStyle(): Style? {
-    val chatComponent = (UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null) as ChatComponent? ?: return null
-    if (chatComponent.currentHovered != -1) {
-        val element = chatComponent.elements[chatComponent.currentHovered]
-        val mouseX = getLineMouseX(chatComponent, element)
-        return mc.textRenderer.textHandler.getStyleAt(element.visible.comp_896, mouseX)
-    }
-    return null
-}
+//fun getIndicator(): MessageIndicator? {
+//    val chatComponent = getHoveredComponent() ?: return null
+//    if (chatComponent.currentHovered == -1) return null
+//    val element = chatComponent.elements[chatComponent.currentHovered]
+//    val indicator = element.visible.indicator ?: return null
+//    if (getLineMouseX(chatComponent, element) >= 0) return null
+//    return indicator
+//}
+//
+//fun getStyle(): Style? {
+//    val chatComponent = getHoveredComponent() ?: return null
+//    if (chatComponent.currentHovered != -1) {
+//        val element = chatComponent.elements[chatComponent.currentHovered]
+//        val mouseX = getLineMouseX(chatComponent, element)
+//        return mc.textRenderer.textHandler.getStyleAt(element.visible.comp_896, mouseX)
+//    }
+//    return null
+//}
 
 // messy code
 @Throws(IOException::class)
@@ -124,15 +126,15 @@ fun InputStream.cropToInputStream(x: Int, y: Int, width: Int, height: Int): Inpu
     }
 }
 
-fun getSkinFromProfile(gameProfile: GameProfile?): PolyImage? {
-    val profile = gameProfile ?: return null
-    mc.networkHandler?.getPlayerListEntry(profile.id)?.let {
-        resourceManager.open(it.skinTextures.comp_1626).cropToInputStream(8, 8, 8, 8).let { stream ->
-            return DynamicPolyImage("chatHead_${gameProfile.name}", stream, PolyImage.Type.Raster)
-        }
-    }
-    return null
-}
+//fun getSkinFromProfile(gameProfile: GameProfile?): PolyImage? {
+//    val profile = gameProfile ?: return null
+//    mc.networkHandler?.getPlayerListEntry(profile.id)?.let {
+//        resourceManager.open(it.skinTextures.comp_1626).cropToInputStream(8, 8, 8, 8).let { stream ->
+//            return DynamicPolyImage("chatHead_${gameProfile.name}", stream, PolyImage.Type.Raster)
+//        }
+//    }
+//    return null
+//}
 
 fun String.copyToClipboard() {
     Clipboard.getInstance().string = this
