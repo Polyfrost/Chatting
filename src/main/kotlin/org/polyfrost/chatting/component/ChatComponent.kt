@@ -170,7 +170,9 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun addExampleText() {
         editorMessages.forEach { message ->
-            val line = MessageInfo(MCSimpleTextHolder(message), null)
+            val line = MessageInfo(MCSimpleTextHolder(message), null).also {
+                it.creationTick = -1
+            }
             addMessage(line)
         }
         window.update()
@@ -255,7 +257,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     }
 
     override fun render() {
-        renderer.pushScissor(x, y, width * scaleX, height * scaleY)
+//        renderer.pushScissor(x, y, width * scaleX, height * scaleY)
         renderer.translate(x, y - translateAmount * lineHeight)
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
@@ -285,7 +287,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             //#endif
             renderer.translate(0f, lineHeight.toFloat())
         }
-        renderer.popScissor()
+//        renderer.popScissor()
     }
 
     fun drawLegacy(ctx: OmniRenderingContext) {

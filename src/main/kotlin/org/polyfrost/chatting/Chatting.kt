@@ -1,7 +1,11 @@
 package org.polyfrost.chatting
 
+import dev.deftu.eventbus.SubscribeEvent
+import dev.deftu.omnicore.api.client.events.input.InputEvent
+import dev.deftu.omnicore.api.client.events.input.InputState
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
+import dev.deftu.omnicore.api.eventBus
 import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.oneconfig.api.commands.v1.CommandManager
 import org.polyfrost.oneconfig.api.event.v1.EventManager
@@ -36,19 +40,20 @@ object Chatting
         ModConfig.preload()
         CommandManager.register(ModCommand)
         HudManager.register(ChatWindow(preview = true))
+        eventBus.register(this)
 
         eventHandler { event: MouseInputEvent.Moved ->
             if (!isInScreen || !isInChatScreen) return@eventHandler
             UIManager.INSTANCE.defaultInstance.inputManager.mouseMoved(event.x, event.y)
         }
+    }
 
-        eventHandler { event: MouseInputEvent ->
-            println(event.button)
-            if (event.state != 0) return@eventHandler
-            if (!isInScreen || !isInChatScreen) return@eventHandler
-            UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
-                EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, event.button))
-            }
+    @SubscribeEvent
+    fun onMouseInput(event: InputEvent.MouseButton) {
+        if (event.state == InputState.RELEASED) return
+        if (!isInScreen || !isInChatScreen) return
+        UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
+            EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, event.button.code))
         }
     }
 

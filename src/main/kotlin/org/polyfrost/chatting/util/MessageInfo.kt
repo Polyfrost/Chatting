@@ -9,5 +9,5 @@ class MessageInfo(
 
     val string = text.asString()
 
-    val creationTick = getCurrentTick()
+    var creationTick = getCurrentTick()
 }
