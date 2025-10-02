@@ -1,0 +1,1 @@
+net.minecraft.client.gui.hud.ChatHudLine comp_893() getText()

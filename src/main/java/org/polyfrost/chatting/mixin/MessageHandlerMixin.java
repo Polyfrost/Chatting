@@ -1,6 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
-//#if MC > 11202
+//#if MC > 1.16.5
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.message.MessageHandler;
 import net.minecraft.network.message.MessageType;

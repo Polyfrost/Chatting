@@ -10,6 +10,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.impl.Text
@@ -83,7 +84,7 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
             val inChat = isInScreen && isInChatScreen
             length = elements.count {
                 val creationTick = it.messageInfo.creationTick
-                val currentTick = getCurrentTick()
+                val currentTick = mc.inGameHud.ticks
                 val fullOpacity = inChat || creationTick == -1
                 (currentTick - creationTick) / 200f
                 val canRender = fullOpacity || currentTick - creationTick <= 200

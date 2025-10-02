@@ -1,36 +1,34 @@
 package org.polyfrost.chatting.mixin;
 
-import dev.deftu.textile.minecraft.MCTextHolder;
+import net.minecraft.client.gui.hud.ChatHudLine;
 import org.polyfrost.chatting.util.McChat;
-import org.polyfrost.chatting.util.MessageInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if FORGE
-//$$ @Mixin(net.minecraft.client.gui.GuiNewChat.class)
-//#else
 @Mixin(net.minecraft.client.gui.hud.ChatHud.class)
-//#endif
 public class ChatMixin {
 
-    //#if MC <= 11202
-    //#if FORGE
-    //$$ @Inject(method = "printChatMessageWithOptionalDeletion", at = @At("HEAD"))
-    //$$ private void newMessage(net.minecraft.util.IChatComponent message, int chatLineId, CallbackInfo ci) {
-    //#else
-    //$$ @Inject(method = "addMessage(Lnet/minecraft/text/Text;I)V", at = @At("HEAD"))
-    //$$ private void addMessage(net.minecraft.text.Text message, int messageId, CallbackInfo ci) {
-    //#endif
-    //$$     MessageInfo messageInfo = new MessageInfo(MCTextHolder.convertFromVanilla(message), null);
-    //$$     McChat.INSTANCE.addMessage(messageInfo);
-    //$$ }
-    //#else
-    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("HEAD"))
-    private void newMessage(net.minecraft.text.Text text, net.minecraft.network.message.MessageSignatureData messageSignatureData, net.minecraft.client.gui.hud.MessageIndicator messageIndicator, CallbackInfo ci) {
-        MessageInfo messageInfo = new MessageInfo(MCTextHolder.convertFromVanilla(text), messageIndicator);
-        McChat.INSTANCE.addMessage(messageInfo);
+    //#if MC > 1.16.5
+    @Inject(method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V", at = @At("HEAD"))
+    private void onAdd(ChatHudLine chatHudLine, CallbackInfo ci) {
+        McChat.INSTANCE.addMessage(chatHudLine);
     }
+    //#else
+    //$$ @Shadow
+    //$$ @Final
+    //$$ private List<ChatHudLine> messages;
+    //$$ @Inject(method = "addMessage(Lnet/minecraft/text/Text;IIZ)V", at = @At("TAIL"))
+    //$$ private void onAdd(net.minecraft.text.Text text, int i, int j, boolean bl, CallbackInfo ci) {
+    //$$     if (!bl) {
+    //$$         McChat.INSTANCE.addMessage(this.messages.get(0));
+    //$$     }
+    //$$ }
     //#endif
+
+    @Inject(method = "clear", at = @At("HEAD"))
+    private void onClear(CallbackInfo ci) {
+        McChat.INSTANCE.clearMessages();
+    }
 }

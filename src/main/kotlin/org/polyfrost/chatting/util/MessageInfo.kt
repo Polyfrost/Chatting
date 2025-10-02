@@ -1,13 +1,18 @@
 package org.polyfrost.chatting.util
 
 import dev.deftu.textile.minecraft.MCTextHolder
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.polyui.data.PolyImage
 
 class MessageInfo(
-    val text: MCTextHolder<*>,
-    val indicator: Object?
+    val id: Int,
+    val message: MCTextHolder<*>,
+    var creationTick: Int,
+    val indicator: Any? = null,
 ) {
 
-    val string = text.asString()
+    var headImage: PolyImage? = null
 
-    var creationTick = getCurrentTick()
+    val string = message.asString()
+
 }

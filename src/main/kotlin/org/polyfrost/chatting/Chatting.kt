@@ -13,28 +13,42 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.ui.v1.UIManager
-
-//#if FORGE
-//$$ @net.minecraftforge.fml.common.Mod(
-//#if MC >=1.20.1 || MC <=1.12.2
-//$$     modid = Chatting.MODID,
-//$$     name = Chatting.NAME,
-//$$     version = Chatting.VERSION,
-//$$     modLanguageAdapter = "org.polyfrost.oneconfig.utils.v1.forge.KotlinLanguageAdapter"
+//#if FABRIC
+import net.fabricmc.api.ClientModInitializer
+//#elseif FORGE
+//#if MC >= 1.16.5
+//$$ import net.minecraftforge.eventbus.api.IEventBus
+//$$ import net.minecraftforge.fml.common.Mod
+//$$ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
+//$$ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 //#else
-//$$     value = Chatting.MODID
+//$$ import net.minecraftforge.fml.common.Mod
+//$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 //#endif
-//$$ )
+//#endif
+
+//#if FORGE-LIKE
+//#if MC >= 1.16.5
+//$$ @Mod(Chatting.MODID)
+//#else
+//$$ @Mod(modid = Chatting.MODID, version = Chatting.VERSION)
+//#endif
 //#endif
 object Chatting
-//#if FABRIC
-    : net.fabricmc.api.ClientModInitializer
-//#endif
+    //#if FABRIC
+    : ClientModInitializer
+    //#endif
 {
 
     const val MODID = "@MOD_ID@"
     const val NAME = "@MOD_NAME@"
     const val VERSION = "@MOD_VERSION@"
+
+    //#if FORGE && MC >= 1.16.5
+    //$$ init {
+    //$$     FMLJavaModLoadingContext.get().modEventBus.addListener(this::onInitializeClient)
+    //$$ }
+    //#endif
 
     fun initialize() {
         ModConfig.preload()
@@ -57,15 +71,27 @@ object Chatting
         }
     }
 
-    //#if FORGE
-    //$$ @net.minecraftforge.fml.common.Mod.EventHandler
-    //$$ fun onFMLInit(event: net.minecraftforge.fml.common.event.FMLInitializationEvent) {
-    //$$     initialize()
-    //$$ }
-    //#else
-    override fun onInitializeClient() {
+    //#if FABRIC
+    override
+    //#elseif FORGE && MC <= 1.12.2
+    //$$ @Mod.EventHandler
+    //#endif
+    fun onInitializeClient(
+        //#if FORGE
+        //#if MC >= 1.16.5
+        //$$ event: FMLClientSetupEvent
+        //#else
+        //$$ event: FMLInitializationEvent
+        //#endif
+        //#endif
+    ) {
+        //#if FORGE && MC <= 1.12.2
+        //$$ if (!event.side.isClient) {
+        //$$     return
+        //$$ }
+        //#endif
+
         initialize()
     }
-    //#endif
 
 }

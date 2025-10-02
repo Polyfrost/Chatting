@@ -9,7 +9,7 @@ import org.polyfrost.chatting.animation.DummyAnimation
 import org.polyfrost.chatting.copyToClipboard
 import org.polyfrost.chatting.editorMessages
 import org.polyfrost.chatting.event.MouseActionEvent
-import org.polyfrost.chatting.event.NewMessageEvent
+import org.polyfrost.chatting.event.MessageEvent
 import org.polyfrost.chatting.mcScale
 import org.polyfrost.chatting.util.McChat
 import org.polyfrost.chatting.util.MessageInfo
@@ -52,16 +52,24 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     var drawingEnd = 0
 
     init {
-        eventHandler { event: NewMessageEvent ->
+        eventHandler { event: MessageEvent.Add ->
             if (HudManager.isEditing) return@eventHandler
             addMessage(event.messageInfo, true)
+        }
+        eventHandler { event: MessageEvent.Remove ->
+            if (HudManager.isEditing) return@eventHandler
+            removeMessage(event.messageInfo, true)
+        }
+        eventHandler { event: MessageEvent.Clear ->
+            if (HudManager.isEditing) return@eventHandler
+            removeAllMessages(true)
         }
         eventHandler { event: HudEditorToggleEvent ->
             swap(event.open)
         }
         eventHandler { event: MouseInputEvent.Moved ->
             if (!hovered) return@eventHandler
-            getCurrentElement(event.x, event.y)
+            getCurrentElement(event.y)
         }
         eventHandler { event: MouseActionEvent.Companion.Click ->
             if (event.mouseOver == null) {
@@ -152,7 +160,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         currentHovered = -1
     }
 
-    fun getCurrentElement(mouseX: Float = OmniMouse.rawX.toFloat(), mouseY: Float = OmniMouse.rawY.toFloat()) {
+    fun getCurrentElement(mouseY: Float = OmniMouse.rawY.toFloat()) {
         if (elements.isEmpty()) return
         val index = elements.size - 1 - floor((y + height * scaleY + lineHeight * scrollAmount.value - mouseY) / lineHeight).toInt()
         if (index < 0 || index >= elements.size) return
@@ -170,16 +178,14 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun addExampleText() {
         editorMessages.forEach { message ->
-            val line = MessageInfo(MCSimpleTextHolder(message), null).also {
-                it.creationTick = -1
-            }
+            val line = MessageInfo(-1, MCSimpleTextHolder(message), -1, null)
             addMessage(line)
         }
         window.update()
     }
 
     fun addAllMessages() {
-        McChat.messages.reversed().forEach {
+        McChat.messages.values.reversed().forEach {
             addMessage(it)
         }
         window.update()
@@ -187,9 +193,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun removeAllMessages(update: Boolean) {
         elements.clear()
-        if (update) {
-            window.update()
-        }
+        if (update) window.update()
     }
 
     fun addMessage(messageInfo: MessageInfo, update: Boolean = false) {
@@ -216,6 +220,11 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         val element = ChatLineElement(messageInfo, false, null)
         elements.add(element)
 
+        if (update) window.update()
+    }
+
+    fun removeMessage(messageInfo: MessageInfo, update: Boolean = false) {
+        elements.removeIf { it.equals(messageInfo) }
         if (update) window.update()
     }
 
@@ -279,7 +288,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             if (element.hasHead) {
                 renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale * scaleX, 8f * mcScale * scaleY, colorMask = 0xFFFFFF or (element.alpha shl 24))
             }
-            //#if MC > 11202
+            //#if MC > 1.16.5
             element.messageInfo.indicator?.let { indicator ->
                 val ac = (indicator as net.minecraft.client.gui.hud.MessageIndicator).comp_899 or (element.alpha shl 24)
                 renderer.rect(0f, 0f, 2 * mcScale * scaleX, lineHeight.toFloat(), argb(ac))
