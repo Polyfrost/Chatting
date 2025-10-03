@@ -8,11 +8,9 @@ import dev.deftu.omnicore.api.client.render.OmniResolution
 import dev.deftu.omnicore.api.client.resourceManager
 import dev.deftu.omnicore.api.color.OmniColor
 import net.minecraft.client.gui.hud.ChatHudLine
-import org.polyfrost.chatting.component.ChatComponent
-import org.polyfrost.chatting.component.ChatLineElement
+import net.minecraft.text.Text
 import org.polyfrost.chatting.mixin.ChatAccessor
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
-import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.oneconfig.internal.DynamicPolyImage
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.data.PolyImage
@@ -22,7 +20,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import javax.imageio.ImageIO
-import kotlin.math.max
 
 val mcScale
     get() = OmniResolution.scaleFactor.toFloat()
@@ -39,64 +36,33 @@ val WHITE = OmniColor(-1)
 @JvmField
 var currentSender: GameProfile? = null
 
-fun getMessages(): List<
-        //#if MC == 11605
-        //$$ ChatHudLine<net.minecraft.text.Text>,
-        //#else
-        ChatHudLine
-        //#endif
-        > {
+fun getMessages(): List<McChatLine> {
     return (mc.inGameHud.chatHud as ChatAccessor).messages
 }
 
-//fun OrderedText.asString(): String {
-//    val sb = StringBuilder()
-//    var lastStyle = Style.EMPTY
-//
-//    this.accept { _, style, codePoint ->
-//        if (style != lastStyle) {
-//            sb.append(getFormattingCodes(style, lastStyle))
-//            lastStyle = style
-//        }
-//        sb.appendCodePoint(codePoint)
-//        true
-//    }
-//
-//    return sb.toString()
-//}
-//
-//private fun getFormattingCodes(style: Style, old: Style): String {
-//    val stringBuilder = StringBuilder()
-//
-//    if (!style.isBold && old.isBold ||
-//        !style.isItalic && old.isItalic ||
-//        !style.isUnderlined && old.isUnderlined ||
-//        !style.isStrikethrough && old.isStrikethrough ||
-//        !style.isObfuscated && old.isObfuscated ||
-//        (style.color != old.color && style.color == null)) {
-//        stringBuilder.append("§r")
-//    }
-//
-//    val color = style.color
-//    if (color != null) {
-//        val format = Formatting.byName(color.name)
-//        if (format != null) {
-//            stringBuilder.append('§').append(format.code)
-//        } else {
-//            val hex = String.format("%06x", color.rgb)
-//            stringBuilder.append("§x")
-//            for (c in hex) stringBuilder.append('§').append(c)
-//        }
-//    }
-//
-//    if (style.isBold) stringBuilder.append("§l")
-//    if (style.isItalic) stringBuilder.append("§o")
-//    if (style.isUnderlined) stringBuilder.append("§n")
-//    if (style.isStrikethrough) stringBuilder.append("§m")
-//    if (style.isObfuscated) stringBuilder.append("§k")
-//
-//    return stringBuilder.toString()
-//}
+fun String.toChatLine(): McChatLine {
+    return ChatHudLine(
+        -1,
+        //#if MC >= 1.16.5
+        Text.literal(this),
+        //#else
+        //$$ net.minecraft.text.LiteralText(this),
+        //#endif
+        //#if MC > 1.16.5
+        null,
+        null
+        //#else
+        //$$ -1
+        //#endif
+    )
+}
+
+typealias McChatLine =
+    //#if MC == 11605
+    //$$ ChatHudLine<net.minecraft.text.Text>
+    //#else
+    ChatHudLine
+    //#endif
 
 //fun getHoveredComponent(): ChatComponent? {
 //    val mouseOver = UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null

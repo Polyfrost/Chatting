@@ -82,7 +82,7 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
         with(get() as ChatComponent) {
             val inChat = isInScreen && isInChatScreen
             length = elements.count {
-                val creationTick = it.messageInfo.creationTick
+                val creationTick = it.fullMessage.creationTick
                 val currentTick = mc.inGameHud.ticks
                 val fullOpacity = inChat || creationTick == -1
                 (currentTick - creationTick) / 200f

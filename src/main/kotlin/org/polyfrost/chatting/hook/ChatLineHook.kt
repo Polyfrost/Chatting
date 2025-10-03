@@ -4,8 +4,8 @@ import org.polyfrost.polyui.data.PolyImage
 
 interface ChatLineHook {
 
-    fun `chatting$setHead`(head: PolyImage?)
+    fun `chatting$setChatHead`(head: PolyImage?)
 
-    fun `chatting$getHead`(): PolyImage?
+    fun `chatting$getChatHead`(): PolyImage?
 
 }

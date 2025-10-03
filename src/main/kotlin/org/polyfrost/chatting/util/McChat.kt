@@ -1,56 +1,36 @@
 package org.polyfrost.chatting.util
 
-import dev.deftu.textile.minecraft.MCTextHolder
-import net.minecraft.client.gui.hud.ChatHudLine
+import org.polyfrost.chatting.McChatLine
 import org.polyfrost.chatting.currentSender
 import org.polyfrost.chatting.event.MessageEvent
 import org.polyfrost.chatting.getSkinFromProfile
+import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 
 object McChat {
 
-    val messages = HashMap<Int, MessageInfo>()
-
-    fun addMessage(
-        chatLine:
-        //#if MC == 11605
-        //$$ ChatHudLine<net.minecraft.text.Text>,
-        //#else
-        ChatHudLine,
-        //#endif
-    ) {
-        val info = MessageInfo(
-            chatLine.hashCode(),
-            MCTextHolder.convertFromVanilla(chatLine.comp_893),
-            chatLine.creationTick,
-            //#if MC > 1.16.5
-            chatLine.indicator
-            //#endif
-        )
+    fun addMessage(chatLine: McChatLine) {
+        val chatLineHook = chatLine as ChatLineHook
         if (currentSender != null) {
             getSkinFromProfile(currentSender)?.let {
-                info.headImage = it
+                chatLineHook.`chatting$setChatHead`(it)
             }
         }
-        messages[chatLine.hashCode()] = info
-        EventManager.INSTANCE.post(MessageEvent.Add(info))
-        while (messages.size > 100) {
-            val id = messages.keys.first()
-            messages.remove(id)
-        }
+        EventManager.INSTANCE.post(MessageEvent.Add(chatLine))
     }
 
-    fun removeMessage(
-        chatLine:
-        //#if MC == 11605
-        //$$ ChatHudLine<net.minecraft.text.Text>,
-        //#else
-        ChatHudLine,
-        //#endif
-    ) {
-        val info = messages[chatLine.hashCode()] ?: return
-        EventManager.INSTANCE.post(MessageEvent.Remove(info))
-        messages.remove(chatLine.hashCode())
+    //#if MC <= 1.16.5
+    //$$ fun removeMessageById(id: Int) {
+    //$$     org.polyfrost.chatting.getMessages().forEach {
+    //$$         if (it.id == id) {
+    //$$             EventManager.INSTANCE.post(MessageEvent.Remove(it))
+    //$$         }
+    //$$     }
+    //$$ }
+    //#endif
+
+    fun refreshChat() {
+        EventManager.INSTANCE.post(MessageEvent.Refresh())
     }
 
     fun clearMessages() {

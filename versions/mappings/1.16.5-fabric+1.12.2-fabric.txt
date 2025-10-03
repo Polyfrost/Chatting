@@ -1,1 +1,2 @@
 net.minecraft.text.Text net.minecraft.text.Text
+net.minecraft.text.Text getString() asFormattedString()
