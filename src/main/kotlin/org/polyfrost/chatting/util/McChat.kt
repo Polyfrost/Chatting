@@ -2,7 +2,9 @@ package org.polyfrost.chatting.util
 
 import dev.deftu.textile.minecraft.MCTextHolder
 import net.minecraft.client.gui.hud.ChatHudLine
+import org.polyfrost.chatting.currentSender
 import org.polyfrost.chatting.event.MessageEvent
+import org.polyfrost.chatting.getSkinFromProfile
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 
 object McChat {
@@ -25,6 +27,11 @@ object McChat {
             chatLine.indicator
             //#endif
         )
+        if (currentSender != null) {
+            getSkinFromProfile(currentSender)?.let {
+                info.headImage = it
+            }
+        }
         messages[chatLine.hashCode()] = info
         EventManager.INSTANCE.post(MessageEvent.Add(info))
         while (messages.size > 100) {

@@ -2,10 +2,13 @@ package org.polyfrost.chatting.mixin;
 
 import net.minecraft.client.gui.hud.ChatHudLine;
 import org.polyfrost.chatting.util.McChat;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 @Mixin(net.minecraft.client.gui.hud.ChatHud.class)
 public class ChatMixin {
@@ -16,7 +19,7 @@ public class ChatMixin {
         McChat.INSTANCE.addMessage(chatHudLine);
     }
     //#else
-    //$$ @Shadow
+    //$$ @org.spongepowered.asm.mixin.Shadow
     //$$ @Final
     //$$ private List<ChatHudLine> messages;
     //$$ @Inject(method = "addMessage(Lnet/minecraft/text/Text;IIZ)V", at = @At("TAIL"))

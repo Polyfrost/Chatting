@@ -65,6 +65,7 @@ object Chatting
     @SubscribeEvent
     fun onMouseInput(event: InputEvent.MouseButton) {
         if (event.state == InputState.RELEASED) return
+        println(event.button)
         if (!isInScreen || !isInChatScreen) return
         UIManager.INSTANCE.defaultInstance.inputManager.mouseOver.let {
             EventManager.INSTANCE.post(MouseActionEvent.Companion.Click(it, event.button.code))

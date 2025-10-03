@@ -4,12 +4,13 @@ package org.polyfrost.chatting
 
 import com.mojang.authlib.GameProfile
 import dev.deftu.clipboard.Clipboard
-import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniResolution
 import dev.deftu.omnicore.api.client.resourceManager
 import dev.deftu.omnicore.api.color.OmniColor
+import net.minecraft.client.gui.hud.ChatHudLine
 import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.component.ChatLineElement
+import org.polyfrost.chatting.mixin.ChatAccessor
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
 import org.polyfrost.oneconfig.api.ui.v1.UIManager
 import org.polyfrost.oneconfig.internal.DynamicPolyImage
@@ -37,6 +38,16 @@ val WHITE = OmniColor(-1)
 
 @JvmField
 var currentSender: GameProfile? = null
+
+fun getMessages(): List<
+        //#if MC == 11605
+        //$$ ChatHudLine<net.minecraft.text.Text>,
+        //#else
+        ChatHudLine
+        //#endif
+        > {
+    return (mc.inGameHud.chatHud as ChatAccessor).messages
+}
 
 //fun OrderedText.asString(): String {
 //    val sb = StringBuilder()
@@ -126,15 +137,22 @@ fun InputStream.cropToInputStream(x: Int, y: Int, width: Int, height: Int): Inpu
     }
 }
 
-//fun getSkinFromProfile(gameProfile: GameProfile?): PolyImage? {
-//    val profile = gameProfile ?: return null
-//    mc.networkHandler?.getPlayerListEntry(profile.id)?.let {
-//        resourceManager.open(it.skinTextures.comp_1626).cropToInputStream(8, 8, 8, 8).let { stream ->
-//            return DynamicPolyImage("chatHead_${gameProfile.name}", stream, PolyImage.Type.Raster)
-//        }
-//    }
-//    return null
-//}
+fun getSkinFromProfile(gameProfile: GameProfile?): PolyImage? {
+    val profile = gameProfile ?: return null
+
+    mc.networkHandler?.getPlayerListEntry(profile.id)?.let {
+        val stream =
+            //#if MC > 1.16.5
+            resourceManager.open(it.skinTextures.comp_1626)
+            //#else
+            //$$ resourceManager.getResource(it.skinTexture).inputStream
+            //#endif
+        stream?.cropToInputStream(8, 8, 8, 8)?.let { stream ->
+            return DynamicPolyImage("chatHead_${gameProfile.name}", stream, PolyImage.Type.Raster)
+        }
+    }
+    return null
+}
 
 fun String.copyToClipboard() {
     Clipboard.getInstance().string = this
