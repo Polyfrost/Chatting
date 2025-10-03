@@ -1,9 +1,6 @@
-package org.polyfrost.chatting.util
+package org.polyfrost.chatting.core
 
-import org.polyfrost.chatting.McChatLine
-import org.polyfrost.chatting.currentSender
 import org.polyfrost.chatting.event.MessageEvent
-import org.polyfrost.chatting.getSkinFromProfile
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 
@@ -21,7 +18,7 @@ object McChat {
 
     //#if MC <= 1.16.5
     //$$ fun removeMessageById(id: Int) {
-    //$$     org.polyfrost.chatting.getMessages().forEach {
+    //$$     org.polyfrost.chatting.core.getMessages().forEach {
     //$$         if (it.id == id) {
     //$$             EventManager.INSTANCE.post(MessageEvent.Remove(it))
     //$$         }

@@ -1,6 +1,6 @@
 package org.polyfrost.chatting.event
 
-import org.polyfrost.chatting.McChatLine
+import org.polyfrost.chatting.core.McChatLine
 import org.polyfrost.oneconfig.api.event.v1.events.Event
 
 class MessageEvent {

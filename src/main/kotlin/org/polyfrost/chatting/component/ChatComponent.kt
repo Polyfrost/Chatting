@@ -5,17 +5,17 @@ import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import dev.deftu.omnicore.api.client.render.OmniTextRenderer
 import dev.deftu.textile.minecraft.MCSimpleTextHolder
-import org.polyfrost.chatting.McChatLine
-import org.polyfrost.chatting.ChatWindow
+import org.polyfrost.chatting.core.McChatLine
+import org.polyfrost.chatting.component.ChatWindow
 import org.polyfrost.chatting.animation.DummyAnimation
-import org.polyfrost.chatting.copyToClipboard
-import org.polyfrost.chatting.editorMessages
+import org.polyfrost.chatting.core.copyToClipboard
+import org.polyfrost.chatting.core.editorMessages
 import org.polyfrost.chatting.event.MouseActionEvent
 import org.polyfrost.chatting.event.MessageEvent
-import org.polyfrost.chatting.getMessages
+import org.polyfrost.chatting.core.getMessages
 import org.polyfrost.chatting.hook.ChatLineHook
-import org.polyfrost.chatting.mcScale
-import org.polyfrost.chatting.toChatLine
+import org.polyfrost.chatting.core.mcScale
+import org.polyfrost.chatting.core.toChatLine
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.event.v1.events.ScreenOpenEvent
@@ -192,7 +192,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     }
 
     fun addAllMessages() {
-        getMessages().forEach {
+        getMessages().reversed().forEach {
             addMessage(it)
         }
         window.update()
@@ -231,10 +231,11 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
                 //#endif
                 chatLine,
                 hasHead && it.value == lines.first(), head)
-//            val element = ChatLineElement(strings.getOrElse(it.index) {
-//                MCSimpleTextHolder(chatLine.comp_893.string)
-//            }.asString(), it.value, chatLine, hasHead && it.value == lines.first(), head)
             elements.add(element)
+        }
+
+        while (elements.size > 100) {
+            elements.removeFirst()
         }
 
         if (update) window.update()

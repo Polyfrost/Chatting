@@ -1,5 +1,6 @@
-package org.polyfrost.chatting
+package org.polyfrost.chatting.core
 
+import org.polyfrost.chatting.Chatting
 import org.polyfrost.oneconfig.api.commands.v1.factories.annotated.Command
 import org.polyfrost.oneconfig.api.commands.v1.factories.annotated.Handler
 import org.polyfrost.oneconfig.utils.v1.dsl.openUI

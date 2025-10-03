@@ -1,8 +1,8 @@
 package org.polyfrost.chatting.component
 
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
-import org.polyfrost.chatting.McChatLine
-import org.polyfrost.chatting.WHITE
+import org.polyfrost.chatting.core.McChatLine
+import org.polyfrost.chatting.core.WHITE
 import org.polyfrost.polyui.color.asMutable
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.data.PolyImage

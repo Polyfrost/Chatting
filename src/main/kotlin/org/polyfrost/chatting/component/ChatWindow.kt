@@ -1,9 +1,9 @@
-package org.polyfrost.chatting
+package org.polyfrost.chatting.component
 
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
-import org.polyfrost.chatting.component.ChatComponent
+import org.polyfrost.chatting.core.mcScale
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch

@@ -13,6 +13,9 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.ui.v1.UIManager
+import org.polyfrost.chatting.component.ChatWindow
+import org.polyfrost.chatting.core.ModCommand
+import org.polyfrost.chatting.core.ModConfig
 //#if FABRIC
 import net.fabricmc.api.ClientModInitializer
 //#elseif FORGE

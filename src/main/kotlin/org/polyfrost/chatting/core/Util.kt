@@ -1,6 +1,6 @@
 @file:JvmName("Util")
 
-package org.polyfrost.chatting
+package org.polyfrost.chatting.core
 
 import com.mojang.authlib.GameProfile
 import dev.deftu.clipboard.Clipboard

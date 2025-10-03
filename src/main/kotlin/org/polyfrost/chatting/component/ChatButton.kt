@@ -1,6 +1,6 @@
 package org.polyfrost.chatting.component
 
-import org.polyfrost.chatting.mcScale
+import org.polyfrost.chatting.core.mcScale
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.impl.Block
 import org.polyfrost.polyui.component.impl.Image

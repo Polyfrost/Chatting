@@ -6,7 +6,7 @@ import net.minecraft.client.network.message.MessageHandler;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.text.Text;
-import org.polyfrost.chatting.Util;
+import org.polyfrost.chatting.core.Util;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -1,5 +1,6 @@
-package org.polyfrost.chatting
+package org.polyfrost.chatting.core
 
+import org.polyfrost.chatting.Chatting
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
