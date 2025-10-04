@@ -1,6 +1,6 @@
 package org.polyfrost.chatting.core
 
-import org.polyfrost.chatting.Chatting
+import org.polyfrost.chatting.ChattingConstants
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
@@ -8,7 +8,7 @@ import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.input.KeybindHelper
 import org.polyfrost.polyui.input.Keys
 
-object ModConfig : Config("${Chatting.MODID}.json", Chatting.NAME, Category.OTHER) {
+object ModConfig : Config("${ChattingConstants.MODID}.json", ChattingConstants.NAME, Category.OTHER) {
 
     @Dropdown(
         title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"],

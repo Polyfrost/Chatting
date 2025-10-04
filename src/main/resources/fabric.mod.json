@@ -12,7 +12,7 @@
         "client": [
             {
                 "adapter": "kotlin",
-                "value": "org.polyfrost.chatting.Chatting"
+                "value": "org.polyfrost.chatting.ChattingEntrypoint"
             }
         ]
     },

@@ -6,7 +6,6 @@ import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import dev.deftu.omnicore.api.client.render.OmniTextRenderer
 import dev.deftu.textile.minecraft.MCSimpleTextHolder
 import org.polyfrost.chatting.core.McChatLine
-import org.polyfrost.chatting.component.ChatWindow
 import org.polyfrost.chatting.animation.DummyAnimation
 import org.polyfrost.chatting.core.copyToClipboard
 import org.polyfrost.chatting.core.editorMessages
@@ -324,14 +323,14 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         matrices.translate(x / mcScale, y / mcScale, 0f)
         matrices.scale(scaleX, scaleY, 1f)
         matrices.translate(4f, -translateAmount * 9 + 1f, 0f)
-        ctx.pushScissor(0, 0, 5, 5)
+//        ctx.pushScissor(0, 0, 5, 5)
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
             if (index !in drawingStart..drawingEnd) continue
             element.render(ctx)
             matrices.translate(0f, 9f, 0f)
         }
-        ctx.popScissor()
+//        ctx.popScissor()
         matrices.pop()
     }
 }
