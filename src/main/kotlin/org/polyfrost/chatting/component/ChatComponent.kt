@@ -21,9 +21,9 @@ import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.animate.Animation
 import org.polyfrost.polyui.animate.Linear
 import org.polyfrost.polyui.color.argb
+import org.polyfrost.polyui.unit.Vec2
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.ms
-import org.polyfrost.polyui.utils.fastEach
 import kotlin.math.*
 
 class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(window, size = 100f by 100f) {
@@ -37,11 +37,6 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     var lastSelected = -1
 
     var hovered = false
-        get() = field
-        set(value) {
-            field = value
-            children?.fastEach { it.renders = value }
-        }
 
     var lineHeight = 0f
 
@@ -58,6 +53,18 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     init {
         chatComponents.add(this)
     }
+
+    override var visibleSize: Vec2
+        get() {
+            return if (hovered) {
+                super.visibleSize + Vec2(30 * mcScale * scaleX, 0f)
+            } else {
+                super.visibleSize
+            }
+        }
+        set(value) {
+            super.visibleSize = value
+        }
 
     fun hoverEnter() {
         hovered = true
@@ -264,6 +271,9 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             element.color.recolor(color)
             element.color.alpha *= element.opacity.toFloat()
             renderer.rect(0f, 0f, width, lineHeight, element.color)
+            if (index == currentHovered) {
+                ChatButtonGroup.render(renderer, width, lineHeight)
+            }
             if (element.hasHead) {
                 renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale, 8f * mcScale, colorMask = 0xFFFFFF or (element.alpha shl 24))
             }

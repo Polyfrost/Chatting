@@ -6,6 +6,7 @@ import dev.deftu.omnicore.api.client.events.input.InputState
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
 import dev.deftu.omnicore.api.eventBus
+import org.polyfrost.chatting.component.ChatButtonGroup
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
@@ -32,7 +33,11 @@ object McChat {
                     return@fastEach
                 }
             }
-            hoveredComponent?.getCurrentElement()
+            hoveredComponent?.let {
+                val x = (event.x - it.x - it.width * it.scaleX) / mcScale
+                ChatButtonGroup.update(x)
+                it.getCurrentElement()
+            }
             if (hoveredComponent != lastHovered) {
                 lastHovered?.hoverExit()
                 hoveredComponent?.hoverEnter()
