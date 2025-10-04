@@ -18,7 +18,6 @@ import org.polyfrost.polyui.unit.milliseconds
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.roundToInt
 
 class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = "Chat", category = Category.INFO) {
 
@@ -98,8 +97,10 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
                 }
                 return@count canRender
             }
-            lineHeight = (9 * mcScale * scaleY).roundToInt()
-            this.size = (320 + 12) * mcScale by min(length, lineLimit) * 9 * mcScale
+            lineHeight = 9 * mcScale
+            val buttonWidth = 10
+            renderWidth = (320 + 12) * mcScale
+            this.size = (320 + 12 + buttonWidth) * mcScale by min(length, lineLimit) * 9 * mcScale
         }
         return true
     }

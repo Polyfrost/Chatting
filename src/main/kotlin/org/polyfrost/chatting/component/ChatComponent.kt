@@ -7,29 +7,23 @@ import dev.deftu.omnicore.api.client.render.OmniTextRenderer
 import dev.deftu.textile.minecraft.MCSimpleTextHolder
 import org.polyfrost.chatting.core.McChatLine
 import org.polyfrost.chatting.animation.DummyAnimation
+import org.polyfrost.chatting.core.chatComponents
 import org.polyfrost.chatting.core.copyToClipboard
 import org.polyfrost.chatting.core.editorMessages
-import org.polyfrost.chatting.event.MouseActionEvent
-import org.polyfrost.chatting.event.MessageEvent
 import org.polyfrost.chatting.core.getMessages
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.chatting.core.mcScale
 import org.polyfrost.chatting.core.toChatLine
-import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
-import org.polyfrost.oneconfig.api.event.v1.events.ScreenOpenEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
-import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.animate.Animation
 import org.polyfrost.polyui.animate.Linear
 import org.polyfrost.polyui.color.argb
-import org.polyfrost.polyui.component.extensions.onHover
-import org.polyfrost.polyui.component.extensions.onHoverExit
 import org.polyfrost.polyui.unit.by
 import org.polyfrost.polyui.unit.ms
+import org.polyfrost.polyui.utils.fastEach
 import kotlin.math.*
 
 class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(window, size = 100f by 100f) {
@@ -43,8 +37,13 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     var lastSelected = -1
 
     var hovered = false
+        get() = field
+        set(value) {
+            field = value
+            children?.fastEach { it.renders = value }
+        }
 
-    var lineHeight = 0
+    var lineHeight = 0f
 
     var scrollAmount: Animation = DummyAnimation(0f)
 
@@ -54,53 +53,25 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     var drawingEnd = 0
 
+    var renderWidth = 0f
+
     init {
-        eventHandler { event: MessageEvent.Add ->
-            if (HudManager.isEditing) return@eventHandler
-            addMessage(event.chatLine, true)
-        }
-        eventHandler { event: MessageEvent.Remove ->
-            if (HudManager.isEditing) return@eventHandler
-            removeMessage(event.chatLine, true)
-        }
-        eventHandler { event: MessageEvent.Refresh ->
-            removeAllMessages(false)
-            addAllMessages()
-        }
-        eventHandler { event: MessageEvent.Clear ->
-            if (HudManager.isEditing) return@eventHandler
-            removeAllMessages(true)
-        }
-        eventHandler { event: HudEditorToggleEvent ->
-            swap(event.open)
-        }
-        eventHandler { event: MouseInputEvent.Moved ->
-            if (!hovered) return@eventHandler
-            getCurrentElement(event.y)
-        }
-        eventHandler { event: MouseActionEvent.Companion.Click ->
-            if (event.mouseOver == null) {
-                selectedElements.clear()
-            } else {
-                if (event.mouseOver == this) {
-                    when (event.button) {
-                        0 -> leftClick()
-                        1 -> rightClick()
-                    }
-                }
-            }
-        }
-        eventHandler { event: ScreenOpenEvent ->
-            if (event.getScreen<Any>() == null) {
-                onClose()
-            }
-        }
-        onHover {
-            getCurrentElement()
-            hovered = true
-        }
-        onHoverExit {
-            hoverExit()
+        chatComponents.add(this)
+    }
+
+    fun hoverEnter() {
+        hovered = true
+    }
+
+    fun hoverExit() {
+        hovered = false
+        currentHovered = -1
+    }
+
+    fun click(button: Int) {
+        when (button) {
+            0 -> leftClick()
+            1 -> rightClick()
         }
     }
 
@@ -129,6 +100,10 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     }
 
     fun rightClick() {
+        copyMessages()
+    }
+
+    fun copyMessages() {
         if (selectedElements.isEmpty()) {
             if (currentHovered == -1) return
             elements[currentHovered].string.copyToClipboard()
@@ -162,14 +137,9 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         getCurrentElement()
     }
 
-    fun hoverExit() {
-        hovered = false
-        currentHovered = -1
-    }
-
     fun getCurrentElement(mouseY: Float = OmniMouse.rawY.toFloat()) {
         if (elements.isEmpty()) return
-        val index = elements.size - 1 - floor((y + height * scaleY + lineHeight * scrollAmount.value - mouseY) / lineHeight).toInt()
+        val index = elements.size - 1 - floor((y + (height + lineHeight * scrollAmount.value) * scaleY - mouseY) / (lineHeight * scaleY)).toInt()
         if (index < 0 || index >= elements.size) return
         currentHovered = index
     }
@@ -270,20 +240,12 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         val full = scroll.toInt().toFloat() == scroll
         drawingEnd = drawingStart + window.lineLimit + if (full) -1 else 0
         translateAmount = if (full) 0f else 1f - scroll + floor(scroll)
-
-        val tempScaleX = scaleX
-        val tempScaleY = scaleY
-        x = round(x)
-        y = round(y)
-        scaleX = 1f
-        scaleY = 1f
         super.preRender(delta)
-        scaleX = tempScaleX
-        scaleY = tempScaleY
     }
 
     override fun render() {
 //        renderer.pushScissor(x, y, width * scaleX, height * scaleY)
+        renderer.push()
         renderer.translate(x, y - translateAmount * lineHeight)
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
@@ -301,18 +263,19 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             }
             element.color.recolor(color)
             element.color.alpha *= element.opacity.toFloat()
-            renderer.rect(0f, 0f, width * scaleX, lineHeight.toFloat(), element.color)
+            renderer.rect(0f, 0f, width, lineHeight, element.color)
             if (element.hasHead) {
-                renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale * scaleX, 8f * mcScale * scaleY, colorMask = 0xFFFFFF or (element.alpha shl 24))
+                renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale, 8f * mcScale, colorMask = 0xFFFFFF or (element.alpha shl 24))
             }
             //#if MC > 1.16.5
             element.fullMessage.indicator?.let { indicator ->
                 val ac = indicator.comp_899 or (element.alpha shl 24)
-                renderer.rect(0f, 0f, 2 * mcScale * scaleX, lineHeight.toFloat(), argb(ac))
+                renderer.rect(0f, 0f, 2 * mcScale, lineHeight, argb(ac))
             }
             //#endif
-            renderer.translate(0f, lineHeight.toFloat())
+            renderer.translate(0f, lineHeight)
         }
+        renderer.pop()
 //        renderer.popScissor()
     }
 

@@ -9,6 +9,7 @@ import dev.deftu.omnicore.api.client.resourceManager
 import dev.deftu.omnicore.api.color.OmniColor
 import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.text.Text
+import org.polyfrost.chatting.component.ChatComponent
 import org.polyfrost.chatting.mixin.ChatAccessor
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
 import org.polyfrost.oneconfig.internal.DynamicPolyImage
@@ -32,6 +33,10 @@ val editorMessages = mutableListOf(
 )
 
 val WHITE = OmniColor(-1)
+
+var hoveredComponent: ChatComponent? = null
+
+val chatComponents = ArrayList<ChatComponent>()
 
 @JvmField
 var currentSender: GameProfile? = null
@@ -58,7 +63,7 @@ fun String.toChatLine(): McChatLine {
 }
 
 typealias McChatLine =
-    //#if MC == 11605
+    //#if MC == 1.16.5
     //$$ ChatHudLine<net.minecraft.text.Text>
     //#else
     ChatHudLine
