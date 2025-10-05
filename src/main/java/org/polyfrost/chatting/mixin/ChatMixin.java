@@ -1,8 +1,13 @@
 package org.polyfrost.chatting.mixin;
 
 import net.minecraft.client.gui.hud.ChatHud;
+import net.minecraft.client.gui.hud.ChatHudLine;
+import org.jetbrains.annotations.NotNull;
 import org.polyfrost.chatting.core.McChat;
+import org.polyfrost.chatting.hook.ChatHook;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
@@ -10,8 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.Collection;
+import java.util.List;
+
 @Mixin(net.minecraft.client.gui.hud.ChatHud.class)
-public class ChatMixin {
+public abstract class ChatMixin implements ChatHook {
+
+    @Shadow
+    @Final
+    private List<ChatHudLine> messages;
 
     //#if MC > 1.16.5
     @ModifyArgs(method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
@@ -42,5 +54,10 @@ public class ChatMixin {
     @Inject(method = "clear", at = @At("HEAD"))
     private void onClear(CallbackInfo ci) {
         McChat.INSTANCE.clearMessages();
+    }
+
+    @Override
+    public void chatting$deleteChatLine(@NotNull Collection<@NotNull ChatHudLine> chatLines) {
+        this.messages.removeAll(chatLines);
     }
 }

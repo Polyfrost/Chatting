@@ -99,7 +99,6 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
             }
             lineHeight = 9 * mcScale
             val buttonWidth = 10
-            renderWidth = (320 + 12) * mcScale
             this.size = (320 + 12 + buttonWidth) * mcScale by min(length, lineLimit) * 9 * mcScale
         }
         return true

@@ -1,6 +1,9 @@
 package org.polyfrost.chatting.component
 
+import dev.deftu.omnicore.api.client.events.input.InputEvent
+import dev.deftu.omnicore.api.client.input.OmniKey
 import dev.deftu.omnicore.api.client.input.OmniKeyboard
+import dev.deftu.omnicore.api.client.input.OmniKeys
 import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
 import dev.deftu.omnicore.api.client.render.OmniTextRenderer
@@ -30,11 +33,11 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     var elements = ArrayList<ChatLineElement>()
 
-    var selectedElements = ArrayList<Int>()
+    var selectedElements = ArrayList<ChatLineElement>()
 
-    var currentHovered = -1
+    var currentHovered: ChatLineElement? = null
 
-    var lastSelected = -1
+    var lastHovered: ChatLineElement? = null
 
     var hovered = false
 
@@ -48,7 +51,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     var drawingEnd = 0
 
-    var renderWidth = 0f
+    val buttonGroup = ChatButtonGroup(arrayListOf(ChatButton.CopyButton(), ChatButton.DeleteButton()))
 
     init {
         chatComponents.add(this)
@@ -56,8 +59,8 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     override var visibleSize: Vec2
         get() {
-            return if (hovered) {
-                super.visibleSize + Vec2(30 * mcScale * scaleX, 0f)
+            return if (hovered && !HudManager.isEditing) {
+                super.visibleSize + Vec2(buttonGroup.buttons.size * 10 * mcScale * scaleX, 0f)
             } else {
                 super.visibleSize
             }
@@ -72,13 +75,27 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun hoverExit() {
         hovered = false
-        currentHovered = -1
+        currentHovered = null
     }
 
-    fun click(button: Int) {
-        when (button) {
-            0 -> leftClick()
-            1 -> rightClick()
+    fun click(event: InputEvent.MouseButton) {
+        if (buttonGroup.hoveredButton != null) {
+            if (event.isLeftButton) {
+                buttonGroup.hoveredButton!!.onClick(this)
+            }
+        } else {
+            if (event.isLeftButton) {
+                leftClick()
+            } else if (event.isRightButton) {
+                rightClick()
+            }
+        }
+    }
+
+    fun keyType(key: OmniKey) {
+        if (OmniKeyboard.isCtrlKeyPressed && key == OmniKeys.KEY_A) {
+            selectedElements.clear()
+            selectedElements.addAll(elements)
         }
     }
 
@@ -89,20 +106,20 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     }
 
     fun leftClick() {
-        if (currentHovered == -1) return
+        val hovered = currentHovered ?: return
         if (OmniKeyboard.isShiftKeyPressed) {
             selectedElements.clear()
-            val currentIndex = currentHovered
-            val lastIndex = if (lastSelected == -1) 0 else lastSelected
+            val currentIndex = elements.indexOf(hovered)
+            val lastIndex = if (lastHovered == null) 0 else elements.indexOf(lastHovered)
             for (i in min(lastIndex, currentIndex)..max(lastIndex, currentIndex)) {
-                selectedElements.add(i)
+                selectedElements.add(elements[i])
             }
         } else {
             if (!OmniKeyboard.isCtrlKeyPressed || !OmniKeyboard.isAltKeyPressed) {
                 selectedElements.clear()
             }
-            selectedElements.add(currentHovered)
-            lastSelected = currentHovered
+            selectedElements = ArrayList(elements.filter { it in selectedElements || it == hovered })
+            lastHovered = hovered
         }
     }
 
@@ -110,21 +127,21 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         copyMessages()
     }
 
+    fun getSelected(): Collection<ChatLineElement> {
+        return elements.filter { it in selectedElements || it == currentHovered }
+    }
+
     fun copyMessages() {
-        if (selectedElements.isEmpty()) {
-            if (currentHovered == -1) return
-            elements[currentHovered].string.copyToClipboard()
-        } else {
-            val stringBuilder = StringBuilder()
-            for (index in selectedElements) {
-                stringBuilder.append(elements[index].string)
-                if (index != selectedElements.last()) {
-                    stringBuilder.append("\n")
-                }
+        val stringBuilder = StringBuilder()
+        val selected = getSelected()
+        for (element in selected) {
+            stringBuilder.append(element.string)
+            if (element != selected.last()) {
+                stringBuilder.append("\n")
             }
-            stringBuilder.toString().copyToClipboard()
-            selectedElements.clear()
         }
+        stringBuilder.toString().copyToClipboard()
+        selectedElements.clear()
     }
 
     fun scroll(amount: Float) {
@@ -148,7 +165,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         if (elements.isEmpty()) return
         val index = elements.size - 1 - floor((y + (height + lineHeight * scrollAmount.value) * scaleY - mouseY) / (lineHeight * scaleY)).toInt()
         if (index < 0 || index >= elements.size) return
-        currentHovered = index
+        currentHovered = elements[index]
     }
 
     fun swap(editing: Boolean) {
@@ -257,7 +274,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
             if (index !in drawingStart..drawingEnd) continue
-            val color = when ((index)) {
+            val color = when ((element)) {
                 in selectedElements -> {
                     window.bgColorSelected
                 }
@@ -271,8 +288,8 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             element.color.recolor(color)
             element.color.alpha *= element.opacity.toFloat()
             renderer.rect(0f, 0f, width, lineHeight, element.color)
-            if (index == currentHovered) {
-                ChatButtonGroup.render(renderer, width, lineHeight)
+            if (!HudManager.isEditing && element == currentHovered) {
+                buttonGroup.render(renderer, width + mcScale)
             }
             if (element.hasHead) {
                 renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale, 8f * mcScale, colorMask = 0xFFFFFF or (element.alpha shl 24))

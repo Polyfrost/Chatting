@@ -6,13 +6,14 @@ import dev.deftu.omnicore.api.client.events.input.InputState
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
 import dev.deftu.omnicore.api.eventBus
-import org.polyfrost.chatting.component.ChatButtonGroup
+import org.polyfrost.chatting.hook.ChatHook
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.event.v1.events.ScreenOpenEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.utils.fastEach
 
 object McChat {
@@ -34,8 +35,8 @@ object McChat {
                 }
             }
             hoveredComponent?.let {
-                val x = (event.x - it.x - it.width * it.scaleX) / mcScale
-                ChatButtonGroup.update(x)
+                val x = (event.x - it.x - it.width * it.scaleX) / (mcScale * it.scaleX)
+                it.buttonGroup.update(x)
                 it.getCurrentElement()
             }
             if (hoveredComponent != lastHovered) {
@@ -53,12 +54,19 @@ object McChat {
     }
 
     @SubscribeEvent
+    fun onKeyInput(event: InputEvent.Key) {
+        if (event.state == InputState.RELEASED) return
+        if (!isInScreen || !isInChatScreen || HudManager.isEditing) return
+        hoveredComponent?.keyType(event.key)
+    }
+
+    @SubscribeEvent
     fun onMouseInput(event: InputEvent.MouseButton) {
         if (event.state == InputState.RELEASED) return
-        if (!isInScreen || !isInChatScreen) return
+        if (!isInScreen || !isInChatScreen || HudManager.isEditing) return
         chatComponents.fastEach {
             if (it == hoveredComponent) {
-                it.click(event.button.code)
+                it.click(event)
             } else {
                 it.selectedElements.clear()
             }
@@ -97,6 +105,11 @@ object McChat {
             it.removeAllMessages(false)
             it.addAllMessages()
         }
+    }
+
+    fun deleteMessages(chatLines: Collection<McChatLine>) {
+        (mc.inGameHud.chatHud as ChatHook).`chatting$deleteChatLine`(chatLines)
+        refreshChat()
     }
 
     fun clearMessages() {
