@@ -6,8 +6,8 @@ import dev.deftu.omnicore.api.client.input.OmniKeyboard
 import dev.deftu.omnicore.api.client.input.OmniKeys
 import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
-import dev.deftu.omnicore.api.client.render.OmniTextRenderer
-import dev.deftu.textile.minecraft.MCSimpleTextHolder
+import dev.deftu.omnicore.api.client.render.OmniTextWrapping
+import dev.deftu.textile.minecraft.MCText
 import org.polyfrost.chatting.core.McChatLine
 import org.polyfrost.chatting.animation.DummyAnimation
 import org.polyfrost.chatting.core.McChat
@@ -202,19 +202,12 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         if (hasHead) {
             i -= 10
         }
-        //#if MC >= 1.16.5
-        val strings = OmniTextRenderer.wrapLines(chatLine.comp_893.string, i)
-        val lines = net.minecraft.client.util.ChatMessages.breakRenderedChatMessageLines(chatLine.comp_893, i, mc.textRenderer)
-        //#else
-        //$$ val lines = net.minecraft.client.util.Texts.wrapLines(chatLine.text, i, mc.textRenderer, false, false)
-        //#endif
+        var lines = OmniTextWrapping.wrap(MCText.wrap(chatLine.comp_893), i)
+        if (lines.isEmpty()) {
+            lines = listOf(MCText.literal(""))
+        }
         lines.withIndex().forEach {
             val element = ChatLineElement(it.value,
-                //#if MC >= 1.16.5
-                strings.getOrElse(it.index) {
-                    MCSimpleTextHolder(chatLine.comp_893.string)
-                }.asString(),
-                //#endif
                 chatLine,
                 hasHead && it.value == lines.first(), head)
             elements.add(element)
