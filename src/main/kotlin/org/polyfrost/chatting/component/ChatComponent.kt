@@ -10,6 +10,7 @@ import dev.deftu.omnicore.api.client.render.OmniTextRenderer
 import dev.deftu.textile.minecraft.MCSimpleTextHolder
 import org.polyfrost.chatting.core.McChatLine
 import org.polyfrost.chatting.animation.DummyAnimation
+import org.polyfrost.chatting.core.McChat
 import org.polyfrost.chatting.core.chatComponents
 import org.polyfrost.chatting.core.copyToClipboard
 import org.polyfrost.chatting.core.editorMessages
@@ -51,8 +52,6 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     var drawingEnd = 0
 
-    val buttonGroup = ChatButtonGroup(arrayListOf(ChatButton.CopyButton(), ChatButton.DeleteButton()))
-
     init {
         chatComponents.add(this)
     }
@@ -60,7 +59,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     override var visibleSize: Vec2
         get() {
             return if (hovered && !HudManager.isEditing) {
-                super.visibleSize + Vec2(buttonGroup.buttons.size * 10 * mcScale * scaleX, 0f)
+                super.visibleSize + Vec2(McChat.buttonGroup.buttons.size * 10 * mcScale * scaleX, 0f)
             } else {
                 super.visibleSize
             }
@@ -79,16 +78,10 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     }
 
     fun click(event: InputEvent.MouseButton) {
-        if (buttonGroup.hoveredButton != null) {
-            if (event.isLeftButton) {
-                buttonGroup.hoveredButton!!.onClick(this)
-            }
-        } else {
-            if (event.isLeftButton) {
-                leftClick()
-            } else if (event.isRightButton) {
-                rightClick()
-            }
+        if (event.isLeftButton) {
+            leftClick()
+        } else if (event.isRightButton) {
+            rightClick()
         }
     }
 
@@ -289,7 +282,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             element.color.alpha *= element.opacity.toFloat()
             renderer.rect(0f, 0f, width, lineHeight, element.color)
             if (!HudManager.isEditing && element == currentHovered) {
-                buttonGroup.render(renderer, width + mcScale)
+                McChat.buttonGroup.render(renderer, width + mcScale)
             }
             if (element.hasHead) {
                 renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale, 8f * mcScale, colorMask = 0xFFFFFF or (element.alpha shl 24))

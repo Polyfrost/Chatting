@@ -39,7 +39,7 @@ abstract class ChatButton(val image: PolyImage?) {
         }
     }
 
-    class DeleteButton(): ChatButton(null) {
+    class DeleteButton(): ChatButton("assets/chatting/icon/delete.svg".image()) {
         override fun onClick(chatComponent: ChatComponent) {
             McChat.deleteMessages(chatComponent.getSelected().map { it.fullMessage })
             chatComponent.selectedElements.clear()

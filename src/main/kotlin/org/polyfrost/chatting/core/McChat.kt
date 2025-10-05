@@ -3,9 +3,12 @@ package org.polyfrost.chatting.core
 import dev.deftu.eventbus.SubscribeEvent
 import dev.deftu.omnicore.api.client.events.input.InputEvent
 import dev.deftu.omnicore.api.client.events.input.InputState
+import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.screen.isInChatScreen
 import dev.deftu.omnicore.api.client.screen.isInScreen
 import dev.deftu.omnicore.api.eventBus
+import org.polyfrost.chatting.component.ChatButton
+import org.polyfrost.chatting.component.ChatButtonGroup
 import org.polyfrost.chatting.hook.ChatHook
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -18,6 +21,10 @@ import org.polyfrost.polyui.utils.fastEach
 
 object McChat {
 
+    val buttonGroup = ChatButtonGroup(arrayListOf(ChatButton.CopyButton(), ChatButton.DeleteButton()))
+
+    var inBound = false
+
     fun initialize() {
         eventBus.register(this)
         eventHandler { event: HudEditorToggleEvent ->
@@ -26,23 +33,7 @@ object McChat {
             }
         }
         eventHandler { event: MouseInputEvent.Moved ->
-            val lastHovered = hoveredComponent
-            hoveredComponent = null
-            chatComponents.fastEach {
-                if (it.isInside(event.x, event.y)) {
-                    hoveredComponent = it
-                    return@fastEach
-                }
-            }
-            hoveredComponent?.let {
-                val x = (event.x - it.x - it.width * it.scaleX) / (mcScale * it.scaleX)
-                it.buttonGroup.update(x)
-                it.getCurrentElement()
-            }
-            if (hoveredComponent != lastHovered) {
-                lastHovered?.hoverExit()
-                hoveredComponent?.hoverEnter()
-            }
+            getMouseOver(event.x, event.y)
         }
         eventHandler { event: ScreenOpenEvent ->
             if (event.getScreen<Object?>() == null) {
@@ -66,10 +57,35 @@ object McChat {
         if (!isInScreen || !isInChatScreen || HudManager.isEditing) return
         chatComponents.fastEach {
             if (it == hoveredComponent) {
-                it.click(event)
+                if (inBound) {
+                    it.click(event)
+                } else if (event.isLeftButton) {
+                    buttonGroup.hoveredButton?.onClick(it)
+                }
             } else {
                 it.selectedElements.clear()
             }
+        }
+    }
+
+    fun getMouseOver(mouseX: Float = OmniMouse.rawX.toFloat(), mouseY: Float = OmniMouse.rawY.toFloat()) {
+        val lastHovered = hoveredComponent
+        hoveredComponent = null
+        chatComponents.fastEach {
+            if (it.isInside(mouseX, mouseY)) {
+                hoveredComponent = it
+                return@fastEach
+            }
+        }
+        hoveredComponent?.let {
+            val x = (mouseX - it.x - it.width * it.scaleX) / (mcScale * it.scaleX)
+            inBound = x < 0f
+            buttonGroup.update(x)
+            it.getCurrentElement()
+        }
+        if (hoveredComponent != lastHovered) {
+            lastHovered?.hoverExit()
+            hoveredComponent?.hoverEnter()
         }
     }
 
@@ -105,6 +121,7 @@ object McChat {
             it.removeAllMessages(false)
             it.addAllMessages()
         }
+        getMouseOver()
     }
 
     fun deleteMessages(chatLines: Collection<McChatLine>) {
