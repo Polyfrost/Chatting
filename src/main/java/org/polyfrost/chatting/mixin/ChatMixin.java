@@ -18,12 +18,22 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import java.util.Collection;
 import java.util.List;
 
+//#if MC == 1.16.5
+//$$ import net.minecraft.text.Text;
+//#endif
+
 @Mixin(net.minecraft.client.gui.hud.ChatHud.class)
 public abstract class ChatMixin implements ChatHook {
 
     @Shadow
     @Final
-    private List<ChatHudLine> messages;
+    private List<
+            //#if MC == 11605
+            //$$ ChatHudLine<Text>
+            //#else
+            ChatHudLine
+            //#endif
+            > messages;
 
     //#if MC > 1.16.5
     @ModifyArgs(method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
@@ -57,7 +67,16 @@ public abstract class ChatMixin implements ChatHook {
     }
 
     @Override
-    public void chatting$deleteChatLine(@NotNull Collection<@NotNull ChatHudLine> chatLines) {
+    public void chatting$deleteChatLine(
+            //#if MC == 1.16.5
+            //$$ @NotNull Collection<? extends @NotNull ChatHudLine<@NotNull Text>>
+            //#elseif MC < 1.16.5
+            //$$ @NotNull Collection<? extends @NotNull ChatHudLine>
+            //#else
+            @NotNull Collection<@NotNull ChatHudLine>
+            //#endif
+            chatLines
+    ) {
         this.messages.removeAll(chatLines);
     }
 }
