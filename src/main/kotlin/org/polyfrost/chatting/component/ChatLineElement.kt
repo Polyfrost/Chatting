@@ -32,4 +32,8 @@ class ChatLineElement(
 
     var renders = false
 
+    fun render(ctx: OmniRenderingContext) {
+
+    }
+
 }

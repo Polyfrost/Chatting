@@ -7,6 +7,8 @@ import org.polyfrost.chatting.core.mcScale
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -14,10 +16,10 @@ import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable
 import org.polyfrost.polyui.component.impl.Text
 import org.polyfrost.polyui.unit.by
-import org.polyfrost.polyui.unit.milliseconds
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = "Chat", category = Category.INFO) {
 
@@ -37,6 +39,27 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
     var bgColorSelected = rgba(255, 255, 255, 0.75f)
 
     @Slider(
+        title = "Width",
+        min = 0f,
+        max = 320f,
+    )
+    var chatWidth = 320
+
+    @Slider(
+        title = "Height",
+        min = 0f,
+        max = 180f,
+    )
+    var chatHeight = 180
+
+    @Slider(
+        title = "Line Spacing",
+        min = 0f,
+        max = 100f,
+    )
+    var lineSpacing = 0
+
+    @Slider(
         title = "Corner Radius",
         min = 0f,
         max = 10f,
@@ -54,6 +77,18 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
 
     var length = 0
 
+    override fun setup() {
+        super.setup()
+        if (isReal) {
+            addCallback("chatWidth") {
+                (get() as ChatComponent).refresh()
+            }
+            eventHandler { event: TickEvent.End ->
+                updateWindow()
+            }
+        }
+    }
+
     override fun clone(): Hud<Drawable> {
         return (super.clone() as ChatWindow).apply {
             isPreview = false
@@ -64,10 +99,6 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
         return if (isPreview) Text("Chat", fontSize = 32f) else ChatComponent(this)
     }
 
-    override fun updateFrequency(): Long {
-        return 25.milliseconds
-    }
-
     override var width = 0f
 
     override var height = 0f
@@ -76,8 +107,8 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
         (get() as ChatComponent).drawLegacy(ctx)
     }
 
-    override fun update(): Boolean {
-        if (get() is Text) return false
+    fun updateWindow() {
+        if (get() !is ChatComponent) return
         with(get() as ChatComponent) {
             val inChat = isInScreen && isInChatScreen
             length = elements.count {
@@ -97,12 +128,14 @@ class ChatWindow(preview: Boolean = false) : LegacyHud(id = "chat.yml", title = 
                 }
                 return@count canRender
             }
-            lineHeight = 9 * mcScale
+            lineHeight = 9 * (1 + lineSpacing / 100f)
+            lineLimit = (chatHeight / lineHeight).roundToInt()
             val buttonWidth = 10
-            this.size = (320 + 12 + buttonWidth) * mcScale by min(length, lineLimit) * 9 * mcScale
+            this.size = (chatWidth + 12 + buttonWidth) * mcScale by min(length, lineLimit) * lineHeight * mcScale
         }
-        return true
     }
+
+    override fun update() = false
 
     override fun hasBackground() = false
 

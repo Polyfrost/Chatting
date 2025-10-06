@@ -129,8 +129,7 @@ object McChat {
     fun refreshChat() {
         if (HudManager.isEditing) return
         chatComponents.fastEach {
-            it.removeAllMessages(false)
-            it.addAllMessages()
+            it.refresh()
         }
         getMouseOver()
     }

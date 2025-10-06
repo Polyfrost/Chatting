@@ -149,7 +149,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 
     fun getCurrentElement(mouseY: Float = OmniMouse.rawY.toFloat()) {
         if (elements.isEmpty()) return
-        val index = elements.size - 1 - floor((y + (height + lineHeight * scrollAmount.value) * scaleY - mouseY) / (lineHeight * scaleY)).toInt()
+        val index = elements.size - 1 - floor((y + height * scaleY - mouseY) / (lineHeight * mcScale * scaleY) + scrollAmount.value * scaleY).toInt()
         if (index < 0 || index >= elements.size) return
         currentHovered = elements[index]
     }
@@ -182,8 +182,13 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         if (update) window.update()
     }
 
+    fun refresh() {
+        removeAllMessages(false)
+        addAllMessages()
+    }
+
     fun addMessage(chatLine: McChatLine, update: Boolean = false) {
-        var i = 320
+        var i = window.chatWidth
         //#if MC > 1.16.5
         val icon = chatLine.icon
         if (icon != null) {
@@ -250,7 +255,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
     override fun render() {
 //        renderer.pushScissor(x, y, width * scaleX, height * scaleY)
         renderer.push()
-        renderer.translate(x, y - translateAmount * lineHeight)
+        renderer.translate(x, y - translateAmount * lineHeight * mcScale)
         var lastHead: PlayerHead? = null
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
@@ -268,7 +273,9 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             }
             element.color.recolor(color)
             element.color.alpha *= element.opacity.toFloat()
-            renderer.rect(0f, 0f, width, lineHeight, element.color)
+            renderer.push()
+            renderer.rect(0f, 0f, width, lineHeight * mcScale, element.color)
+            renderer.translate(0f, window.lineSpacing / 200f * 9 * mcScale)
             if (!HudManager.isEditing && element == currentHovered) {
                 McChat.buttonGroup.render(renderer, width + mcScale)
             }
@@ -279,10 +286,11 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             //#if MC > 1.16.5
             element.fullMessage.indicator?.let { indicator ->
                 val ac = indicator.comp_899 or (element.alpha shl 24)
-                renderer.rect(0f, 0f, 2 * mcScale, lineHeight, argb(ac))
+                renderer.rect(0f, 0f, 2 * mcScale, lineHeight * mcScale, argb(ac))
             }
             //#endif
-            renderer.translate(0f, lineHeight)
+            renderer.pop()
+            renderer.translate(0f, lineHeight * mcScale)
         }
         renderer.pop()
 //        renderer.popScissor()
@@ -295,7 +303,8 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 //        ctx.pushScissor(0, 0, 10, 10)
         matrices.translate(x / mcScale, y / mcScale, 0f)
         matrices.scale(scaleX, scaleY, 1f)
-        matrices.translate(4f, -translateAmount * 9 + 1f, 0f)
+        matrices.translate(4f, -translateAmount * lineHeight + 1f, 0f)
+        matrices.translate(0f, window.lineSpacing / 200f * 9, 0f)
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
             if (index !in drawingStart..drawingEnd) continue
@@ -309,7 +318,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 //                }
 //            }
             OmniTextRenderer.render(ctx, element.text, element.lineOffset, 0f, withAlpha(element.alpha, -1), true)
-            matrices.translate(0f, 9f, 0f)
+            matrices.translate(0f, lineHeight, 0f)
         }
 //        ctx.popScissor()
         matrices.pop()
