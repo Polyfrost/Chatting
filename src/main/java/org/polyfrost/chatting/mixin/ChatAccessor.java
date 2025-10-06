@@ -12,10 +12,9 @@ public interface ChatAccessor {
 
     @Accessor
     List<
-        //#if MC == 11605
-        //$$ ChatHudLine<net.minecraft.text.Text>
-        //#else
         ChatHudLine
+        //#if MC == 11605
+        //$$ <net.minecraft.text.Text>
         //#endif
     > getMessages();
 

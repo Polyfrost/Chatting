@@ -1,11 +1,11 @@
 package org.polyfrost.chatting.hook
 
-import org.polyfrost.polyui.data.PolyImage
+import org.polyfrost.chatting.component.PlayerHead
 
 interface ChatLineHook {
 
-    fun `chatting$setChatHead`(head: PolyImage?)
+    fun `chatting$setChatHead`(head: PlayerHead?)
 
-    fun `chatting$getChatHead`(): PolyImage?
+    fun `chatting$getChatHead`(): PlayerHead?
 
 }

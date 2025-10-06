@@ -4,12 +4,21 @@ package org.polyfrost.chatting.core
 
 import com.mojang.authlib.GameProfile
 import dev.deftu.clipboard.Clipboard
+import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniResolution
+import dev.deftu.omnicore.api.client.render.OmniTextRenderer
+import dev.deftu.omnicore.api.client.render.pipeline.OmniRenderPipelines
+import dev.deftu.omnicore.api.client.render.stack.OmniMatrixStack
 import dev.deftu.omnicore.api.client.resourceManager
+import dev.deftu.omnicore.api.color.ColorFormat
 import dev.deftu.omnicore.api.color.OmniColor
+import dev.deftu.textile.TextStyle
+import dev.deftu.textile.minecraft.asVanilla
 import net.minecraft.client.gui.hud.ChatHudLine
+import net.minecraft.text.Style
 import net.minecraft.text.Text
 import org.polyfrost.chatting.component.ChatComponent
+import org.polyfrost.chatting.component.PlayerHead
 import org.polyfrost.chatting.mixin.ChatAccessor
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
 import org.polyfrost.oneconfig.internal.DynamicPolyImage
@@ -20,6 +29,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.UUID
 import javax.imageio.ImageIO
 
 val mcScale
@@ -38,6 +48,8 @@ var hoveredComponent: ChatComponent? = null
 
 val chatComponents = ArrayList<ChatComponent>()
 
+var playerHeads = HashMap<UUID, PlayerHead>()
+
 @JvmField
 var currentSender: GameProfile? = null
 
@@ -51,7 +63,7 @@ fun String.toChatLine(): McChatLine {
         //#if MC >= 1.16.5
         Text.literal(this),
         //#else
-        //$$ net.minecraft.text.LiteralText(this),
+        //$$ net.minecraft.util.text.TextComponentString(this),
         //#endif
         //#if MC > 1.16.5
         null,
@@ -63,40 +75,80 @@ fun String.toChatLine(): McChatLine {
 }
 
 typealias McChatLine =
-    //#if MC == 1.16.5
-    //$$ ChatHudLine<net.minecraft.text.Text>
-    //#else
     ChatHudLine
+    //#if MC == 1.16.5
+    //$$ <net.minecraft.text.Text>
     //#endif
 
-//fun getHoveredComponent(): ChatComponent? {
-//    val mouseOver = UIManager.INSTANCE.defaultInstance.inputManager.mouseOver ?: return null
-//    if (mouseOver !is ChatComponent) return null
-//    return mouseOver
-//}
-//
-//fun getLineMouseX(chatComponent: ChatComponent, chatLineElement: ChatLineElement): Int {
-//    return ((OmniMouse.rawX - chatComponent.x) * OmniResolution.scaledWidth / max(1, OmniResolution.windowWidth)).toInt() - 4 - if (chatLineElement.hasHead) 10 else 0
-//}
+//#if MC > 1.16.5
+fun getIndicatorAt(): net.minecraft.client.gui.hud.MessageIndicator? {
+    val component = hoveredComponent ?: return null
+    val element = component.currentHovered ?: return null
+    val scale = mcScale * component.scaleX.coerceAtLeast(0.001f)
+    val xPos = ((OmniMouse.rawX - component.x) / scale) - 4 - element.lineOffset
+    val messageIndicator = element.fullMessage.indicator ?: return null
+    if (xPos < 0) return messageIndicator
+    val icon = messageIndicator.comp_900 ?: return null
+    val indicatorX = OmniTextRenderer.width(element.text) + 4 + element.lineOffset
+    if (xPos - indicatorX in 0f..icon.width.toFloat()) return messageIndicator
+    return null
+}
+//#endif
 
-//fun getIndicator(): MessageIndicator? {
-//    val chatComponent = getHoveredComponent() ?: return null
-//    if (chatComponent.currentHovered == -1) return null
-//    val element = chatComponent.elements[chatComponent.currentHovered]
-//    val indicator = element.visible.indicator ?: return null
-//    if (getLineMouseX(chatComponent, element) >= 0) return null
-//    return indicator
-//}
-//
-//fun getStyle(): Style? {
-//    val chatComponent = getHoveredComponent() ?: return null
-//    if (chatComponent.currentHovered != -1) {
-//        val element = chatComponent.elements[chatComponent.currentHovered]
-//        val mouseX = getLineMouseX(chatComponent, element)
-//        return mc.textRenderer.textHandler.getStyleAt(element.visible.comp_896, mouseX)
-//    }
-//    return null
-//}
+fun hasClickEventAt(): Boolean {
+    val style = getStyleAt() ?: return false
+    return style.clickEvent != null
+}
+
+fun getStyleAt(): Style? {
+    return getTextAt()?.style
+}
+
+fun getTextAt(): Text? {
+    val component = hoveredComponent ?: return null
+    val element = component.currentHovered ?: return null
+    val scale = mcScale * component.scaleX.coerceAtLeast(0.001f)
+    val xPos = ((OmniMouse.rawX - component.x) / scale) - 4 - element.lineOffset
+    if (xPos < 0) return null
+    var advance = 0
+    return visitNode(element.text) { node, segment, style ->
+        val width = OmniTextRenderer.width(dev.deftu.textile.Text.literal(segment).setStyle(style))
+        advance += width
+        if (advance > xPos) {
+            node.asVanilla()
+        } else {
+            null
+        }
+    }
+}
+
+fun <T> visitNode(
+    text: dev.deftu.textile.Text,
+    inheritedStyle: TextStyle = TextStyle.EMPTY,
+    visitor: (node: dev.deftu.textile.Text, content: String, style: TextStyle) -> T?
+): T? {
+    val style = text.style.inherited(inheritedStyle)
+    val hit = text.content.visit({ content, innerStyle ->
+        if (content.isEmpty()) {
+            return@visit null
+        }
+
+        visitor(text, content, style)
+    }, style)
+
+    if (hit != null) {
+        return hit
+    }
+
+    for (sibling in text.siblings) {
+        val siblingHit = visitNode(sibling, style, visitor)
+        if (siblingHit != null) {
+            return siblingHit
+        }
+    }
+
+    return null
+}
 
 // messy code
 @Throws(IOException::class)
@@ -123,6 +175,21 @@ fun getSkinFromProfile(gameProfile: GameProfile?): PolyImage? {
         }
     }
     return null
+}
+
+fun withAlpha(i: Int, j: Int): OmniColor {
+    return OmniColor(ColorFormat.ARGB, i shl 24 or (j and 16777215))
+}
+
+fun OmniMatrixStack.renderQuad(
+    x: Double, y: Double,
+    width: Double, height: Double,
+    color: OmniColor,
+) {
+    val pipeline = OmniRenderPipelines.POSITION_COLOR
+    val buffer = pipeline.createBufferBuilder()
+    buffer.quad(this, x, y, width, height, color)
+    buffer.buildOrThrow().drawAndClose(pipeline)
 }
 
 fun String.copyToClipboard() {

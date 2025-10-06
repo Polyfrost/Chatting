@@ -9,6 +9,7 @@ import dev.deftu.omnicore.api.client.screen.isInScreen
 import dev.deftu.omnicore.api.eventBus
 import org.polyfrost.chatting.component.ChatButton
 import org.polyfrost.chatting.component.ChatButtonGroup
+import org.polyfrost.chatting.component.PlayerHead
 import org.polyfrost.chatting.hook.ChatHook
 import org.polyfrost.chatting.hook.ChatLineHook
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -18,6 +19,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.events.HudEditorToggleEvent
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.utils.fastEach
+import java.util.UUID
 
 object McChat {
 
@@ -58,7 +60,9 @@ object McChat {
         chatComponents.fastEach {
             if (it == hoveredComponent) {
                 if (inBound) {
-                    it.click(event)
+                    if (!hasClickEventAt()) {
+                        it.click(event)
+                    }
                 } else if (event.isLeftButton) {
                     buttonGroup.hoveredButton?.onClick(it)
                 }
@@ -90,16 +94,23 @@ object McChat {
     }
 
     fun addMessage(chatLine: McChatLine) {
-        val chatLineHook = chatLine as ChatLineHook
         if (currentSender != null) {
-            getSkinFromProfile(currentSender)?.let {
-                chatLineHook.`chatting$setChatHead`(it)
-            }
+            (chatLine as ChatLineHook).`chatting$setChatHead`(getHeadOrFetch(currentSender!!.id))
         }
         if (HudManager.isEditing) return
         chatComponents.fastEach {
             it.addMessage(chatLine)
         }
+    }
+
+    fun getHeadOrFetch(uuid: UUID): PlayerHead? {
+        if (playerHeads.containsKey(uuid)) return playerHeads[uuid]
+        getSkinFromProfile(currentSender)?.let { headImage ->
+            return PlayerHead(currentSender!!.id, headImage).also { head ->
+                playerHeads[currentSender!!.id] = head
+            }
+        }
+        return null
     }
 
     //#if MC <= 1.16.5

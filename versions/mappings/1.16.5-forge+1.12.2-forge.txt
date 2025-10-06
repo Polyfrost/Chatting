@@ -1,0 +1,2 @@
+net.minecraft.client.GuiMessage net.minecraft.client.gui.ChatLine
+net.minecraft.client.GuiMessage getMessage() getChatComponent()

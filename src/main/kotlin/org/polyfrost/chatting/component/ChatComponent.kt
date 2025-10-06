@@ -6,21 +6,14 @@ import dev.deftu.omnicore.api.client.input.OmniKeyboard
 import dev.deftu.omnicore.api.client.input.OmniKeys
 import dev.deftu.omnicore.api.client.input.OmniMouse
 import dev.deftu.omnicore.api.client.render.OmniRenderingContext
+import dev.deftu.omnicore.api.client.render.OmniTextRenderer
 import dev.deftu.omnicore.api.client.render.OmniTextWrapping
 import dev.deftu.textile.minecraft.MCText
-import org.polyfrost.chatting.core.McChatLine
 import org.polyfrost.chatting.animation.DummyAnimation
-import org.polyfrost.chatting.core.McChat
-import org.polyfrost.chatting.core.chatComponents
-import org.polyfrost.chatting.core.copyToClipboard
-import org.polyfrost.chatting.core.editorMessages
-import org.polyfrost.chatting.core.getMessages
+import org.polyfrost.chatting.core.*
 import org.polyfrost.chatting.hook.ChatLineHook
-import org.polyfrost.chatting.core.mcScale
-import org.polyfrost.chatting.core.toChatLine
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.PolyUI
 import org.polyfrost.polyui.animate.Animation
 import org.polyfrost.polyui.animate.Linear
@@ -147,7 +140,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         if (target == scrollAmount.value) return
         if (window.smoothScrolling) {
             val distance = abs(target - scrollAmount.value)
-            scrollAmount = Linear((75 * distance).ms, scrollAmount.value, target)
+            scrollAmount = Linear((100 * distance).ms, scrollAmount.value, target)
         } else {
             scrollAmount = DummyAnimation(target)
         }
@@ -202,7 +195,8 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         if (hasHead) {
             i -= 10
         }
-        var lines = OmniTextWrapping.wrap(MCText.wrap(chatLine.comp_893), i)
+        val text = MCText.wrap(chatLine.comp_893)
+        var lines = OmniTextWrapping.wrap(text, i)
         if (lines.isEmpty()) {
             lines = listOf(MCText.literal(""))
         }
@@ -257,6 +251,7 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
 //        renderer.pushScissor(x, y, width * scaleX, height * scaleY)
         renderer.push()
         renderer.translate(x, y - translateAmount * lineHeight)
+        var lastHead: PlayerHead? = null
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
             if (index !in drawingStart..drawingEnd) continue
@@ -277,9 +272,10 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
             if (!HudManager.isEditing && element == currentHovered) {
                 McChat.buttonGroup.render(renderer, width + mcScale)
             }
-            if (element.hasHead) {
-                renderer.image(element.head!!, 4 * mcScale, 1 * mcScale, 8f * mcScale, 8f * mcScale, colorMask = 0xFFFFFF or (element.alpha shl 24))
+            if (element.hasHead && lastHead != element.head!!) {
+                renderer.image(element.head.image, 4 * mcScale, 1 * mcScale, 8f * mcScale, 8f * mcScale, colorMask = 0xFFFFFF or (element.alpha shl 24))
             }
+            lastHead = element.head
             //#if MC > 1.16.5
             element.fullMessage.indicator?.let { indicator ->
                 val ac = indicator.comp_899 or (element.alpha shl 24)
@@ -296,14 +292,23 @@ class ChatComponent(val window: ChatWindow) : LegacyHud.LegacyHudComponent(windo
         if (elements.isEmpty()) return
         val matrices = ctx.matrices
         matrices.push()
+//        ctx.pushScissor(0, 0, 10, 10)
         matrices.translate(x / mcScale, y / mcScale, 0f)
         matrices.scale(scaleX, scaleY, 1f)
         matrices.translate(4f, -translateAmount * 9 + 1f, 0f)
-//        ctx.pushScissor(0, 0, 5, 5)
         for ((index, element) in elements.withIndex()) {
             if (!element.renders) continue
             if (index !in drawingStart..drawingEnd) continue
-            element.render(ctx)
+//            val messageIndicator = element.fullMessage.indicator
+//            if (messageIndicator != null) {
+//                matrices.renderQuad(0.0, 0.0, 2.0, 9.0, OmniColor(ColorFormat.ARGB, messageIndicator.comp_899() or (element.alpha shl 24)))
+//                val icon = messageIndicator.comp_900()
+//                if (element == currentHovered && icon != null) {
+//                    val ad = OmniTextRenderer.width(element.text) + 4 + headOffset
+//                    ctx.renderTextureRegion(OmniRenderPipelines.TEXTURED, icon.texture, ad, 8f - icon.height, icon.width, icon.height, 0f, 0f, 1f, 1f)
+//                }
+//            }
+            OmniTextRenderer.render(ctx, element.text, element.lineOffset, 0f, withAlpha(element.alpha, -1), true)
             matrices.translate(0f, 9f, 0f)
         }
 //        ctx.popScissor()

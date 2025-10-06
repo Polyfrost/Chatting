@@ -12,5 +12,8 @@
     "ChatMixin",
     "MessageHandlerMixin"
   ],
-  "verbose": true
+  "verbose": true,
+  "mixins": [
+    "RendererImplMixin"
+  ]
 }
