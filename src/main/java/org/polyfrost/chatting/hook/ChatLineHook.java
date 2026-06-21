@@ -1,19 +1,16 @@
 package org.polyfrost.chatting.hook;
 
-import net.minecraft.client.gui.ChatLine;
-import net.minecraft.client.network.NetworkPlayerInfo;
-
-import java.lang.ref.WeakReference;
-import java.util.HashSet;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import org.jetbrains.annotations.Nullable;
 
 public interface ChatLineHook {
-    HashSet<WeakReference<ChatLine>> chatting$chatLines = new HashSet<>();
-    boolean chatting$hasDetected();
-    NetworkPlayerInfo chatting$getPlayerInfo();
 
-    void chatting$updatePlayerInfo();
+    @Nullable
+    PlayerInfo chatting$getPlayerInfo();
 
-    long chatting$getUniqueId();
+    void chatting$setPlayerInfo(@Nullable PlayerInfo info);
 
-    ChatLine chatting$getFullMessage();
+    boolean chatting$isHeadHidden();
+
+    void chatting$setHeadHidden(boolean hidden);
 }

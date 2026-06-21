@@ -1,16 +1,9 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.libs.universal.ChatColor
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import org.polyfrost.chatting.gui.components.TabButton
 import com.google.gson.annotations.SerializedName
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.ChatLine
-import net.minecraft.util.ChatComponentText
-import net.minecraft.util.EnumChatFormatting
-import net.minecraft.util.IChatComponent
-import org.polyfrost.chatting.mixin.GuiNewChatAccessor
-import java.util.*
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import java.util.Locale
 
 data class ChatTab(
     val enabled: Boolean,
@@ -32,87 +25,46 @@ data class ChatTab(
     @SerializedName("selected_color") val selectedColor: Int?,
     val prefix: String?
 ) {
-    @Transient lateinit var button: TabButton
-    @Transient lateinit var compiledRegex: ChatRegexes
-    @Transient lateinit var compiledIgnoreRegex: ChatRegexes
-    @Transient var messages: List<String>? = ArrayList()
+    @Transient
+    lateinit var compiledRegex: ChatRegexes
 
-    //Ugly hack to make GSON not make button / regex null
+    @Transient
+    lateinit var compiledIgnoreRegex: ChatRegexes
+
+    @Transient
+    var messages: List<String>? = ArrayList()
+
+    /** GSON skips the `@Transient` fields, so compile the regexes after deserialisation. */
     fun initialize() {
         compiledRegex = ChatRegexes(uncompiledRegex)
         compiledIgnoreRegex = ChatRegexes(uncompiledIgnoreRegex)
-        val width = mc.fontRendererObj.getStringWidth(name)
-        button = TabButton(653452, run {
-            val returnValue = x - 2
-            x += 6 + width
-            return@run returnValue
-        }, width + 4, 12, this)
     }
 
-    fun shouldRender(chatComponent: IChatComponent): Boolean {
+    fun shouldRender(chatComponent: Component): Boolean {
         val message =
-            (if (unformatted) EnumChatFormatting.getTextWithoutFormattingCodes(chatComponent.unformattedText) else chatComponent.formattedText).let {
-                if (lowercase == true) it.lowercase(
-                    Locale.ENGLISH
-                ) else it
+            (if (unformatted) ChatFormatting.stripFormatting(chatComponent.string) ?: chatComponent.string
+            else LegacyText.toFormatted(chatComponent)).let {
+                if (lowercase == true) it.lowercase(Locale.ENGLISH) else it
             }
-        ignoreStartsWith?.forEach {
-            if (message.startsWith(it)) {
-                return false
-            }
-        }
-        ignoreEquals?.forEach {
-            if (message == it) {
-                return false
-            }
-        }
-        ignoreEndsWith?.forEach {
-            if (message.endsWith(it)) {
-                return false
-            }
-        }
-        ignoreContains?.forEach {
-            if (message.contains(it)) {
-                return false
-            }
-        }
-        compiledIgnoreRegex.compiledRegexList.forEach {
-            if (it.matches(message)) {
-                return false
-            }
-        }
+        ignoreStartsWith?.forEach { if (message.startsWith(it)) return false }
+        ignoreEquals?.forEach { if (message == it) return false }
+        ignoreEndsWith?.forEach { if (message.endsWith(it)) return false }
+        ignoreContains?.forEach { if (message.contains(it)) return false }
+        compiledIgnoreRegex.compiledRegexList.forEach { if (it.matches(message)) return false }
         if (startsWith.isNullOrEmpty() && equals.isNullOrEmpty() && endsWith.isNullOrEmpty() && contains.isNullOrEmpty() && uncompiledRegex.isNullOrEmpty()) {
             return true
         }
-        equals?.forEach {
-            if (message == it) {
-                return true
-            }
-        }
-        startsWith?.forEach {
-            if (message.startsWith(it)) {
-                return true
-            }
-        }
-        endsWith?.forEach {
-            if (message.endsWith(it)) {
-                return true
-            }
-        }
-        contains?.forEach {
-            if (message.contains(it)) {
-                return true
-            }
-        }
-        compiledRegex.compiledRegexList.forEach {
-            if (it.matches(message)) {
-                return true
-            }
-        }
+        equals?.forEach { if (message == it) return true }
+        startsWith?.forEach { if (message.startsWith(it)) return true }
+        endsWith?.forEach { if (message.endsWith(it)) return true }
+        contains?.forEach { if (message.contains(it)) return true }
+        compiledRegex.compiledRegexList.forEach { if (it.matches(message)) return true }
         return false
     }
 
     companion object {
-        private var x = 4
+        const val COLOR: Int = 14737632
+        const val HOVERED_COLOR: Int = 16777120
+        const val SELECTED_COLOR: Int = 10526880
     }
 }

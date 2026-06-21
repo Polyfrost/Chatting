@@ -1,0 +1,7 @@
+accessWidener	v1	official
+
+accessible	class	net/minecraft/client/gui/render/GuiRenderer$Draw
+accessible	field	net/minecraft/client/gui/render/GuiRenderer$Draw	indexCount	I
+accessible	class	net/minecraft/client/gui/render/GuiRenderer$MeshToDraw
+accessible	field	net/minecraft/client/renderer/GameRenderer	fogRenderer	Lnet/minecraft/client/renderer/fog/FogRenderer;
+accessible	field	net/minecraft/client/renderer/GameRenderer	guiRenderer	Lnet/minecraft/client/gui/render/GuiRenderer;

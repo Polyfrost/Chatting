@@ -1,124 +1,97 @@
 package org.polyfrost.chatting.chat
 
-import cc.polyfrost.oneconfig.config.core.ConfigUtils
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import org.polyfrost.chatting.Chatting
-import org.polyfrost.chatting.gui.components.TabButton
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
-import net.minecraft.util.IChatComponent
-import java.io.File
+import net.minecraft.network.chat.Component
+import org.polyfrost.chatting.config.ChattingConfig
+import org.polyfrost.chatting.hook.ChatComponentHook
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 object ChatTabs {
     private val GSON = GsonBuilder().setPrettyPrinting().create()
-    private val PARSER = JsonParser()
+
     val tabs = arrayListOf<ChatTab>()
-    var currentTabs: ArrayList<ChatTab> = object : ArrayList<ChatTab>() {
-        override fun add(element: ChatTab): Boolean {
-            val returnValue = super.add(element)
-            if (mc.theWorld != null && returnValue) {
-                mc.ingameGUI.chatGUI.refreshChat()
-            }
-            return returnValue
-        }
-    }
-    var hasCancelledAnimation = false
+    val currentTabs = arrayListOf<ChatTab>()
+
     private var initialized = false
 
-    private val tabFile = ConfigUtils.getProfileFile("chattabs.json")
-    private val oldTabFile = File(Chatting.oldModDir, "chattabs.json")
+    private val tabFile = FabricLoader.getInstance().configDir.resolve("chatting").resolve("chattabs.json")
 
     fun initialize() {
-        if (initialized) {
-            return
-        } else {
-            initialized = true
-        }
+        if (initialized) return
+        initialized = true
+        tabFile.parent.createDirectories()
         if (!tabFile.exists()) {
-            if (oldTabFile.exists()) {
-                tabFile.writeText(oldTabFile.readText())
-                handleFile()
-            } else {
-                generateNewFile()
-            }
+            generateNewFile()
         } else {
             handleFile()
         }
-        tabs.forEach {
-            it.initialize()
-        }
+        tabs.forEach { it.initialize() }
         currentTabs.clear()
-        currentTabs.add(tabs[0])
+        if (tabs.isNotEmpty()) currentTabs.add(tabs[0])
+    }
+
+    fun shouldFilter(): Boolean = ChattingConfig.chatTabs && tabs.isNotEmpty()
+
+    fun shouldRender(message: Component): Boolean {
+        if (currentTabs.isEmpty()) return true
+        for (tab in currentTabs) if (tab.shouldRender(message)) return true
+        return false
+    }
+
+    fun click(tab: ChatTab, shift: Boolean) {
+        if (shift) {
+            if (currentTabs.contains(tab)) currentTabs.remove(tab) else currentTabs.add(tab)
+        } else {
+            currentTabs.clear()
+            currentTabs.add(tab)
+        }
+        refresh()
+    }
+
+    fun isSelected(tab: ChatTab): Boolean = currentTabs.contains(tab)
+
+    fun refresh() {
+        val chat = Minecraft.getInstance().gui?.chat ?: return
+        (chat as? ChatComponentHook)?.`chatting$refresh`()
+    }
+
+    fun applyPrefix(message: String): String {
+        if (!ChattingConfig.chatTabs || message.startsWith("/")) return message
+        val tab = currentTabs.firstOrNull { !it.prefix.isNullOrEmpty() } ?: return message
+        return tab.prefix + message
     }
 
     private fun handleFile() {
         try {
             val chatTabJson = GSON.fromJson(tabFile.readText(), ChatTabsJson::class.java)
-            when (chatTabJson.version) {
-                1 -> {
-                    // ver 2 adds `enabled`
-                    chatTabJson.tabs.forEach {
-                        applyVersion2Changes(it.asJsonObject)
-                        applyVersion3Changes(it.asJsonObject)
-                        applyVersion4Changes(it.asJsonObject)
-                        applyVersion5Changes(it.asJsonObject)
-                        applyVersion6Changes(it.asJsonObject)
-                    }
-                    chatTabJson.version = ChatTabsJson.VERSION
-                    tabFile.writeText(GSON.toJson(chatTabJson))
+            if (chatTabJson.version < ChatTabsJson.VERSION) {
+                chatTabJson.tabs.forEach {
+                    val obj = it.asJsonObject
+                    if (chatTabJson.version < 2) applyVersion2Changes(obj)
+                    if (chatTabJson.version < 3) applyVersion3Changes(obj)
+                    if (chatTabJson.version < 4) applyVersion4Changes(obj)
+                    if (chatTabJson.version < 5) applyVersion5Changes(obj)
+                    if (chatTabJson.version < 6) applyVersion6Changes(obj)
                 }
-                2 -> {
-                    // ver 3 adds ignore_
-                    chatTabJson.tabs.forEach {
-                        applyVersion3Changes(it.asJsonObject)
-                        applyVersion4Changes(it.asJsonObject)
-                        applyVersion5Changes(it.asJsonObject)
-                        applyVersion6Changes(it.asJsonObject)
-                    }
-                    chatTabJson.version = ChatTabsJson.VERSION
-                    tabFile.writeText(GSON.toJson(chatTabJson))
-                }
-                3 -> {
-                    // ver 4 adds color options
-                    chatTabJson.tabs.forEach {
-                        applyVersion4Changes(it.asJsonObject)
-                        applyVersion5Changes(it.asJsonObject)
-                        applyVersion6Changes(it.asJsonObject)
-                    }
-                    chatTabJson.version = ChatTabsJson.VERSION
-                    tabFile.writeText(GSON.toJson(chatTabJson))
-                }
-                4 -> {
-                    // ver 5 adds lowercase
-                    chatTabJson.tabs.forEach {
-                        applyVersion5Changes(it.asJsonObject)
-                        applyVersion6Changes(it.asJsonObject)
-                    }
-                    chatTabJson.version = ChatTabsJson.VERSION
-                    tabFile.writeText(GSON.toJson(chatTabJson))
-                }
-                5 -> {
-                    // ver 6 changes pm regex
-                    chatTabJson.tabs.forEach {
-                        applyVersion6Changes(it.asJsonObject)
-                    }
-                    chatTabJson.version = ChatTabsJson.VERSION
-                    tabFile.writeText(GSON.toJson(chatTabJson))
-                }
+                chatTabJson.version = ChatTabsJson.VERSION
+                tabFile.writeText(GSON.toJson(chatTabJson))
             }
             chatTabJson.tabs.forEach {
                 val chatTab = GSON.fromJson(it.toString(), ChatTab::class.java)
-                if (chatTab.enabled) {
-                    tabs.add(chatTab)
-                }
+                if (chatTab.enabled) tabs.add(chatTab)
             }
         } catch (e: Throwable) {
             e.printStackTrace()
-            tabFile.delete()
+            runCatching { tabFile.writeText("") }
             generateNewFile()
         }
     }
@@ -136,9 +109,9 @@ object ChatTabs {
     }
 
     private fun applyVersion4Changes(json: JsonObject) {
-        json.addProperty("color", TabButton.color)
-        json.addProperty("hovered_color", TabButton.hoveredColor)
-        json.addProperty("selected_color", TabButton.selectedColor)
+        json.addProperty("color", ChatTab.COLOR)
+        json.addProperty("hovered_color", ChatTab.HOVERED_COLOR)
+        json.addProperty("selected_color", ChatTab.SELECTED_COLOR)
     }
 
     private fun applyVersion5Changes(json: JsonObject) {
@@ -152,11 +125,7 @@ object ChatTabs {
             starts.iterator().let {
                 while (it.hasNext()) {
                     when (it.next().asString) {
-                        "To " -> {
-                            detected = true
-                            it.remove()
-                        }
-                        "From " -> {
+                        "To ", "From " -> {
                             detected = true
                             it.remove()
                         }
@@ -177,7 +146,7 @@ object ChatTabs {
             ends.iterator().let {
                 while (it.hasNext()) {
                     when (it.next().asString) {
-                        "§r§ehas invited you to join their party!", -> {
+                        "§r§ehas invited you to join their party!" -> {
                             detected = true
                             it.remove()
                         }
@@ -192,51 +161,23 @@ object ChatTabs {
         }
     }
 
-    fun shouldRender(message: IChatComponent): Boolean {
-        if (currentTabs.isEmpty()) return true
-        for (tab in currentTabs) {
-            if (tab.shouldRender(message)) {
-                return true
-            }
-        }
-        return false
-    }
-
     private fun generateNewFile() {
-        tabFile.createNewFile()
+        tabs.clear()
         val jsonObject = JsonObject()
-        val defaultTabs = generateDefaultTabs()
-        jsonObject.add("tabs", defaultTabs)
+        jsonObject.add("tabs", generateDefaultTabs())
         jsonObject.addProperty("version", ChatTabsJson.VERSION)
         tabFile.writeText(GSON.toJson(jsonObject))
     }
 
     private fun generateDefaultTabs(): JsonArray {
         val all = ChatTab(
-            true,
-            "ALL",
-            unformatted = false,
-            lowercase = false,
-            startsWith = null,
-            contains = null,
-            endsWith = null,
-            equals = null,
-            uncompiledRegex = null,
-            ignoreStartsWith = null,
-            ignoreContains = null,
-            ignoreEndsWith = null,
-            ignoreEquals = null,
-            uncompiledIgnoreRegex = null,
-            color = TabButton.color,
-            hoveredColor = TabButton.hoveredColor,
-            selectedColor = TabButton.selectedColor,
-            prefix = ""
+            true, "ALL", unformatted = false, lowercase = false,
+            startsWith = null, contains = null, endsWith = null, equals = null, uncompiledRegex = null,
+            ignoreStartsWith = null, ignoreContains = null, ignoreEndsWith = null, ignoreEquals = null, uncompiledIgnoreRegex = null,
+            color = ChatTab.COLOR, hoveredColor = ChatTab.HOVERED_COLOR, selectedColor = ChatTab.SELECTED_COLOR, prefix = ""
         )
         val party = ChatTab(
-            true,
-            "PARTY",
-            unformatted = false,
-            lowercase = false,
+            true, "PARTY", unformatted = false, lowercase = false,
             startsWith = listOf("§r§9Party §8> ", "§r§9P §8> ", "§eThe party was transferred to §r", "§eKicked §r"),
             contains = listOf("§r§ehas invited you to join their party!"),
             endsWith = listOf(
@@ -249,16 +190,16 @@ object ChatTabs {
                 "§r§e because they were offline.§r"
             ),
             equals = listOf("§cThe party was disbanded because all invites expired and the party was empty§r"),
-            uncompiledRegex = listOf( //regexes from https://github.com/kwevin/Hychat-Tabs/blob/main/tabs/re-add%20prefixes%20%26%20fix%20shortened%20tags/chat.json cause i cant write regex
-                "(§r)*(§9Party §8\u003e)+(.*)",
+            uncompiledRegex = listOf(
+                "(§r)*(§9Party §8>)+(.*)",
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§einvited §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§eto the party! They have §r§c60 §r§eseconds to accept\\.§r",
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§ehas left the party\\.§r",
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§ejoined the party\\.§r",
                 "§eYou left the party\\.§r",
-                "§eYou have joined §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)\u0027s §r§eparty!§r",
+                "§eYou have joined §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)'s §r§eparty!§r",
                 "§cThe party was disbanded because all invites expired and the party was empty§r",
-                "§cYou cannot invite that player since they\u0027re not online\\.§r",
-                "§eThe party leader, §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§e, warped you to §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§e\u0027s house\\.§r",
+                "§cYou cannot invite that player since they're not online\\.§r",
+                "§eThe party leader, §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§e, warped you to §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§e's house\\.§r",
                 "§eSkyBlock Party Warp §r§7\\([0-9]+ players?\\)§r",
                 "§a. §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§f §r§awarped to your server§r",
                 "§eYou summoned §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§f §r§eto your server\\.§r",
@@ -274,7 +215,7 @@ object ChatTabs {
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§e has promoted §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§eto Party Moderator§r",
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§eis now a Party Moderator§r",
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r§e has demoted §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§eto Party Member§r",
-                "§cYou can\u0027t demote yourself!§r",
+                "§cYou can't demote yourself!§r",
                 "§6Party Members \\([0-9]+\\)§r",
                 "§eParty Leader: §r(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) ?§r(?:§[a-zA-Z0-9]).§r",
                 "§eParty Members: §r(?:(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+)§r(?:§[a-zA-Z0-9]) . §r)+",
@@ -288,67 +229,31 @@ object ChatTabs {
                 "(?:(?:§[a-zA-Z0-9])*\\[(?:(?:VIP)|(?:VIP§r§6\\+)|(?:MVP)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+)|(?:MVP(?:§r)?(?:§[a-zA-Z0-9])\\+\\+)|(?:(?:§r)?§fYOUTUBE))(?:§r)?(?:(?:§[a-zA-Z0-9]))?\\] [a-zA-Z0-9_]+|§7[a-zA-Z0-9_]+) §r§ehas disconnected, they have §r§c5 §r§eminutes to rejoin before they are removed from the party.§r",
                 "§cYou are not in a party right now\\.§r",
                 "§cThis party is currently muted\\.§r",
-                "(§r)*(§9P §8\u003e)+(.*)"
+                "(§r)*(§9P §8>)+(.*)"
             ),
-            ignoreStartsWith = null,
-            ignoreContains = null,
-            ignoreEndsWith = null,
-            ignoreEquals = null,
-            uncompiledIgnoreRegex = null,
-            color = TabButton.color,
-            hoveredColor = TabButton.hoveredColor,
-            selectedColor = TabButton.selectedColor,
-            prefix = "/pc "
+            ignoreStartsWith = null, ignoreContains = null, ignoreEndsWith = null, ignoreEquals = null, uncompiledIgnoreRegex = null,
+            color = ChatTab.COLOR, hoveredColor = ChatTab.HOVERED_COLOR, selectedColor = ChatTab.SELECTED_COLOR, prefix = "/pc "
         )
         val guild = ChatTab(
-            true,
-            "GUILD",
-            unformatted = true,
-            lowercase = false,
+            true, "GUILD", unformatted = true, lowercase = false,
             startsWith = listOf("Guild >", "G >"),
-            contains = null,
-            endsWith = null,
-            equals = null,
-            uncompiledRegex = null,
-            ignoreStartsWith = null,
-            ignoreContains = null,
-            ignoreEndsWith = null,
-            ignoreEquals = null,
-            uncompiledIgnoreRegex = null,
-            color = TabButton.color,
-            hoveredColor = TabButton.hoveredColor,
-            selectedColor = TabButton.selectedColor,
-            prefix = "/gc "
+            contains = null, endsWith = null, equals = null, uncompiledRegex = null,
+            ignoreStartsWith = null, ignoreContains = null, ignoreEndsWith = null, ignoreEquals = null, uncompiledIgnoreRegex = null,
+            color = ChatTab.COLOR, hoveredColor = ChatTab.HOVERED_COLOR, selectedColor = ChatTab.SELECTED_COLOR, prefix = "/gc "
         )
         val pm = ChatTab(
-            true,
-            "PM",
-            unformatted = false,
-            lowercase = false,
-            startsWith = null,
-            contains = null,
-            endsWith = null,
-            equals = null,
+            true, "PM", unformatted = false, lowercase = false,
+            startsWith = null, contains = null, endsWith = null, equals = null,
             uncompiledRegex = listOf("^(?<type>§dTo|§dFrom) (?<prefix>.+): §r(?<message>.*)(?:§r)?\$"),
-            ignoreStartsWith = null,
-            ignoreContains = null,
-            ignoreEndsWith = null,
-            ignoreEquals = null,
-            uncompiledIgnoreRegex = null,
-            color = TabButton.color,
-            hoveredColor = TabButton.hoveredColor,
-            selectedColor = TabButton.selectedColor,
-            prefix = "/r "
+            ignoreStartsWith = null, ignoreContains = null, ignoreEndsWith = null, ignoreEquals = null, uncompiledIgnoreRegex = null,
+            color = ChatTab.COLOR, hoveredColor = ChatTab.HOVERED_COLOR, selectedColor = ChatTab.SELECTED_COLOR, prefix = "/r "
         )
         tabs.add(all)
         tabs.add(party)
         tabs.add(guild)
         tabs.add(pm)
         val jsonArray = JsonArray()
-        jsonArray.add(PARSER.parse(GSON.toJson(all)).asJsonObject)
-        jsonArray.add(PARSER.parse(GSON.toJson(party)).asJsonObject)
-        jsonArray.add(PARSER.parse(GSON.toJson(guild)).asJsonObject)
-        jsonArray.add(PARSER.parse(GSON.toJson(pm)).asJsonObject)
+        listOf(all, party, guild, pm).forEach { jsonArray.add(JsonParser.parseString(GSON.toJson(it)).asJsonObject) }
         return jsonArray
     }
 }

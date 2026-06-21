@@ -5,7 +5,7 @@ data class ChatRegexes(val regexList: List<String>?) {
 
     init {
         regexList?.forEach {
-            compiledRegexList.add(Regex(it))
+            runCatching { compiledRegexList.add(Regex(it)) }
         }
     }
 }

@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${mod_version}",
+    "name": "${mod_name}",
+    "description": "${mod_description}",
+    "authors": [
+        "Polyfrost"
+    ],
+    "contact": {
+        "homepage": "https://polyfrost.org",
+        "sources": "https://github.com/Polyfrost/Chatting"
+    },
+    "license": "LGPL-3.0-or-later",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            {
+                "value": "org.polyfrost.chatting.ChattingClient",
+                "adapter": "kotlin"
+            }
+        ]
+    },
+    "mixins": [
+        "mixins.${mod_id}.json"
+    ],
+    "accessWidener": "${aw}",
+    "depends": {
+        "minecraft": ">=${mc_version}",
+        "fabricloader": ">=0.15.11"
+    }
+}

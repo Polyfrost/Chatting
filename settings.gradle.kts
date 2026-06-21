@@ -1,30 +1,37 @@
-@file:Suppress("PropertyName")
-
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         mavenCentral()
-        maven("https://repo.polyfrost.org/releases") // Adds the Polyfrost maven repository to get Polyfrost Gradle Toolkit
+        gradlePluginPortal()
+        maven("https://maven.fabricmc.net")
+        maven("https://maven.kikugie.dev/snapshots")
+        maven("https://maven.kikugie.dev/releases")
+        maven("https://jitpack.io/")
+        maven("https://maven.deftu.dev/releases")
+        maven("https://maven.deftu.dev/snapshots")
+        maven("https://maven.architectury.dev")
+        maven("https://repo.polyfrost.org/releases")
+        maven("https://repo.polyfrost.org/snapshots")
+        mavenLocal()
     }
-    plugins {
-        val pgtVersion = "0.6.5" // Sets the default versions for Polyfrost Gradle Toolkit
-        id("org.polyfrost.multi-version.root") version pgtVersion
+}
+
+plugins {
+    id("dev.kikugie.stonecutter") version "0.9.4"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    id("dev.kikugie.loom-back-compat") version "0.3"
+}
+
+stonecutter {
+    create(rootProject) {
+        versions("1.21.1", "1.21.4", "1.21.5", "1.21.8", "1.21.10", "1.21.11", "26.1")
+        vcsVersion = "1.21.1"
     }
 }
 
-val mod_name: String by settings
-
-// Configures the root project Gradle name based on the value in `gradle.properties`
-rootProject.name = mod_name
-rootProject.buildFileName = "root.gradle.kts"
-
-// Adds all of our build target versions to the classpath if we need to add version-specific code.
-listOf(
-    "1.8.9-forge"
-).forEach { version ->
-    include(":$version")
-    project(":$version").apply {
-        projectDir = file("versions/$version")
-        buildFileName = "../../build.gradle.kts"
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs")
     }
 }
+
+rootProject.name = "Chatting"
