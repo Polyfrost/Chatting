@@ -42,9 +42,11 @@ public class GuiRendererMixin implements GuiRendererInterface {
     private List<GuiRenderer.Draw> draws;
     @Shadow
     private int firstDrawIndexAfterBlur;
+    //? if <26.2 {
     @Final
     @Shadow
     private List<GuiRenderer.MeshToDraw> meshesToDraw;
+    //?}
     @Mutable
     @Final
     @Shadow
@@ -59,9 +61,15 @@ public class GuiRendererMixin implements GuiRendererInterface {
     public void chatting$setRenderState(Object state) {
         this.renderState = (GuiRenderState) state;
     }
+    //? if >=26.2 {
+    /^@Final
+    @Shadow
+    private net.minecraft.client.renderer.StagedVertexBuffer vertexBuffer;
+    ^///?} else {
     @Final
     @Shadow
     private Map<VertexFormat, MappableRingBuffer> vertexBuffers;
+    //?}
 
     //? if >=26 {
     /^@Final
@@ -84,10 +92,33 @@ public class GuiRendererMixin implements GuiRendererInterface {
     private void clearUnusedOversizedItemRenderers() {
     }
 
+    //? if >=26.2 {
+    /^@Shadow
+    private void executeDrawRange(Supplier<String> supplier, RenderTarget arg, GpuBufferSlice gpuBufferSlice, int j, int k) {
+    }
+    ^///?} else {
     @Shadow
     private void executeDrawRange(Supplier<String> supplier, RenderTarget arg, GpuBufferSlice gpuBufferSlice, GpuBufferSlice gpuBufferSlice2, GpuBuffer gpuBuffer, VertexFormat.IndexType arg2, int j, int k) {
     }
+    //?}
 
+    //? if >=26.2 {
+    /^@Unique
+    private void chatting$draw(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
+        if (this.draws.isEmpty()) return;
+        WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
+        this.guiProjection.setupOrtho(1000.0F, 11000.0F, (float) windowState.width / (float) windowState.guiScale, (float) windowState.height / (float) windowState.guiScale, true);
+        RenderSystem.setProjectionMatrix(this.guiProjectionMatrixBuffer.getBuffer(this.guiProjection), ProjectionType.ORTHOGRAPHIC);
+        GpuBufferSlice gpubufferslice = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F));
+        if (this.firstDrawIndexAfterBlur > 0) {
+            this.executeDrawRange(() -> "GUI before blur", renderTarget, gpubufferslice, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
+        }
+        if (this.draws.size() > this.firstDrawIndexAfterBlur) {
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), (double) 1.0F);
+            this.executeDrawRange(() -> "GUI after blur", renderTarget, gpubufferslice, this.firstDrawIndexAfterBlur, this.draws.size());
+        }
+    }
+    ^///?} else {
     @Unique
     private void chatting$draw(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         if (!this.draws.isEmpty()) {
@@ -128,7 +159,23 @@ public class GuiRendererMixin implements GuiRendererInterface {
             }
         }
     }
+    //?}
 
+    //? if >=26.2 {
+    /^@Override
+    public void chatting$render(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
+        this.prepare();
+        this.vertexBuffer.upload();
+        this.chatting$draw(gpuBufferSlice, renderTarget);
+        this.vertexBuffer.endDraw();
+        this.vertexBuffer.endFrame();
+
+        this.draws.clear();
+        this.renderState.reset();
+        this.firstDrawIndexAfterBlur = Integer.MAX_VALUE;
+        this.clearUnusedOversizedItemRenderers();
+    }
+    ^///?} else {
     @Override
     public void chatting$render(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         this.prepare();
@@ -144,5 +191,6 @@ public class GuiRendererMixin implements GuiRendererInterface {
         this.firstDrawIndexAfterBlur = Integer.MAX_VALUE;
         this.clearUnusedOversizedItemRenderers();
     }
+    //?}
 }
 *///?}

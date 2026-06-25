@@ -16,11 +16,13 @@ val mcversion = stonecutter.current.version
 val oneconfigversion = property("oneconfig_version") as String
 val loaderversion = property("loader_version") as String
 
-val hasOfficialMappings = mcversion != "26.1"
-val javaVersion = if (mcversion == "26.1") 25 else 21
+val isModern = stonecutter.eval(mcversion, ">=26.1")
+val hasOfficialMappings = !isModern
+val javaVersion = if (isModern) 25 else 21
 
 val accessWidener = when {
-    mcversion == "26.1" -> "chatting-26.accesswidener"
+    stonecutter.eval(mcversion, ">=26.2") -> "chatting-26.2.accesswidener"
+    isModern -> "chatting-26.accesswidener"
     stonecutter.eval(mcversion, ">=1.21.11") -> "chatting-1.21.11.accesswidener"
     stonecutter.eval(mcversion, ">=1.21.6") -> "chatting-1.21.6.accesswidener"
     stonecutter.eval(mcversion, ">=1.21.5") -> "chatting-1.21.5.accesswidener"
@@ -28,7 +30,7 @@ val accessWidener = when {
 }
 val allAccessWideners = listOf(
     "chatting.accesswidener", "chatting-1.21.5.accesswidener", "chatting-1.21.6.accesswidener",
-    "chatting-1.21.11.accesswidener", "chatting-26.accesswidener"
+    "chatting-1.21.11.accesswidener", "chatting-26.accesswidener", "chatting-26.2.accesswidener"
 )
 
 base {
@@ -45,12 +47,14 @@ repositories {
     maven("https://repo.polyfrost.org/snapshots")
     maven("https://maven.gegy.dev/releases")
 
-    maven("https://maven.logix.dev/snapshots")
     maven("https://nexus.prsm.wtf/repository/maven-public/maven-repo/releases/")
     maven("https://repo.hypixel.net/repository/Hypixel/")
     maven("https://maven.deftu.dev/releases")
 
     maven("https://maven.fabricmc.net/releases")
+    maven("https://central.sonatype.com/repository/maven-snapshots/") {
+        content { includeGroup("net.kyori") }
+    }
     maven("https://jitpack.io") {
         content { includeGroupAndSubgroups("com.github") }
     }
@@ -94,6 +98,7 @@ dependencies {
     modImplementation("org.polyfrost.oneconfig:ui:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:utils:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:hud:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:notifications:$oneconfigversion")
 }
 
 bloom {

@@ -7,8 +7,8 @@ import net.minecraft.client.Minecraft;
 import java.util.List;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;*/
-//?} else {
+/*import net.minecraft.client.multiplayer.chat.GuiMessage;
+*///?} else {
 import net.minecraft.client.GuiMessage;
 //?}
 
@@ -26,20 +26,20 @@ public final class ChatScreenshotModern {
         RenderTarget rt = render(mc, lines, width, height, scale, shadow);
         if (rt == null) return;
         readbackAndPersist(rt);
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.6 {
-    /*
-    private static void chatting$flush(Minecraft mc, Object renderState, RenderTarget rt) {
+    
+    /*private static void chatting$flush(Minecraft mc, Object renderState, RenderTarget rt) {
         net.minecraft.client.gui.render.GuiRenderer guiRenderer = mc.gameRenderer.guiRenderer;
         org.polyfrost.chatting.hook.GuiRendererInterface gri = (org.polyfrost.chatting.hook.GuiRendererInterface) (Object) guiRenderer;
         Object saved = gri.chatting$getRenderState();
         gri.chatting$setRenderState(renderState);
         gri.chatting$render(mc.gameRenderer.fogRenderer.getBuffer(net.minecraft.client.renderer.fog.FogRenderer.FogMode.NONE), rt);
         gri.chatting$setRenderState(saved);
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.5 <1.21.6 {
     /*private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
@@ -77,7 +77,7 @@ public final class ChatScreenshotModern {
         try {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
         } catch (IllegalArgumentException e) {
-            ChatScreenshot.notify("Chat window is empty.");
+            ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
         OverrideVertexProvider consumer = new OverrideVertexProvider(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256), rt);
@@ -105,7 +105,7 @@ public final class ChatScreenshotModern {
         try {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
         } catch (IllegalArgumentException e) {
-            ChatScreenshot.notify("Chat window is empty.");
+            ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
         net.minecraft.client.gui.render.state.GuiRenderState renderState = new net.minecraft.client.gui.render.state.GuiRenderState();
@@ -132,7 +132,7 @@ public final class ChatScreenshotModern {
         try {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
         } catch (IllegalArgumentException e) {
-            ChatScreenshot.notify("Chat window is empty.");
+            ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
         net.minecraft.client.gui.render.state.GuiRenderState renderState = new net.minecraft.client.gui.render.state.GuiRenderState();
@@ -157,14 +157,22 @@ public final class ChatScreenshotModern {
     /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
         com.mojang.blaze3d.pipeline.TextureTarget rt;
         try {
+            //? if >=26.2 {
+            /^rt = new com.mojang.blaze3d.pipeline.TextureTarget("chatting_screenshot", width * scale, height * scale, false, com.mojang.blaze3d.GpuFormat.RGBA8_UNORM);
+            ^///?} else {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
+            //?}
         } catch (IllegalArgumentException e) {
-            ChatScreenshot.notify("Chat window is empty.");
+            ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
         net.minecraft.client.renderer.state.gui.GuiRenderState renderState = new net.minecraft.client.renderer.state.gui.GuiRenderState();
         net.minecraft.client.gui.GuiGraphicsExtractor context = new net.minecraft.client.gui.GuiGraphicsExtractor(mc, renderState, 0, 0);
+        //? if >=26.2 {
+        /^com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), new org.joml.Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
+        ^///?} else {
         com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
+        //?}
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
         int y = 0;
         for (GuiMessage.Line line : lines) {
@@ -177,8 +185,8 @@ public final class ChatScreenshotModern {
         }
         chatting$flush(mc, renderState, rt);
         return rt;
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.5 <1.21.6 {
     /*private static void readbackAndPersist(RenderTarget rt) {
@@ -209,12 +217,20 @@ public final class ChatScreenshotModern {
     /*private static void readbackAndPersist(RenderTarget rt) {
         int i = rt.width, j = rt.height;
         com.mojang.blaze3d.textures.GpuTexture tex = rt.getColorTexture();
+        //? if >=26.2 {
+        /^int px = tex.getFormat().blockSize();
+        ^///?} else {
         int px = tex.getFormat().pixelSize();
+        //?}
         com.mojang.blaze3d.systems.GpuDevice device = com.mojang.blaze3d.systems.RenderSystem.getDevice();
         com.mojang.blaze3d.buffers.GpuBuffer buffer = device.createBuffer(null, com.mojang.blaze3d.buffers.GpuBuffer.USAGE_COPY_DST | com.mojang.blaze3d.buffers.GpuBuffer.USAGE_MAP_READ, i * j * px);
         com.mojang.blaze3d.systems.CommandEncoder encoder = device.createCommandEncoder();
         encoder.copyTextureToBuffer(tex, buffer, 0, () -> {
+            //? if >=26.2 {
+            /^try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView view = buffer.map(true, false)) {
+            ^///?} else {
             try (com.mojang.blaze3d.buffers.GpuBuffer.MappedView view = encoder.mapBuffer(buffer, true, false)) {
+            //?}
                 NativeImage image = new NativeImage(i, j, false);
                 for (int k = 0; k < j; k++) {
                     for (int l = 0; l < i; l++) {
@@ -227,6 +243,6 @@ public final class ChatScreenshotModern {
                 rt.destroyBuffers();
             }
         }, 0);
-    }*/
-    //?}
+    }
+    *///?}
 }

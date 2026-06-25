@@ -4,9 +4,7 @@ import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import net.minecraft.client.Minecraft
-import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindManager
-import org.polyfrost.oneconfig.api.ui.v1.keybind.KeyModifiers
-import org.polyfrost.oneconfig.api.ui.v1.keybind.OneConfigKeybind
+import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatTabs
 
@@ -64,7 +62,7 @@ object ChattingConfig : Config(
     @Keybind(
         title = "Peek KeyBind", category = "Chat Peek"
     )
-    var chatPeekBind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L, this::runPeek)
+    var chatPeekBind = KeybindHelper.builder().action(this::runPeek).register()
 
     @RadioButton(
         title = "Peek Mode", category = "Chat Peek",
@@ -246,10 +244,6 @@ object ChattingConfig : Config(
         return server.ip.contains("hypixel", ignoreCase = true)
     }
 
-    //todo fixed in beta.5
-    @Transient
-    private var registeredPeekBind: OneConfigKeybind? = null
-
     private fun runPeek(pressed: Boolean): Boolean {
         if (!chatPeek) return false
         if (peekMode == 0 /* HOLD */) {
@@ -263,16 +257,11 @@ object ChattingConfig : Config(
     }
 
     private fun resetPeekScroll() {
+        //? if >=26.2 {
+        /*Minecraft.getInstance().gui?.hud?.chat?.resetChatScroll()
+        *///?} else {
         Minecraft.getInstance().gui?.chat?.resetChatScroll()
-    }
-
-    private fun refreshPeekBind() {
-        registeredPeekBind?.let { KeybindManager.unregister(it) }
-        registeredPeekBind = null
-        val src = chatPeekBind
-        if (!src.isBound) return
-        registeredPeekBind = OneConfigKeybind(src.keyCodes, src.mouseBtns, src.mods, src.durationNanos, this::runPeek)
-            .also { KeybindManager.register(it) }
+        //?}
     }
 
     init {
@@ -289,8 +278,6 @@ object ChattingConfig : Config(
         addDependency("peekMode", "chatPeek")
 
         addCallback("peekMode") { Chatting.peeking = false }
-        addCallback("chatPeekBind") { refreshPeekBind() }
-        refreshPeekBind()
         addCallback("chatTabs") { ChatTabs.refresh() }
         addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh() }
     }

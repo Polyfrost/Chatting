@@ -1,8 +1,8 @@
 package org.polyfrost.chatting.hud
 
 //? if >=26 {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
-//?} else {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+*///?} else {
 import net.minecraft.client.gui.GuiGraphics
 //?}
 import net.minecraft.client.Minecraft

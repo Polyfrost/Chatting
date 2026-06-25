@@ -9,6 +9,8 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.oneconfig.api.notifications.v1.NotificationType;
+import org.polyfrost.oneconfig.api.notifications.v1.Notifications;
 import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
 
 import javax.imageio.ImageIO;
@@ -18,8 +20,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;*/
-//?} else {
+/*import net.minecraft.client.multiplayer.chat.GuiMessage;
+*///?} else {
 import net.minecraft.client.GuiMessage;
 //?}
 
@@ -50,11 +52,11 @@ public final class ChatScreenshot {
             text = FORMATTING.matcher(text).replaceAll("");
         }
         if (text.isEmpty()) {
-            notify("Could not find chat message.");
+            notifyError("Could not find chat message.");
             return;
         }
         ClipboardHelper.setString(text);
-        notify("Copied: " + text);
+        notifySuccess("Copied to clipboard", text);
     }
 
     private static String collectFormatted(List<GuiMessage.Line> lines) {
@@ -90,7 +92,7 @@ public final class ChatScreenshot {
     public static void copyImage(List<GuiMessage.Line> lines) {
         Minecraft mc = Minecraft.getInstance();
         if (lines.isEmpty()) {
-            notify("Chat window is empty.");
+            notifyError("Chat window is empty.");
             return;
         }
         int width = 0;
@@ -98,7 +100,7 @@ public final class ChatScreenshot {
             width = Math.max(width, headOffset(line.content()) + mc.font.width(line.content()));
         }
         if (width <= 0) {
-            notify("Chat window is empty.");
+            notifyError("Chat window is empty.");
             return;
         }
         int height = lines.size() * 9;
@@ -110,8 +112,8 @@ public final class ChatScreenshot {
         //?} elif <1.21.5 {
         /*notify("Image screenshot isn't supported on 1.21.4 yet — use right-click / the copy button to copy the text.");*/
         //?} else {
-        /*ChatScreenshotModern.capture(mc, lines, width, height, scale, shadow);*/
-        //?}
+        /*ChatScreenshotModern.capture(mc, lines, width, height, scale, shadow);
+        *///?}
     }
 
     //? if <1.21.5 {
@@ -121,18 +123,18 @@ public final class ChatScreenshot {
             //? if <1.21.4 {
             rt = new TextureTarget(width * scale, height * scale, false, false);
             //?} else {
-            /*rt = new TextureTarget(width * scale, height * scale, false);*/
-            //?}
+            /*rt = new TextureTarget(width * scale, height * scale, false);
+            *///?}
         } catch (Exception e) {
-            notify("Screenshot failed.");
+            notifyError("Screenshot failed.");
             return;
         }
         rt.setClearColor(0f, 0f, 0f, 0f);
         //? if <1.21.4 {
         rt.clear(false);
         //?} else {
-        /*rt.clear();*/
-        //?}
+        /*rt.clear();
+        *///?}
         rt.bindWrite(true);
 
         //? if <1.21.4 {
@@ -209,10 +211,10 @@ public final class ChatScreenshot {
             if (clip) {
                 ClipboardHelper.setImage(toBufferedImage(image));
             }
-            notify("Chat screenshotted successfully.");
+            notifySuccess("Chatting", "Chat screenshotted successfully.");
         } catch (Exception e) {
             e.printStackTrace();
-            notify("Screenshot failed.");
+            notifyError("Screenshot failed.");
         } finally {
             image.close();
         }
@@ -240,12 +242,14 @@ public final class ChatScreenshot {
     }
 
     static void notify(String message) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.gui == null) return;
-        //? if >=26 {
-        /*mc.gui.getChat().addClientSystemMessage(Component.literal("[Chatting] " + message));*/
-        //?} else {
-        mc.gui.getChat().addMessage(Component.literal("[Chatting] " + message));
-        //?}
+        Notifications.send("Chatting", message, NotificationType.INFO);
+    }
+
+    static void notifySuccess(String title, String message) {
+        Notifications.send(title, message, NotificationType.SUCCESS);
+    }
+
+    static void notifyError(String message) {
+        Notifications.send("Chatting", message, NotificationType.ERROR);
     }
 }

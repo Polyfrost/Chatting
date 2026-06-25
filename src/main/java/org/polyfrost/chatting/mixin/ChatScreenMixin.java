@@ -29,17 +29,17 @@ import java.util.List;
 
 //? if >=26 {
 /*import net.minecraft.client.multiplayer.chat.GuiMessage;
-import net.minecraft.client.gui.GuiGraphicsExtractor;*/
-//?} else {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+*///?} else {
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
 //?}
 //? if >=1.21.10 {
-/*import net.minecraft.client.input.MouseButtonEvent;*/
-//?}
+/*import net.minecraft.client.input.MouseButtonEvent;
+*///?}
 //? if >=1.21.11 {
-/*import net.minecraft.util.Mth;*/
-//?}
+/*import net.minecraft.util.Mth;
+*///?}
 
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin extends Screen {
@@ -119,14 +119,23 @@ public abstract class ChatScreenMixin extends Screen {
         return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentMessage(message));
     }
 
+    // Tabs are drawn at HEAD so the vanilla command-suggestion popup (rendered later in
+    // ChatScreen#render) paints on top of them instead of being covered (Polyfrost/Chatting#101).
+    //? if <26 {
+    @Inject(method = "render", at = @At("HEAD"))
+    private void chatting$renderTabsLayer(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
+    }
+    //?}
+
     //? if >=26 {
     /*@Inject(method = "extractRenderState", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
     *///?} else {
     @Inject(method = "render", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     //?}
-        ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
         chatting$tooltip = null;
         chatting$lineButtons(graphics, mouseX, mouseY);
         chatting$globalButtons(graphics, mouseX, mouseY);
@@ -138,15 +147,19 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private void chatting$lineButtons(Object g0, int mouseX, int mouseY) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;*/
-        //?} else {
+        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        *///?} else {
         GuiGraphics graphics = (GuiGraphics) g0;
         //?}
         ChattingConfig cfg = ChattingConfig.INSTANCE;
         boolean perLine = ChatButtons.hasPerLineButtons();
         if (!perLine && !cfg.getRightClickCopy()) return;
 
+        //? if >=26.2 {
+        /*ChatComponent chat = minecraft.gui.hud.getChat();
+        *///?} else {
         ChatComponent chat = minecraft.gui.getChat();
+        //?}
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
         float chatScale = (float) acc.chatting$getScale();
         if (chatScale <= 0f) return;
@@ -204,8 +217,8 @@ public abstract class ChatScreenMixin extends Screen {
         //? if <1.21.6 {
         graphics.pose().popPose();
         //?} else {
-        /*graphics.pose().popMatrix();*/
-        //?}
+        /*graphics.pose().popMatrix();
+        *///?}
     }
 
     @Unique
@@ -289,7 +302,11 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private void chatting$globalButtons(Object graphics, int mouseX, int mouseY) {
         ChattingConfig cfg = ChattingConfig.INSTANCE;
+        //? if >=26.2 {
+        /*ChatComponent chat = minecraft.gui.hud.getChat();
+        *///?} else {
         ChatComponent chat = minecraft.gui.getChat();
+        //?}
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
 
         int x = width - 12;
@@ -325,8 +342,8 @@ public abstract class ChatScreenMixin extends Screen {
     private void chatting$button(Object g0, Object icon, int localX, int localY, float scale,
                                  int mouseX, int mouseY, List<String> tooltip, Runnable action) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;*/
-        //?} else {
+        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        *///?} else {
         GuiGraphics graphics = (GuiGraphics) g0;
         //?}
         ChattingConfig cfg = ChattingConfig.INSTANCE;
@@ -351,29 +368,46 @@ public abstract class ChatScreenMixin extends Screen {
         List<String> lines = chatting$tooltip;
         chatting$tooltip = null;
         if (lines == null || lines.isEmpty()) return;
-        //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;*/
-        //?} else {
-        GuiGraphics graphics = (GuiGraphics) g0;
-        //?}
         Font font = this.font;
         int textW = 0;
         for (String s : lines) textW = Math.max(textW, font.width(s));
-        int pad = 4;
         int lineH = 10;
-        int boxW = textW + pad * 2;
-        int boxH = lines.size() * lineH - 2 + pad * 2;
+        int textH = lines.size() == 1 ? 8 : lines.size() * lineH - 2;
+        // x/y is the top-left of the text content; the vanilla background frame extends 3-4px around it.
         int x = mouseX + 12;
         int y = mouseY - 12;
-        if (x + boxW > this.width) x = Math.max(0, mouseX - 12 - boxW);
-        if (y + boxH > this.height) y = Math.max(0, this.height - boxH);
-        if (y < 0) y = 0;
-        graphics.fill(x, y, x + boxW, y + boxH, 0xF0100010);
-        int ty = y + pad;
+        if (x + textW + 4 > this.width) x = Math.max(4, this.width - textW - 4);
+        if (y + textH + 6 > this.height) y = this.height - textH - 6;
+        if (y < 4) y = 4;
+        chatting$tooltipBackground(g0, x, y, textW, textH);
+        int ty = y;
         for (String s : lines) {
-            chatting$text(g0, s, x + pad, ty);
+            chatting$text(g0, s, x, ty);
             ty += lineH;
         }
+    }
+
+    @Unique
+    private void chatting$tooltipBackground(Object g0, int x, int y, int w, int h) {
+        //? if >=26 {
+        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        *///?} else {
+        GuiGraphics graphics = (GuiGraphics) g0;
+        //?}
+        int bg = 0xF0100010;
+        graphics.fill(x - 3, y - 4, x + w + 3, y - 3, bg);
+        graphics.fill(x - 3, y + h + 3, x + w + 3, y + h + 4, bg);
+        graphics.fill(x - 3, y - 3, x + w + 3, y + h + 3, bg);
+        graphics.fill(x - 4, y - 3, x - 3, y + h + 3, bg);
+        graphics.fill(x + w + 3, y - 3, x + w + 4, y + h + 3, bg);
+        //? if <26 {
+        int b1 = 0x505000FF;
+        int b2 = 0x5028007F;
+        graphics.fillGradient(x - 3, y - 2, x - 2, y + h + 2, b1, b2);
+        graphics.fillGradient(x + w + 2, y - 2, x + w + 3, y + h + 2, b1, b2);
+        graphics.fill(x - 3, y - 3, x + w + 3, y - 2, b1);
+        graphics.fill(x - 3, y + h + 2, x + w + 3, y + h + 3, b2);
+        //?}
     }
 
     @Unique
@@ -388,8 +422,8 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private void chatting$blit(Object g0, Object icon, int x, int y) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;*/
-        //?} else {
+        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        *///?} else {
         GuiGraphics graphics = (GuiGraphics) g0;
         //?}
         //? if <1.21.4 {
@@ -461,8 +495,8 @@ public abstract class ChatScreenMixin extends Screen {
         if (event.button() == 0 && ChatTabsRenderer.INSTANCE.click(event.x(), event.y(), event.hasShiftDown())) {
             cir.setReturnValue(true);
         }
-    }*/
-    //?} else {
+    }
+    *///?} else {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (button == 0 && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
