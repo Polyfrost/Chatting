@@ -26,8 +26,12 @@ concurrency:
 
 jobs:
   build:
-    name: "Build"
+    name: "Build ${{ matrix.version }}"
     runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["1.21.1", "1.21.4", "1.21.5", "1.21.8", "1.21.10", "1.21.11", "26.1", "26.2"]
 
     steps:
       - uses: actions/checkout@v6
@@ -48,12 +52,25 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - run: chmod +x ./gradlew
-      - name: Build all Stonecutter versions
+      - name: Build Stonecutter version
         run: |
-          versions=(1.21.1 1.21.4 1.21.5 1.21.8 1.21.10 1.21.11 26.1 26.2)
+          ./gradlew ":${{ matrix.version }}:build"
 
-          for version in "${versions[@]}"; do
-            echo "::group::Build $version"
-            nice -n20 ./gradlew --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1536m -Dorg.gradle.vfs.watch=false -Dorg.gradle.parallel=false ":$version:build"
-            echo "::endgroup::"
-          done
+      - name: Resolve built mod jar
+        id: mod-jar
+        run: |
+          mapfile -t jars < <(find "versions/${{ matrix.version }}/build/libs" -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | sort)
+
+          if [ "${#jars[@]}" -ne 1 ]; then
+            printf 'Expected exactly one non-sources jar, found %s:\n' "${#jars[@]}"
+            printf '%s\n' "${jars[@]}"
+            exit 1
+          fi
+
+          echo "path=${jars[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload built mod jar
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.mod-jar.outputs.path }}
+          archive: false
