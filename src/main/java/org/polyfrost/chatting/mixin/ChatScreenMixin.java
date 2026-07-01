@@ -445,7 +445,10 @@ public abstract class ChatScreenMixin extends Screen {
         return (int) acc.chatting$screenToChatY(mouseY);
         //?} else {
         /*double d = (double) this.minecraft.getWindow().getGuiScaledHeight() - mouseY - 40.0;
-        return (int) (d / (acc.chatting$getScale() * acc.chatting$getLineHeight()));
+        // Match FocusedAccessMixin's half-open [entryTop, entryBottom) hover test: exactly on the
+        // boundary between two lines the cursor pixel belongs to the lower line (ceil - 1 instead of
+        // floor), so the highlighted line and the line the buttons target always agree.
+        return (int) Math.ceil(d / (acc.chatting$getScale() * acc.chatting$getLineHeight())) - 1;
         *///?}
     }
 
