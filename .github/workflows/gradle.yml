@@ -15,6 +15,9 @@ on:
       - '.gitignore'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   # Maximum of one running workflow per pull request source branch
   # or branch and run number combination (cancels old run if action is rerun)
@@ -27,22 +30,30 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
-      - uses: gradle/wrapper-validation-action@v1
-
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version: |
+            21
+            25
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - name: Restore Node path for local runners
+        run: |
+          if [ -d /opt/acttoolcache/node ]; then
+            find /opt/acttoolcache/node -path '*/x64/bin' -type d | sort -V | tail -n 1 >> "$GITHUB_PATH"
+          fi
+
+      - uses: gradle/actions/setup-gradle@v5
+
       - run: chmod +x ./gradlew
-      - run: ./gradlew --no-daemon build
+      - name: Build all Stonecutter versions
+        run: |
+          versions=(1.21.1 1.21.4 1.21.5 1.21.8 1.21.10 1.21.11 26.1 26.2)
+
+          for version in "${versions[@]}"; do
+            echo "::group::Build $version"
+            nice -n20 ./gradlew --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1536m -Dorg.gradle.vfs.watch=false -Dorg.gradle.parallel=false ":$version:build"
+            echo "::endgroup::"
+          done
