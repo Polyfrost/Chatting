@@ -39,7 +39,7 @@ public class FocusedAccessMixin {
     @Unique
     private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
         Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-        if (m.x >= x1 && m.x <= x2 && m.y >= y1 && m.y <= y2) {
+        if (m.x >= x1 && m.x < x2 && m.y >= y1 && m.y < y2) {
             return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return color;
@@ -60,7 +60,7 @@ public class FocusedAccessMixin {
     @Unique
     private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
         Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-        if (m.x >= x1 && m.x <= x2 && m.y >= y1 && m.y <= y2) {
+        if (m.x >= x1 && m.x < x2 && m.y >= y1 && m.y < y2) {
             return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return color;
