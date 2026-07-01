@@ -179,7 +179,9 @@ public abstract class ChatScreenMixin extends Screen {
         if (!perLine) return;
 
         int lineHeight = acc.chatting$getLineHeight();
-        int localRight = (int) (acc.chatting$getWidth() / chatScale);
+        // Anchor the buttons at the message background's right edge (text width + the background's
+        // right edge offset) so they sit just outside it when "Extend Chat Backgrounds" is disabled.
+        int stripStart = (int) Math.ceil(acc.chatting$getWidth() / chatScale) + ChatButtons.BACKGROUND_RIGHT_EDGE;
         int top = chatting$chatBottomLocal(chatScale) - (lineIndex + 1) * lineHeight
                 + (int) Math.ceil((lineHeight - 9) / 2.0);
 
@@ -205,12 +207,12 @@ public abstract class ChatScreenMixin extends Screen {
 
         int slot = 0;
         if (cfg.getChatCopy()) {
-            chatting$button(graphics, Textures.COPY, localRight + 2 + slot * (ChatButtons.BUTTON_WIDTH + 1), top,
+            chatting$button(graphics, Textures.COPY, stripStart + slot * (ChatButtons.BUTTON_WIDTH + ChatButtons.BUTTON_GAP), top,
                     chatScale, mx, my, CHATTING$COPY_TOOLTIP, () -> chatting$copyAction(acc, messageIndex, lineIndex));
             slot++;
         }
         if (cfg.getChatDelete()) {
-            chatting$button(graphics, Textures.DELETE, localRight + 2 + slot * (ChatButtons.BUTTON_WIDTH + 1), top,
+            chatting$button(graphics, Textures.DELETE, stripStart + slot * (ChatButtons.BUTTON_WIDTH + ChatButtons.BUTTON_GAP), top,
                     chatScale, mx, my, CHATTING$DELETE_TOOLTIP, () -> chatting$deleteAction(acc, lineIndex));
         }
 
