@@ -73,13 +73,19 @@ public abstract class ChatScreenMixin extends Screen {
             "§b§lCTRL CLICK§r §8- §7Single Line"
     );
 
+    @Unique private static final int CHATTING$SEARCH_BOX_HEIGHT = 12;
+    @Unique private static final int CHATTING$SEARCH_BOX_BOTTOM_MARGIN = 26;
+    @Unique private static final int CHATTING$GLOBAL_BUTTON_Y_OFFSET =
+            (CHATTING$SEARCH_BOX_HEIGHT - ChatButtons.BUTTON_WIDTH + 1) / 2;
+
     @Unique private EditBox chatting$searchBox;
 
     @Inject(method = "init", at = @At("TAIL"))
     private void chatting$initSearch(CallbackInfo ci) {
         int boxWidth = width / 4;
         int buttonRow = 3 * (ChatButtons.BUTTON_WIDTH + 2) + 12;
-        EditBox box = new EditBox(this.font, width - boxWidth - buttonRow, height - 26, boxWidth, 12, Component.empty());
+        EditBox box = new EditBox(this.font, width - boxWidth - buttonRow,
+                height - CHATTING$SEARCH_BOX_BOTTOM_MARGIN, boxWidth, CHATTING$SEARCH_BOX_HEIGHT, Component.empty());
         box.setMaxLength(100);
         box.setResponder(ChatSearch.INSTANCE::setQuery);
         box.setVisible(ChatSearch.INSTANCE.getEnabled());
@@ -312,7 +318,7 @@ public abstract class ChatScreenMixin extends Screen {
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
 
         int x = width - 12;
-        int y = height - 26;
+        int y = height - CHATTING$SEARCH_BOX_BOTTOM_MARGIN + CHATTING$GLOBAL_BUTTON_Y_OFFSET;
         if (cfg.getChatScreenshot()) {
             chatting$button(graphics, Textures.SCREENSHOT, x, y, 1f, mouseX, mouseY, null,
                     () -> ChatScreenshot.copyImage(chatting$visibleLines(chat, acc)));
