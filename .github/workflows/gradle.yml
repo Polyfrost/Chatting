@@ -43,12 +43,6 @@ jobs:
             21
             25
 
-      - name: Restore Node path for local runners
-        run: |
-          if [ -d /opt/acttoolcache/node ]; then
-            find /opt/acttoolcache/node -path '*/x64/bin' -type d | sort -V | tail -n 1 >> "$GITHUB_PATH"
-          fi
-
       - uses: gradle/actions/setup-gradle@v5
 
       - run: chmod +x ./gradlew
