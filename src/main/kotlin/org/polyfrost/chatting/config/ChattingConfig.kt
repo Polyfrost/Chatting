@@ -157,7 +157,7 @@ object ChattingConfig : Config(
 
     @Switch(
         title = "Only Click Copy Chat Message when Holding Shortcut Key", category = "Buttons",
-        description = "Only allow right clicking on a chat message to copy it when holding Cmd on macOS or Ctrl elsewhere."
+        description = "Only allow right clicking on a chat message to copy it when holding Ctrl (Cmd on macOS)."
     )
     var rightClickCopyCtrl = true
 
