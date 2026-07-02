@@ -39,8 +39,20 @@ public final class ChatButtons {
         return count;
     }
 
+    public static int globalButtonCount() {
+        int count = 0;
+        if (ChattingConfig.INSTANCE.getChatScreenshot()) count++;
+        if (ChattingConfig.INSTANCE.getChatDeleteHistory()) count++;
+        if (ChattingConfig.INSTANCE.getChatSearch()) count++;
+        return count;
+    }
+
     public static boolean hasPerLineButtons() {
         return perLineButtonCount() > 0;
+    }
+
+    public static boolean hasGlobalButtons() {
+        return globalButtonCount() > 0;
     }
 
     /** Total width, in chat-local pixels, occupied by the per-line button strip. */

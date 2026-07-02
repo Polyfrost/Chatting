@@ -1,11 +1,14 @@
 package org.polyfrost.chatting.mixin;
 
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.fabricmc.loader.api.FabricLoader;
 import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatScreenshot;
@@ -77,6 +80,13 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique private static final int CHATTING$SEARCH_BOX_BOTTOM_MARGIN = 26;
     @Unique private static final int CHATTING$GLOBAL_BUTTON_Y_OFFSET =
             (CHATTING$SEARCH_BOX_HEIGHT - ChatButtons.BUTTON_WIDTH + 1) / 2;
+    @Unique private static final String CHATTING$NO_CHAT_REPORTS_ID = "nochatreports";
+    @Unique private static final String CHATTING$NO_CHAT_REPORTS_PACKAGE = "com.aizistral.nochatreports.";
+    @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_SIZE = 20;
+    @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_RIGHT_MARGIN = 23;
+    @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_BOTTOM_MARGIN = 37;
+    @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_ROW_WIDTH = 100;
+    @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_Y_SHIFT = ChatButtons.BUTTON_WIDTH + 2;
 
     @Unique private EditBox chatting$searchBox;
 
@@ -92,6 +102,7 @@ public abstract class ChatScreenMixin extends Screen {
         addRenderableWidget(box);
         chatting$searchBox = box;
         chatting$syncSearchBox();
+        chatting$offsetNoChatReportsButtons();
     }
 
     @Inject(method = "removed", at = @At("HEAD"))
@@ -332,6 +343,35 @@ public abstract class ChatScreenMixin extends Screen {
         if (cfg.getChatSearch()) {
             chatting$button(graphics, Textures.SEARCH, x, y, 1f, mouseX, mouseY, null, this::chatting$toggleSearch);
         }
+    }
+
+    @Unique
+    private void chatting$offsetNoChatReportsButtons() {
+        if (!ChatButtons.hasGlobalButtons()) return;
+        if (!FabricLoader.getInstance().isModLoaded(CHATTING$NO_CHAT_REPORTS_ID)) return;
+
+        int ncrY = height - CHATTING$NO_CHAT_REPORTS_BUTTON_BOTTOM_MARGIN;
+        int ncrRight = width - CHATTING$NO_CHAT_REPORTS_BUTTON_RIGHT_MARGIN + CHATTING$NO_CHAT_REPORTS_BUTTON_SIZE;
+        int ncrLeft = ncrRight - CHATTING$NO_CHAT_REPORTS_BUTTON_ROW_WIDTH;
+        for (GuiEventListener child : children()) {
+            if (!(child instanceof AbstractWidget widget)) continue;
+            if (!chatting$isNoChatReportsButton(widget, ncrY, ncrLeft, ncrRight)) continue;
+            widget.setY(widget.getY() - CHATTING$NO_CHAT_REPORTS_BUTTON_Y_SHIFT);
+        }
+    }
+
+    @Unique
+    private boolean chatting$isNoChatReportsButton(AbstractWidget widget, int rowY, int rowLeft, int rowRight) {
+        if (widget.getY() != rowY) return false;
+        if (widget.getWidth() != CHATTING$NO_CHAT_REPORTS_BUTTON_SIZE
+                || widget.getHeight() != CHATTING$NO_CHAT_REPORTS_BUTTON_SIZE) return false;
+        if (widget.getX() < rowLeft || widget.getRight() > rowRight) return false;
+
+        String className = widget.getClass().getName();
+        if (className.startsWith(CHATTING$NO_CHAT_REPORTS_PACKAGE)) return true;
+
+        // NCR 26.x uses a vanilla CycleButton for the rightmost safety-state button.
+        return widget.getX() == width - CHATTING$NO_CHAT_REPORTS_BUTTON_RIGHT_MARGIN;
     }
 
     @Unique
