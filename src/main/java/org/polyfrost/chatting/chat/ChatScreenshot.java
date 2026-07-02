@@ -44,16 +44,17 @@ public final class ChatScreenshot {
     }
 
     public static void copyText(List<GuiMessage.Line> lines, Component fullMessage, boolean keepFormatting) {
+        if (fullMessage == null && lines.isEmpty()) {
+            notifyError("Could not find chat message.");
+            return;
+        }
+
         String text;
         if (keepFormatting) {
             text = fullMessage != null ? LegacyText.INSTANCE.toFormatted(fullMessage) : collectFormatted(lines);
         } else {
             text = fullMessage != null ? fullMessage.getString() : collect(lines);
             text = FORMATTING.matcher(text).replaceAll("");
-        }
-        if (text.isEmpty()) {
-            notifyError("Could not find chat message.");
-            return;
         }
         ClipboardHelper.setString(text);
         notifySuccess("Copied to clipboard", text);
