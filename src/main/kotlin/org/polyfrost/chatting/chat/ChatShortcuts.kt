@@ -50,6 +50,7 @@ object ChatShortcuts {
     }
 
     fun writeShortcut(key: String, value: String) {
+        shortcuts.removeIf { it.first == key }
         shortcuts.add(key to value)
         val obj = runCatching { JsonParser.parseString(shortcutsFile.readText()).asJsonObject }.getOrElse { JsonObject() }
         obj.addProperty(key, value)

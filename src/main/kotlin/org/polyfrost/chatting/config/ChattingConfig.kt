@@ -7,6 +7,8 @@ import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatTabs
+import org.polyfrost.chatting.config.shortcut.ChatShortcutManagerScreen
+import org.polyfrost.oneconfig.api.platform.v1.Platform
 
 object ChattingConfig : Config(
     "chatting.json",
@@ -238,6 +240,15 @@ object ChattingConfig : Config(
         title = "Enable Shortcuts Only on Hypixel", category = "Shortcuts"
     )
     var hypixelOnlyChatShortcuts = true
+
+    @Button(
+        title = "Edit Chat Shortcuts", category = "Shortcuts",
+        description = "Create, edit, and delete chat shortcut aliases.",
+        text = "Edit"
+    )
+    fun openChatShortcutsScreen() {
+        Platform.screen().display(ChatShortcutManagerScreen())
+    }
 
     private fun isHypixel(): Boolean {
         val server = Minecraft.getInstance().currentServer ?: return false
