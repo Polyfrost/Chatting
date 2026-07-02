@@ -58,6 +58,9 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique private boolean chatting$altHeld;
 
     @Unique private List<String> chatting$tooltip;
+    @Unique private boolean chatting$tooltipFixed;
+    @Unique private int chatting$tooltipX;
+    @Unique private int chatting$tooltipY;
 
     @Unique private static final boolean CHATTING$MAC = System.getProperty("os.name", "").toLowerCase().contains("mac");
 
@@ -72,14 +75,20 @@ public abstract class ChatScreenMixin extends Screen {
     );
 
     @Unique private static final List<String> CHATTING$DELETE_TOOLTIP = List.of(
+            "§e§lDelete From History",
             "§b§lNORMAL CLICK§r §8- §7Full Message",
             "§b§lCTRL CLICK§r §8- §7Single Line"
     );
+
+    @Unique private static final List<String> CHATTING$SEARCH_TOOLTIP = List.of("§eSearch Chat");
+    @Unique private static final List<String> CHATTING$DELETE_HISTORY_TOOLTIP = List.of("§eClear Chat History");
+    @Unique private static final List<String> CHATTING$SCREENSHOT_TOOLTIP = List.of("§eScreenshot Chat");
 
     @Unique private static final int CHATTING$SEARCH_BOX_HEIGHT = 12;
     @Unique private static final int CHATTING$SEARCH_BOX_BOTTOM_MARGIN = 26;
     @Unique private static final int CHATTING$GLOBAL_BUTTON_Y_OFFSET =
             (CHATTING$SEARCH_BOX_HEIGHT - ChatButtons.BUTTON_WIDTH + 1) / 2;
+    @Unique private static final int CHATTING$GLOBAL_TOOLTIP_GAP = 8;
     @Unique private static final String CHATTING$NO_CHAT_REPORTS_ID = "nochatreports";
     @Unique private static final String CHATTING$NO_CHAT_REPORTS_PACKAGE = "com.aizistral.nochatreports.";
     @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_SIZE = 20;
@@ -154,6 +163,7 @@ public abstract class ChatScreenMixin extends Screen {
     private void chatting$renderTabs(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     //?}
         chatting$tooltip = null;
+        chatting$tooltipFixed = false;
         chatting$lineButtons(graphics, mouseX, mouseY);
         chatting$globalButtons(graphics, mouseX, mouseY);
         chatting$drawTooltip(graphics, mouseX, mouseY);
@@ -331,17 +341,26 @@ public abstract class ChatScreenMixin extends Screen {
         int x = width - 12;
         int y = height - CHATTING$SEARCH_BOX_BOTTOM_MARGIN + CHATTING$GLOBAL_BUTTON_Y_OFFSET;
         if (cfg.getChatScreenshot()) {
-            chatting$button(graphics, Textures.SCREENSHOT, x, y, 1f, mouseX, mouseY, null,
+            chatting$globalButton(graphics, Textures.SCREENSHOT, x, y, mouseX, mouseY, CHATTING$SCREENSHOT_TOOLTIP,
                     () -> ChatScreenshot.copyImage(chatting$visibleLines(chat, acc)));
             x -= ChatButtons.BUTTON_WIDTH + 2;
         }
         if (cfg.getChatDeleteHistory()) {
-            chatting$button(graphics, Textures.DELETE, x, y, 1f, mouseX, mouseY, null,
+            chatting$globalButton(graphics, Textures.DELETE, x, y, mouseX, mouseY, CHATTING$DELETE_HISTORY_TOOLTIP,
                     () -> chat.clearMessages(false));
             x -= ChatButtons.BUTTON_WIDTH + 2;
         }
         if (cfg.getChatSearch()) {
-            chatting$button(graphics, Textures.SEARCH, x, y, 1f, mouseX, mouseY, null, this::chatting$toggleSearch);
+            chatting$globalButton(graphics, Textures.SEARCH, x, y, mouseX, mouseY, CHATTING$SEARCH_TOOLTIP,
+                    this::chatting$toggleSearch);
+        }
+    }
+
+    @Unique
+    private void chatting$globalButton(Object graphics, Object icon, int x, int y, int mouseX, int mouseY,
+                                       List<String> tooltip, Runnable action) {
+        if (chatting$button(graphics, icon, x, y, 1f, mouseX, mouseY, null, action)) {
+            chatting$setFixedTooltip(tooltip, x, y);
         }
     }
 
@@ -387,8 +406,8 @@ public abstract class ChatScreenMixin extends Screen {
     }
 
     @Unique
-    private void chatting$button(Object g0, Object icon, int localX, int localY, float scale,
-                                 int mouseX, int mouseY, List<String> tooltip, Runnable action) {
+    private boolean chatting$button(Object g0, Object icon, int localX, int localY, float scale,
+                                    int mouseX, int mouseY, List<String> tooltip, Runnable action) {
         //? if >=26 {
         /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
         *///?} else {
@@ -409,22 +428,49 @@ public abstract class ChatScreenMixin extends Screen {
             if (tooltip != null) chatting$tooltip = tooltip;
             if (chatting$leftClicked) action.run();
         }
+        return hover;
+    }
+
+    @Unique
+    private void chatting$setFixedTooltip(List<String> tooltip, int buttonX, int buttonY) {
+        if (tooltip == null || tooltip.isEmpty()) return;
+        int textW = chatting$tooltipWidth(tooltip);
+        int textH = chatting$tooltipHeight(tooltip);
+        chatting$tooltip = tooltip;
+        chatting$tooltipFixed = true;
+        chatting$tooltipX = buttonX + (ChatButtons.BUTTON_WIDTH - textW) / 2;
+        chatting$tooltipY = buttonY - textH - CHATTING$GLOBAL_TOOLTIP_GAP;
+    }
+
+    @Unique
+    private int chatting$tooltipWidth(List<String> lines) {
+        int textW = 0;
+        for (String s : lines) textW = Math.max(textW, this.font.width(s));
+        return textW;
+    }
+
+    @Unique
+    private int chatting$tooltipHeight(List<String> lines) {
+        return lines.size() == 1 ? 8 : lines.size() * 10 - 2;
     }
 
     @Unique
     private void chatting$drawTooltip(Object g0, int mouseX, int mouseY) {
         List<String> lines = chatting$tooltip;
+        boolean fixed = chatting$tooltipFixed;
+        int fixedX = chatting$tooltipX;
+        int fixedY = chatting$tooltipY;
         chatting$tooltip = null;
+        chatting$tooltipFixed = false;
         if (lines == null || lines.isEmpty()) return;
-        Font font = this.font;
-        int textW = 0;
-        for (String s : lines) textW = Math.max(textW, font.width(s));
+        int textW = chatting$tooltipWidth(lines);
         int lineH = 10;
-        int textH = lines.size() == 1 ? 8 : lines.size() * lineH - 2;
+        int textH = chatting$tooltipHeight(lines);
         // x/y is the top-left of the text content; the vanilla background frame extends 3-4px around it.
-        int x = mouseX + 12;
-        int y = mouseY - 12;
+        int x = fixed ? fixedX : mouseX + 12;
+        int y = fixed ? fixedY : mouseY - 12;
         if (x + textW + 4 > this.width) x = Math.max(4, this.width - textW - 4);
+        if (x < 4) x = 4;
         if (y + textH + 6 > this.height) y = this.height - textH - 6;
         if (y < 4) y = 4;
         chatting$tooltipBackground(g0, x, y, textW, textH);
