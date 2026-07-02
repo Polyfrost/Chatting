@@ -53,7 +53,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Unique private boolean chatting$leftClicked;
     @Unique private boolean chatting$rightClicked;
-    @Unique private boolean chatting$ctrlHeld;
+    @Unique private boolean chatting$shortcutHeld;
     @Unique private boolean chatting$shiftHeld;
     @Unique private boolean chatting$altHeld;
 
@@ -63,11 +63,12 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique private int chatting$tooltipY;
 
     @Unique private static final boolean CHATTING$MAC = System.getProperty("os.name", "").toLowerCase().contains("mac");
+    @Unique private static final String CHATTING$SHORTCUT_KEY = CHATTING$MAC ? "CMD" : "CTRL";
 
     @Unique private static final List<String> CHATTING$COPY_TOOLTIP = List.of(
             "§e§lCopy To Clipboard",
             "§b§lNORMAL CLICK§r §8- §7Full Message",
-            "§b§lCTRL CLICK§r §8- §7Single Line",
+            "§b§l" + CHATTING$SHORTCUT_KEY + " CLICK§r §8- §7Single Line",
             "§b§lSHIFT CLICK§r §8- §7Screenshot Message",
             "",
             "§e§lModifiers",
@@ -77,7 +78,7 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique private static final List<String> CHATTING$DELETE_TOOLTIP = List.of(
             "§e§lDelete From History",
             "§b§lNORMAL CLICK§r §8- §7Full Message",
-            "§b§lCTRL CLICK§r §8- §7Single Line"
+            "§b§l" + CHATTING$SHORTCUT_KEY + " CLICK§r §8- §7Single Line"
     );
 
     @Unique private static final List<String> CHATTING$SEARCH_TOOLTIP = List.of("§eSearch Chat");
@@ -198,12 +199,12 @@ public abstract class ChatScreenMixin extends Screen {
         int messageIndex = chatting$hoveredMessageIndex(chat, acc, lineIndex);
         if (messageIndex == -1) return;
 
-        if (chatting$rightClicked && cfg.getRightClickCopy()
-                && (!cfg.getRightClickCopyCtrl() || chatting$ctrlHeld)) {
-            chatting$copyLine(acc, messageIndex, lineIndex);
+        boolean rightClickCopies = chatting$rightClicked && cfg.getRightClickCopy()
+                && (!cfg.getRightClickCopyCtrl() || chatting$shortcutHeld);
+        if (rightClickCopies) chatting$copyLine(acc, messageIndex, lineIndex);
+        if (!perLine) {
+            return;
         }
-
-        if (!perLine) return;
 
         int lineHeight = acc.chatting$getLineHeight();
         // Anchor the buttons at the message background's right edge (text width + the background's
@@ -275,7 +276,7 @@ public abstract class ChatScreenMixin extends Screen {
             return;
         }
         boolean fmt = chatting$altHeld;
-        if (chatting$ctrlHeld) {
+        if (chatting$shortcutHeld) {
             List<GuiMessage.Line> visible = acc.chatting$getTrimmedMessages();
             int idx = lineIndex + acc.chatting$getScrollbarPos();
             if (idx < 0 || idx >= visible.size()) return;
@@ -287,7 +288,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Unique
     private void chatting$deleteAction(ChatComponentAccessor acc, int lineIndex) {
-        if (chatting$ctrlHeld) {
+        if (chatting$shortcutHeld) {
             List<GuiMessage.Line> visible = acc.chatting$getTrimmedMessages();
             int idx = lineIndex + acc.chatting$getScrollbarPos();
             if (idx >= 0 && idx < visible.size()) visible.remove(idx);
@@ -568,17 +569,24 @@ public abstract class ChatScreenMixin extends Screen {
         return (int) ((height - 40) / chatScale);
     }
 
-    //? if >=1.21.10 {
+    //? if >=26 {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         int button = event.button();
-        chatting$ctrlHeld = event.hasControlDown();
+        chatting$shortcutHeld = event.hasControlDownWithQuirk();
+        chatting$shiftHeld = event.hasShiftDown();
+        chatting$altHeld = event.hasAltDown();
+    *///?} elif >=1.21.10 {
+    /*@Inject(method = "mouseClicked", at = @At("HEAD"))
+    private void chatting$captureClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+        int button = event.button();
+        chatting$shortcutHeld = event.hasControlDown();
         chatting$shiftHeld = event.hasShiftDown();
         chatting$altHeld = event.hasAltDown();
     *///?} else {
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        chatting$ctrlHeld = Screen.hasControlDown();
+        chatting$shortcutHeld = Screen.hasControlDown();
         chatting$shiftHeld = Screen.hasShiftDown();
         chatting$altHeld = Screen.hasAltDown();
     //?}
