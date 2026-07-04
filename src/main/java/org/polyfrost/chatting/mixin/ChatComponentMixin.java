@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.hook.HeadHook;
@@ -309,10 +310,12 @@ public class ChatComponentMixin implements ChatComponentHook {
         PlayerInfo info = ((ChatLineHook) (Object) line).chatting$getPlayerInfo();
         boolean hidden = ((ChatLineHook) (Object) line).chatting$isHeadHidden();
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
-            //? if <1.21.4 {
+            //? if 1.21.1 {
+            RenderSystem.enableBlend();
             graphics.setColor(1f, 1f, 1f, alpha / 255f);
             if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, y - 1, 8, -1, true, false);
             else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8);
+            RenderSystem.disableBlend();
             graphics.setColor(1f, 1f, 1f, 1f);
             //?} else {
             /*if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^//^.body().texturePath()^//^?} else {^/.texture()/^?}^/, x, y - 1, 0xFFFFFF | (alpha << 24), 8, true, false);
