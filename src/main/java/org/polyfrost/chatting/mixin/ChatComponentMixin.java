@@ -32,11 +32,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import net.minecraft.client.gui.Font;
-//? if >= 26.1 {
-/*import net.minecraft.client.gui.components.PlayerFaceExtractor;
-*///?} else {
+//? if <= 1.21.11
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
-//?}
 //? if <=1.21.10 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -52,10 +49,8 @@ import net.minecraft.client.gui.GuiGraphics;
 
 @Mixin(ChatComponent.class)
 public class ChatComponentMixin implements ChatComponentHook {
+    //? if <= 1.21.11 {
     @SuppressWarnings("InstantiationOfUtilityClass")
-    //? if >= 26.1 {
-    /*@Unique PlayerFaceExtractor chatting$playerFaceExtractor = new PlayerFaceExtractor();
-    *///?} else {
     @Unique PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
     //?}
 
@@ -320,7 +315,7 @@ public class ChatComponentMixin implements ChatComponentHook {
             else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8);
             graphics.setColor(1f, 1f, 1f, 1f);
             //?} else {
-            /*if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, y - 1, 0xFFFFFF | (alpha << 24), 8, true, false);
+            /*if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^//^.body().texturePath()^//^?} else {^/.texture()/^?}^/, x, y - 1, 0xFFFFFF | (alpha << 24), 8, true, false);
             else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8, 0xFFFFFF | (alpha << 24));
             *///?}
         }
