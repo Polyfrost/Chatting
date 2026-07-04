@@ -32,6 +32,8 @@ class ChatWindowHud : LegacyHud(
 
     override fun multipleInstancesAllowed() = false
 
+    override fun deletable() = false
+
     override fun defaultPosition(): Pair<Float, Float> = DEFAULT_LEFT to defaultTop()
 
     override fun render(mcCtx: GuiGraphics) {
