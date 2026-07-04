@@ -9,9 +9,9 @@ import net.minecraft.client.gui.components.PlayerFaceRenderer;
 //?}
 //? if >= 1.21.8 {
 /*import net.minecraft.client.renderer.RenderPipelines;
-*///?} else {
-import net.minecraft.client.renderer.RenderType;
-//?}
+*///?} else if >= 1.21.4 {
+/*import net.minecraft.client.renderer.RenderType;
+*///?}
 //? if >= 1.21.11 {
 /*import net.minecraft.resources.Identifier;
 *///?} else {
@@ -34,7 +34,7 @@ public class PlayerFaceRendererMixin implements HeadHook {
     public void chatting$draw(/*? if >= 26.1 {*/ /*GuiGraphicsExtractor *//*?} else {*/ GuiGraphics /*?}*/ graphics, /*? if >= 1.21.11 {*/ /*Identifier *//*?} else {*/ ResourceLocation /*?}*/ texture, int x, int y, int size, int color, boolean hatVisible, boolean upsideDown) {
         int i = 8 + (upsideDown ? 8 : 0);
         int j = 8 * (upsideDown ? -1 : 1);
-        graphics.blit(/*? if >= 1.21.8 {*/ /*RenderPipelines.GUI_TEXTURED, *//*?} else if >= 1.21.4 {*/ /*RenderType::guiTextured, *//*?}*/ texture, x, y, size, size, 8, /*? if 1.21.1 {*/ (float) /*?}*/ i, 8, j, 64, 64);
+        graphics.blit(/*? if >= 1.21.8 {*/ /*RenderPipelines.GUI_TEXTURED, *//*?} else if >= 1.21.4 {*/ /*RenderType::guiTextured, *//*?}*/ texture, x, y, size, size, 8, i, 8, j, 64, 64 /*? if >= 1.21.4 {*//*, color *//*?}*/);
         if (hatVisible) {
             graphics.pose().translate(-0.5F, -0.5F /*? if <= 1.21.5 {*/ , 0F /*?}*/);
             /*? if >= 26.1 {*/ /*extractHat *//*?} else {*/ drawHat /*?}*/ (graphics, texture, x , y , 9, upsideDown /*? if >= 1.21.4 {*/ /*, color *//*?}*/);
