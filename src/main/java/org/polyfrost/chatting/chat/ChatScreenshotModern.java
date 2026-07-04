@@ -3,13 +3,17 @@ package org.polyfrost.chatting.chat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
+import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.HeadHook;
 
 import java.util.List;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;
+/*import net.minecraft.client.gui.components.PlayerFaceExtractor;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 *///?} else {
 import net.minecraft.client.GuiMessage;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 //?}
 
 //? if >=1.21.5 <1.21.6 {
@@ -20,6 +24,13 @@ public final class ChatScreenshotModern {
 
     private ChatScreenshotModern() {
     }
+
+    @SuppressWarnings("InstantiationOfUtilityClass")
+    //? if >= 26.1 {
+    /*static PlayerFaceExtractor chatting$playerFaceExtractor = new PlayerFaceExtractor();
+    *///?} else {
+    static PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
+    //?}
 
     //? if >=1.21.5 {
     /*static void capture(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
@@ -88,7 +99,8 @@ public final class ChatScreenshotModern {
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
+                if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(context, info.getSkin().texture(), 0, y - 1, 8, -1, true, false);
+                else PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
             }
             context.drawString(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
             y += 9;
@@ -116,7 +128,8 @@ public final class ChatScreenshotModern {
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
+                if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(context, info.getSkin()./^? if 1.21.8 {^//^texture()^//^?} else {^/body().texturePath()/^?}^/, 0, y - 1, 8, -1, true, false);
+                else PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
             }
             context.drawString(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
             y += 9;
@@ -143,7 +156,8 @@ public final class ChatScreenshotModern {
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
+                if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(context, info.getSkin().body().texturePath(), 0, y - 1, 8, -1, true, false);
+                else PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
             }
             context.drawString(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
             y += 9;
@@ -178,7 +192,8 @@ public final class ChatScreenshotModern {
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(context, info.getSkin(), 0, y - 1, 8);
+                if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceExtractor).chatting$draw(context, info.getSkin().body().texturePath(), 0, y - 1, 8, -1, true, false);
+                else PlayerFaceExtractor.extractRenderState(context, info.getSkin(), 0, y - 1, 8);
             }
             context.text(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
             y += 9;

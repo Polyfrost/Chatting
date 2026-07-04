@@ -9,6 +9,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.HeadHook;
 import org.polyfrost.oneconfig.api.notifications.v1.NotificationType;
 import org.polyfrost.oneconfig.api.notifications.v1.Notifications;
 import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
@@ -18,6 +19,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.regex.Pattern;
+
+//? if <= 1.21.11
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 
 //? if >=26 {
 /*import net.minecraft.client.multiplayer.chat.GuiMessage;
@@ -34,6 +38,11 @@ import org.joml.Matrix4fStack;
 public final class ChatScreenshot {
 
     private static final Pattern FORMATTING = Pattern.compile("§[0-9a-zA-Z]");
+
+    //? if <= 1.21.11 {
+    @SuppressWarnings("InstantiationOfUtilityClass")
+    static PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
+    //?}
 
     private ChatScreenshot() {
     }
@@ -155,7 +164,8 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), 0, y - 1, 8);
+                if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), 0, y - 1, 8, -1, true, false);
+                 else PlayerFaceRenderer.draw(graphics, info.getSkin(), 0, y - 1, 8);
             }
             graphics.drawString(mc.font, line.content(), headOffset(line.content()), y, 0xFFFFFFFF, shadow);
             y += 9;
