@@ -318,7 +318,7 @@ public class ChatComponentMixin implements ChatComponentHook {
             RenderSystem.disableBlend();
             graphics.setColor(1f, 1f, 1f, 1f);
             //?} else {
-            /*if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^//^.body().texturePath()^//^?} else {^/.texture()/^?}^/, x, y - 1, 0xFFFFFF | (alpha << 24), 8, true, false);
+            /*if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^//^.body().texturePath()^//^?} else {^/.texture()/^?}^/, x, y - 1, 8, 0xFFFFFF | (alpha << 24), true, false);
             else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8, 0xFFFFFF | (alpha << 24));
             *///?}
         }
