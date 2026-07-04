@@ -8,6 +8,7 @@ import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.chat.ChatHeads;
 import org.polyfrost.chatting.chat.SmoothChat;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,9 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 //?} else {
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+/^import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
-//?}
+^///?}
 
 @Mixin(targets = {
     "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess",
@@ -34,6 +35,9 @@ public class GraphicsAccessMixin {
     /*@Unique private GuiGraphics chatting$graphics;
     @Unique private boolean chatting$shift;
     @Unique private FormattedCharSequence chatting$lineSeq;
+
+    @SuppressWarnings("InstantiationOfUtilityClass")
+    @Unique PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureGraphics(CallbackInfo ci, @Local(argsOnly = true) GuiGraphics graphics) {
@@ -50,7 +54,8 @@ public class GraphicsAccessMixin {
         boolean hidden = ChatHeads.INSTANCE.isHidden(seq);
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
             int alpha = Math.round(SmoothChat.INSTANCE.fade(seq, opacity) * 255f);
-            PlayerFaceRenderer.draw(this.chatting$graphics, info.getSkin(), 0, textTop - 1, 8, 0xFFFFFF | (alpha << 24));
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(this.chatting$graphics, info.getSkin().body().texturePath(),0, textTop - 1, 8, 0xFFFFFF | (alpha << 24), true, false);
+            else PlayerFaceRenderer.draw(this.chatting$graphics, info.getSkin(), 0, textTop - 1, 8, 0xFFFFFF | (alpha << 24));
         }
         chatting$shift = ChatHeads.INSTANCE.shouldOffset(info);
     }
@@ -84,6 +89,9 @@ public class GraphicsAccessMixin {
     @Unique private boolean chatting$shift;
     @Unique private FormattedCharSequence chatting$lineSeq;
 
+    @SuppressWarnings("InstantiationOfUtilityClass")
+    @Unique PlayerFaceExtractor chatting$playerFaceExtractor = new PlayerFaceExtractor();
+
     @Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureGraphics(CallbackInfo ci, @Local(argsOnly = true) GuiGraphicsExtractor graphics) {
         this.chatting$graphics = graphics;
@@ -99,7 +107,8 @@ public class GraphicsAccessMixin {
         boolean hidden = ChatHeads.INSTANCE.isHidden(seq);
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
             int alpha = Math.round(SmoothChat.INSTANCE.fade(seq, opacity) * 255f);
-            PlayerFaceExtractor.extractRenderState(this.chatting$graphics, info.getSkin(), 0, textTop - 1, 8, 0xFFFFFF | (alpha << 24));
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceExtractor).chatting$draw(this.chatting$graphics, info.getSkin().body().texturePath(),0, textTop - 1, 8, 0xFFFFFF | (alpha << 24), true, false);
+            else PlayerFaceExtractor.extractRenderState(this.chatting$graphics, info.getSkin(), 0, textTop - 1, 8, 0xFFFFFF | (alpha << 24));
         }
         chatting$shift = ChatHeads.INSTANCE.shouldOffset(info);
     }

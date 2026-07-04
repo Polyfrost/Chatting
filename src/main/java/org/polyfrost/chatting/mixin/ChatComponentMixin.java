@@ -2,12 +2,13 @@ package org.polyfrost.chatting.mixin;
 
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
+import org.polyfrost.chatting.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;*/
-//?} else {
+/*import net.minecraft.client.multiplayer.chat.GuiMessage;
+*///?} else {
 import net.minecraft.client.GuiMessage;
 //?}
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -31,10 +32,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import net.minecraft.client.gui.Font;
+//? if >= 26.1 {
+/*import net.minecraft.client.gui.components.PlayerFaceExtractor;
+*///?} else {
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
+//?}
 //? if <=1.21.10 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.util.FormattedCharSequence;
 import org.spongepowered.asm.mixin.Final;
 //?}
@@ -42,11 +47,17 @@ import org.spongepowered.asm.mixin.Final;
 import net.minecraft.client.gui.GuiGraphics;
 //?}
 //? if >=26 {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor;*/
-//?}
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+*///?}
 
 @Mixin(ChatComponent.class)
 public class ChatComponentMixin implements ChatComponentHook {
+    @SuppressWarnings("InstantiationOfUtilityClass")
+    //? if >= 26.1 {
+    /*@Unique PlayerFaceExtractor chatting$playerFaceExtractor = new PlayerFaceExtractor();
+    *///?} else {
+    @Unique PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
+    //?}
 
     @Shadow
     private void refreshTrimmedMessages() {
@@ -67,15 +78,15 @@ public class ChatComponentMixin implements ChatComponentHook {
     /*@ModifyVariable(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private boolean chatting$peek(boolean focused) {
         return focused || Chatting.INSTANCE.getPeeking();
-    }*/
-    //?} else {
+    }
+    *///?} else {
     /*@ModifyVariable(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private ChatComponent.DisplayMode chatting$peek(ChatComponent.DisplayMode mode) {
         return (mode == ChatComponent.DisplayMode.BACKGROUND && Chatting.INSTANCE.getPeeking())
             ? ChatComponent.DisplayMode.FOREGROUND
             : mode;
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.11 <26 {
     /*@Unique private boolean chatting$posed;
@@ -102,8 +113,8 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (!chatting$posed) return;
         chatting$posed = false;
         graphics.pose().popMatrix();
-    }*/
-    //?} elif >=26 {
+    }
+    *///?} elif >=26 {
     /*@Unique private boolean chatting$posed;
 
     @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"))
@@ -128,8 +139,8 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (!chatting$posed) return;
         chatting$posed = false;
         graphics.pose().popMatrix();
-    }*/
-    //?}
+    }
+    *///?}
 
     @Unique
     private PlayerInfo chatting$pendingHead;
@@ -203,8 +214,8 @@ public class ChatComponentMixin implements ChatComponentHook {
     private void chatting$tagHead(List<Object> list, Object element) {
         chatting$applyHead(element);
         list.addFirst(element);
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if <=1.21.10 {
     @Unique
@@ -244,8 +255,8 @@ public class ChatComponentMixin implements ChatComponentHook {
         //? if <1.21.6 {
         graphics.pose().popPose();
         //?} else {
-        /*graphics.pose().popMatrix();*/
-        //?}
+        /*graphics.pose().popMatrix();
+        *///?}
     }
 
     @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 1)
@@ -305,11 +316,13 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
             //? if <1.21.4 {
             graphics.setColor(1f, 1f, 1f, alpha / 255f);
-            PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8);
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, y - 1, 8, -1, true, false);
+            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8);
             graphics.setColor(1f, 1f, 1f, 1f);
             //?} else {
-            /*PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8, 0xFFFFFF | (alpha << 24));*/
-            //?}
+            /*if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, y - 1, 0xFFFFFF | (alpha << 24), 8, true, false);
+            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8, 0xFFFFFF | (alpha << 24));
+            *///?}
         }
         return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10 : x;
     }
@@ -353,8 +366,8 @@ public class ChatComponentMixin implements ChatComponentHook {
         }
     }
     //?} else {
-    /*
-    // method_71991 = line text (drawString), method_71992 = line background (fill)
+    
+    /*// method_71991 = line text (drawString), method_71992 = line background (fill)
     @Redirect(method = "method_71992", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
     private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, @Local(argsOnly = true) GuiMessage.Line line) {
         chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line);
@@ -371,8 +384,8 @@ public class ChatComponentMixin implements ChatComponentHook {
             default:
                 graphics.drawString(font, text, dx, y, color);
         }
-    }*/
-    //?}
+    }
+    *///?}
     //?}
 
     @Unique
@@ -397,24 +410,24 @@ public class ChatComponentMixin implements ChatComponentHook {
     @ModifyVariable(method = "forEachLine", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private boolean chatting$fadeFocused(boolean focused) {
         return focused || !ChattingConfig.INSTANCE.getFade();
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.11 <26 {
     /*@ModifyArg(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;timeBased(I)Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;"), index = 0)
     private int chatting$fade(int tickCount) {
         if (!ChattingConfig.INSTANCE.getFade()) return tickCount - 1_000_000_000;
         return tickCount + chatting$fadeOffset();
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=26 {
     /*@ModifyArg(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;timeBased(I)Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;"), index = 0)
     private int chatting$fade(int tickCount) {
         if (!ChattingConfig.INSTANCE.getFade()) return tickCount - 1_000_000_000;
         return tickCount + chatting$fadeOffset();
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if <=1.21.5 {
     @Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
@@ -442,8 +455,8 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 2))
     private void chatting$scrollBar2(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
         if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, color);
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.11 <26 {
     /*@Redirect(method = {"render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
@@ -459,8 +472,8 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Redirect(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
     private void chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
         if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=26 {
     /*@Redirect(method = {"extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
@@ -476,6 +489,6 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Redirect(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 3))
     private void chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
         if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
-    }*/
-    //?}
+    }
+    *///?}
 }

@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 //? if <26 {
 import net.minecraft.client.gui.render.state.GuiTextRenderState;
 //?} else {
-import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
-//?}
+/^import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
+^///?}
 
 @Mixin(GuiTextRenderState.class)
 public class GuiTextRenderStateMixin {

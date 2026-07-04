@@ -13,8 +13,8 @@ import net.minecraft.client.GuiMessage;
 //?}
 
 //? if >=1.21.5 <1.21.6 {
-/*import net.minecraft.client.renderer.RenderType;*/
-//?}
+/*import net.minecraft.client.renderer.RenderType;
+*///?}
 
 public final class ChatScreenshotModern {
 
@@ -96,8 +96,8 @@ public final class ChatScreenshotModern {
         context.flush();
         consumer.finishDrawing();
         return rt;
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.6 <1.21.11 {
     /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
@@ -123,8 +123,8 @@ public final class ChatScreenshotModern {
         }
         chatting$flush(mc, renderState, rt);
         return rt;
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.11 <26 {
     /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
@@ -150,8 +150,8 @@ public final class ChatScreenshotModern {
         }
         chatting$flush(mc, renderState, rt);
         return rt;
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=26 {
     /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
@@ -210,8 +210,8 @@ public final class ChatScreenshotModern {
                 rt.destroyBuffers();
             }
         }, 0);
-    }*/
-    //?}
+    }
+    *///?}
 
     //? if >=1.21.6 {
     /*private static void readbackAndPersist(RenderTarget rt) {

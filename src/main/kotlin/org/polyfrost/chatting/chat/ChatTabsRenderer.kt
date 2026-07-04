@@ -3,8 +3,8 @@ package org.polyfrost.chatting.chat
 import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.config.ChattingConfig
 //? if >=26 {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
-//?} else {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+*///?} else {
 import net.minecraft.client.gui.GuiGraphics
 //?}
 
@@ -64,8 +64,8 @@ object ChatTabsRenderer {
         for (v in views(mouseX, mouseY)) {
             graphics.fill(v.x, v.y, v.x + v.width, v.y + v.height, v.backgroundColor)
             //? if >=26 {
-            /*graphics.text(font, v.name, v.textX, v.textY, v.textColor, shadow)*/
-            //?} else {
+            /*graphics.text(font, v.name, v.textX, v.textY, v.textColor, shadow)
+            *///?} else {
             graphics.drawString(font, v.name, v.textX, v.textY, v.textColor, shadow)
             //?}
         }

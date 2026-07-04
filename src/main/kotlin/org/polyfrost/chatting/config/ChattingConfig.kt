@@ -189,9 +189,15 @@ object ChattingConfig : Config(
 
     @Switch(
         title = "Show Chat Heads", category = "Chat Heads",
-        description = "Show the chat heads of players in chat",
+        description = "Show the chat heads of players in chat.",
     )
     var showChatHeads = true
+
+    @Switch(
+        title = "Show 3D Heads", category = "Chat Heads",
+        description = "Show the hat layer in 3D.",
+    )
+    var improvedHeads = true
 
     @Switch(
         title = "Offset Non-Player Messages", category = "Chat Heads",
@@ -287,6 +293,7 @@ object ChattingConfig : Config(
         addDependency("peekScrolling", "chatPeek")
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
+        addDependency("improvedHeads", "showChatHeads")
 
         addCallback("peekMode") { Chatting.peeking = false }
         addCallback("chatTabs") { ChatTabs.refresh() }

@@ -111,8 +111,8 @@ public final class ChatScreenshot {
         //? if <1.21.4 {
         captureLegacy(mc, lines, width, height, scale, shadow);
         //?} elif <1.21.5 {
-        /*notify("Image screenshot isn't supported on 1.21.4 yet — use right-click / the copy button to copy the text.");*/
-        //?} else {
+        /*notify("Image screenshot isn't supported on 1.21.4 yet — use right-click / the copy button to copy the text.");
+        *///?} else {
         /*ChatScreenshotModern.capture(mc, lines, width, height, scale, shadow);
         *///?}
     }

@@ -14,8 +14,8 @@ import net.minecraft.client.gui.Font;
 //? if <26 {
 import net.minecraft.client.gui.GuiGraphics;
 //?} else {
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-//?}
+/^import net.minecraft.client.gui.GuiGraphicsExtractor;
+^///?}
 
 @Mixin(targets = "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess")
 public class FocusedAccessMixin {
@@ -45,7 +45,7 @@ public class FocusedAccessMixin {
         return color;
     }
     //?} else {
-    @Inject(method = "<init>", at = @At("TAIL"))
+    /^@Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureMouse(GuiGraphicsExtractor graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
         this.chatting$mouseX = mouseX;
         this.chatting$mouseY = mouseY;
@@ -65,7 +65,7 @@ public class FocusedAccessMixin {
         }
         return color;
     }
-    //?}
+    ^///?}
 }
 *///?}
 //? if <1.21.11 {
