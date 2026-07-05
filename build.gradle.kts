@@ -21,6 +21,17 @@ val isModern = stonecutter.eval(mcversion, ">=26.1")
 val hasOfficialMappings = !isModern
 val javaVersion = if (isModern) 25 else 21
 
+val modmenuVersion = when {
+    stonecutter.eval(mcversion, ">=26.2") -> "20.0.0-beta.4"
+    stonecutter.eval(mcversion, ">=26.1") -> "18.0.0-beta.1"
+    stonecutter.eval(mcversion, ">=1.21.11") -> "17.0.0"
+    stonecutter.eval(mcversion, ">=1.21.9") -> "16.0.1"
+    stonecutter.eval(mcversion, ">=1.21.6") -> "15.0.2"
+    stonecutter.eval(mcversion, ">=1.21.5") -> "14.0.2"
+    stonecutter.eval(mcversion, ">=1.21.4") -> "13.0.4"
+    else -> "11.0.4"
+}
+
 val accessWidener = when {
     stonecutter.eval(mcversion, ">=26.2") -> "chatting-26.2.accesswidener"
     isModern -> "chatting-26.accesswidener"
@@ -103,6 +114,8 @@ dependencies {
     modImplementation("org.polyfrost.oneconfig:utils:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:hud:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:notifications:$oneconfigversion")
+
+    modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") { isTransitive = false }
 
     if (mcversion == "26.2") {
         // OneConfig beta.5 pulls 8.1.3, which lacks Fabric API 26.2's BuiltInBlockModels access rules.

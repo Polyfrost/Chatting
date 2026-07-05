@@ -9,14 +9,22 @@
     ],
     "contact": {
         "homepage": "https://polyfrost.org",
-        "sources": "https://github.com/Polyfrost/Chatting"
+        "sources": "https://github.com/Polyfrost/Chatting",
+        "issues": "https://github.com/Polyfrost/Chatting/issues"
     },
     "license": "LGPL-3.0-or-later",
+    "icon": "assets/${mod_id}/icon.png",
     "environment": "client",
     "entrypoints": {
         "client": [
             {
                 "value": "org.polyfrost.chatting.ChattingClient",
+                "adapter": "kotlin"
+            }
+        ],
+        "modmenu": [
+            {
+                "value": "org.polyfrost.chatting.integration.ChattingModMenuIntegration",
                 "adapter": "kotlin"
             }
         ]
