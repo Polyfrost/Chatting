@@ -3,6 +3,7 @@ package org.polyfrost.chatting.mixin;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -19,6 +20,7 @@ import org.polyfrost.chatting.chat.Textures;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,7 +40,8 @@ import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
 //?}
 //? if >=1.21.10 {
-/*import net.minecraft.client.input.MouseButtonEvent;
+/*import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 *///?}
 //? if >=1.21.11 {
 /*import net.minecraft.util.Mth;
@@ -98,6 +101,9 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_ROW_WIDTH = 100;
     @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_Y_SHIFT = ChatButtons.BUTTON_WIDTH + 2;
 
+    @Shadow protected EditBox input;
+    @Shadow private CommandSuggestions commandSuggestions;
+
     @Unique private EditBox chatting$searchBox;
 
     @Inject(method = "init", at = @At("TAIL"))
@@ -126,6 +132,17 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$syncSearchBox();
     }
 
+    // Close the search box once it loses focus (e.g. the player clicked or tabbed into the vanilla
+    // chat input). Polled each frame so it runs after the screen's focus machinery, avoiding the
+    // reentrancy of hooking setFocused mid focus-transfer.
+    @Unique
+    private void chatting$closeSearchOnFocusLoss() {
+        if (chatting$searchBox == null || !ChatSearch.INSTANCE.getEnabled()) return;
+        if (chatting$searchBox.isFocused()) return;
+        ChatSearch.INSTANCE.close();
+        chatting$syncSearchBox();
+    }
+
     @Unique
     private void chatting$syncSearchBox() {
         if (chatting$searchBox == null) return;
@@ -133,11 +150,24 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$searchBox.setVisible(on);
         chatting$searchBox.setValue(ChatSearch.INSTANCE.getQuery());
         if (on) {
+            // The vanilla chat input is created with setCanLoseFocus(false), so setFocused(false)
+            // is a no-op and it keeps rendering its blinking caret. Allow it to lose focus while the
+            // search box is active so only one caret shows.
+            input.setCanLoseFocus(true);
+            input.setFocused(false);
+            // Disabling suggestions dismisses the popup and blocks the async completion callback from
+            // re-showing it while the search box is focused; hide() alone leaves that race open.
+            commandSuggestions.setAllowSuggestions(false);
             chatting$searchBox.setFocused(true);
             this.setFocused(chatting$searchBox);
             ChatSearch.INSTANCE.refresh();
         } else {
             chatting$searchBox.setFocused(false);
+            input.setFocused(true);
+            input.setCanLoseFocus(false);
+            this.setFocused(input);
+            commandSuggestions.setAllowSuggestions(true);
+            commandSuggestions.updateCommandInfo();
         }
     }
 
@@ -163,6 +193,7 @@ public abstract class ChatScreenMixin extends Screen {
     @Inject(method = "render", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     //?}
+        chatting$closeSearchOnFocusLoss();
         chatting$tooltip = null;
         chatting$tooltipFixed = false;
         chatting$lineButtons(graphics, mouseX, mouseY);
@@ -607,6 +638,24 @@ public abstract class ChatScreenMixin extends Screen {
         if (button == 0 && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
             cir.setReturnValue(true);
         }
+    }
+    //?}
+
+    // While the search box holds focus, swallow the keys ChatScreen would otherwise route to the
+    // vanilla input (Enter to send, Up/Down for chat history) so they don't act on the hidden input.
+    // Text edits, Left/Right and Tab still fall through to the focused widget / focus navigation.
+    //? if >=1.21.10 {
+    /*@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void chatting$suppressSearchKeys(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+        if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
+        int key = event.key();
+        if (event.isConfirmation() || key == 264 || key == 265) cir.setReturnValue(true);
+    }
+    *///?} else {
+    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void chatting$suppressSearchKeys(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+        if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
+        if (keyCode == 257 || keyCode == 335 || keyCode == 264 || keyCode == 265) cir.setReturnValue(true);
     }
     //?}
 }
