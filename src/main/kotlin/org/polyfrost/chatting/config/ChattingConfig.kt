@@ -14,7 +14,7 @@ object ChattingConfig : Config(
     "chatting.json",
     "/assets/chatting/chatting_dark.svg",
     "Chatting",
-    Category.QOL,
+    Category.VISUALS,
 ) {
 
     @Dropdown(
