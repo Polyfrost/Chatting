@@ -327,10 +327,11 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @Unique
     private void chatting$drawHoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, GuiMessage.Line line) {
-        if (((ChatComponent) (Object) this).isChatFocused()) {
+        boolean focused = ((ChatComponent) (Object) this).isChatFocused();
+        if (focused) {
             x2 += ChatButtons.extraBackgroundWidth();
         }
-        if (chatting$hovered >= 0 && trimmedMessages.indexOf(line) == chatting$hovered) {
+        if (focused && chatting$hovered >= 0 && trimmedMessages.indexOf(line) == chatting$hovered) {
             graphics.fill(x1, y1, x2, y2, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         } else {
             graphics.fill(x1, y1, x2, y2, color);
