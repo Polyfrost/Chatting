@@ -1,10 +1,10 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;
-*///?} else {
-import net.minecraft.client.GuiMessage;
-//?}
+import net.minecraft.client.multiplayer.chat.GuiMessage;
+//?} else {
+/*import net.minecraft.client.GuiMessage;
+*///?}
 import net.minecraft.client.multiplayer.PlayerInfo;
 import org.jetbrains.annotations.Nullable;
 import org.polyfrost.chatting.hook.ChatLineHook;

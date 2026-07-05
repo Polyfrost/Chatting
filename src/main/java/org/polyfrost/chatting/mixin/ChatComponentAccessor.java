@@ -1,10 +1,10 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;
-*///?} else {
-import net.minecraft.client.GuiMessage;
-//?}
+import net.minecraft.client.multiplayer.chat.GuiMessage;
+//?} else {
+/*import net.minecraft.client.GuiMessage;
+*///?}
 import net.minecraft.client.gui.components.ChatComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -37,10 +37,10 @@ public interface ChatComponentAccessor {
     void chatting$refreshTrimmedMessages();
 
     //? if <1.21.11 {
-    @Invoker("getMessageEndIndexAt")
+    /*@Invoker("getMessageEndIndexAt")
     int chatting$getMessageEndIndexAt(double x, double y);
 
     @Invoker("screenToChatY")
     double chatting$screenToChatY(double y);
-    //?}
+    *///?}
 }

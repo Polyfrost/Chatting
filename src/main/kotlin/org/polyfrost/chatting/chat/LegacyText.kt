@@ -14,14 +14,14 @@ import java.util.Optional
 object LegacyText {
 
     //? if >=26.2 {
-    /*// 26.2 stripped the color metadata off ChatFormatting; TextColor.fromLegacyFormat now
+    // 26.2 stripped the color metadata off ChatFormatting; TextColor.fromLegacyFormat now
     // resolves the RGB for the 16 color codes (and returns null for the format-only codes).
     private val byColor: Map<Int, ChatFormatting> =
         ChatFormatting.values().mapNotNull { cf -> TextColor.fromLegacyFormat(cf)?.let { it.value to cf } }.toMap()
-    *///?} else {
-    private val byColor: Map<Int, ChatFormatting> =
+    //?} else {
+    /*private val byColor: Map<Int, ChatFormatting> =
         ChatFormatting.values().filter { it.isColor }.associateBy { it.color!! }
-    //?}
+    *///?}
 
     fun toFormatted(component: Component): String {
         val sb = StringBuilder()

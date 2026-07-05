@@ -1,6 +1,6 @@
 package org.polyfrost.chatting.hook;
 //? if >=1.21.6 {
-/*import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 
 public interface GuiRendererInterface {
@@ -10,4 +10,4 @@ public interface GuiRendererInterface {
 
     void chatting$setRenderState(Object renderState);
 }
-*///?}
+//?}

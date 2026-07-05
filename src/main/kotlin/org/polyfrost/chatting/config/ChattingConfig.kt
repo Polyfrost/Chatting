@@ -275,10 +275,10 @@ object ChattingConfig : Config(
 
     private fun resetPeekScroll() {
         //? if >=26.2 {
-        /*Minecraft.getInstance().gui?.hud?.chat?.resetChatScroll()
-        *///?} else {
-        Minecraft.getInstance().gui?.chat?.resetChatScroll()
-        //?}
+        Minecraft.getInstance().gui?.hud?.chat?.resetChatScroll()
+        //?} else {
+        /*Minecraft.getInstance().gui?.chat?.resetChatScroll()
+        *///?}
     }
 
     init {

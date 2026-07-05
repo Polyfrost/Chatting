@@ -1,15 +1,15 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=1.21.11 {
-/*import org.polyfrost.chatting.Chatting;
+import org.polyfrost.chatting.Chatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 //? if <26 {
-import net.minecraft.client.gui.render.state.GuiTextRenderState;
-//?} else {
-/^import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
-^///?}
+/*import net.minecraft.client.gui.render.state.GuiTextRenderState;
+*///?} else {
+import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
+//?}
 
 @Mixin(GuiTextRenderState.class)
 public class GuiTextRenderStateMixin {
@@ -19,8 +19,8 @@ public class GuiTextRenderStateMixin {
         return dropShadow && !Chatting.noShadowPass;
     }
 }
-*///?}
-//? if <1.21.11 {
-public class GuiTextRenderStateMixin {
-}
 //?}
+//? if <1.21.11 {
+/*public class GuiTextRenderStateMixin {
+}
+*///?}

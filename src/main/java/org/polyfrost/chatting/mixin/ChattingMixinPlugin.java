@@ -14,13 +14,13 @@ public class ChattingMixinPlugin implements IMixinConfigPlugin {
     public List<String> getMixins() {
         List<String> mixins = new ArrayList<>();
         //? if >=1.21.11 {
-        /*mixins.add("GraphicsAccessMixin");
+        mixins.add("GraphicsAccessMixin");
         mixins.add("FocusedAccessMixin");
         mixins.add("GuiTextRenderStateMixin");
-        *///?}
+        //?}
         //? if >=1.21.6 {
-        /*mixins.add("GuiRendererMixin");
-        *///?}
+        mixins.add("GuiRendererMixin");
+        //?}
         return mixins;
     }
 

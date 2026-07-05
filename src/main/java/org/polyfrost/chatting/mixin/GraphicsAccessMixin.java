@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=1.21.11 {
-/*import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.util.FormattedCharSequence;
 import org.polyfrost.chatting.Chatting;
@@ -17,18 +17,18 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //? if <26 {
-import net.minecraft.client.gui.GuiGraphics;
+/*import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
-//?} else {
-/^import net.minecraft.client.gui.GuiGraphicsExtractor;
+*///?} else {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
-^///?}
+//?}
 
 @Mixin(targets = {
     "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess",
     "net.minecraft.client.gui.components.ChatComponent$DrawingBackgroundGraphicsAccess"
 })
-*///?}
+//?}
 public class GraphicsAccessMixin {
 
     //? if >=1.21.11 <26 {
@@ -85,7 +85,7 @@ public class GraphicsAccessMixin {
     *///?}
 
     //? if >=26 {
-    /*@Unique private GuiGraphicsExtractor chatting$graphics;
+    @Unique private GuiGraphicsExtractor chatting$graphics;
     @Unique private boolean chatting$shift;
     @Unique private FormattedCharSequence chatting$lineSeq;
 
@@ -135,5 +135,5 @@ public class GraphicsAccessMixin {
     private float chatting$fade(float opacity) {
         return SmoothChat.INSTANCE.fade(chatting$lineSeq, opacity);
     }
-    *///?}
+    //?}
 }

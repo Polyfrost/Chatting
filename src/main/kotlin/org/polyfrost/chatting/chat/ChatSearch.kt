@@ -16,10 +16,10 @@ object ChatSearch {
 
     fun shouldFilter(): Boolean = ChattingConfig.chatSearch && enabled && query.isNotBlank()
             //? if >=26.2 {
-            /*&& Minecraft.getInstance().gui.screen() is ChatScreen
-            *///?} else {
-            && Minecraft.getInstance().screen is ChatScreen
-            //?}
+            && Minecraft.getInstance().gui.screen() is ChatScreen
+            //?} else {
+            /*&& Minecraft.getInstance().screen is ChatScreen
+            *///?}
 
     fun matches(message: Component): Boolean =
         message.string.lowercase().contains(query.lowercase())
@@ -45,10 +45,10 @@ object ChatSearch {
 
     fun refresh() {
         //? if >=26.2 {
-        /*val chat = Minecraft.getInstance().gui?.hud?.chat ?: return
-        *///?} else {
-        val chat = Minecraft.getInstance().gui?.chat ?: return
-        //?}
+        val chat = Minecraft.getInstance().gui?.hud?.chat ?: return
+        //?} else {
+        /*val chat = Minecraft.getInstance().gui?.chat ?: return
+        *///?}
         (chat as? ChatComponentHook)?.`chatting$refresh`()
     }
 }

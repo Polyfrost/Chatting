@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=1.21.11 {
-/*import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,10 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 //? if <26 {
-import net.minecraft.client.gui.GuiGraphics;
-//?} else {
-/^import net.minecraft.client.gui.GuiGraphicsExtractor;
-^///?}
+/*import net.minecraft.client.gui.GuiGraphics;
+*///?} else {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+//?}
 
 @Mixin(targets = "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess")
 public class FocusedAccessMixin {
@@ -25,7 +25,7 @@ public class FocusedAccessMixin {
     @Unique private int chatting$mouseY;
 
     //? if <26 {
-    @Inject(method = "<init>", at = @At("TAIL"))
+    /*@Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureMouse(GuiGraphics graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
         this.chatting$mouseX = mouseX;
         this.chatting$mouseY = mouseY;
@@ -46,8 +46,8 @@ public class FocusedAccessMixin {
         }
         return color;
     }
-    //?} else {
-    /^@Inject(method = "<init>", at = @At("TAIL"))
+    *///?} else {
+    @Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureMouse(GuiGraphicsExtractor graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
         this.chatting$mouseX = mouseX;
         this.chatting$mouseY = mouseY;
@@ -68,19 +68,19 @@ public class FocusedAccessMixin {
         }
         return color;
     }
-    ^///?}
+    //?}
 
     @Unique
     private boolean chatting$chatFocused() {
         //? if >=26.2 {
-        /^return Minecraft.getInstance().gui.screen() instanceof net.minecraft.client.gui.screens.ChatScreen;
-        ^///?} else {
-        return Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen;
-        //?}
+        return Minecraft.getInstance().gui.screen() instanceof net.minecraft.client.gui.screens.ChatScreen;
+        //?} else {
+        /*return Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen;
+        *///?}
     }
 }
-*///?}
-//? if <1.21.11 {
-public class FocusedAccessMixin {
-}
 //?}
+//? if <1.21.11 {
+/*public class FocusedAccessMixin {
+}
+*///?}
