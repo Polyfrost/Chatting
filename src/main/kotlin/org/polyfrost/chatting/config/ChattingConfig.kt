@@ -215,7 +215,7 @@ object ChattingConfig : Config(
         title = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"],
         description = "What to do when taking a screenshot."
     )
-    var copyMode = 0
+    var copyMode = 2
 
     @Switch(
         title = "Chat Tabs", category = "Tabs",
