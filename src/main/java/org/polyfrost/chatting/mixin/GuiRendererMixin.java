@@ -1,15 +1,15 @@
 package org.polyfrost.chatting.mixin;
 //? if >=1.21.6 {
 
-/*//? if >=26 {
-/^import net.minecraft.client.renderer.Projection;
+//? if >=26 {
+import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
-^///?} else {
-import net.minecraft.client.gui.render.state.GuiRenderState;
+//?} else {
+/*import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
-//?}
+*///?}
 
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -43,10 +43,10 @@ public class GuiRendererMixin implements GuiRendererInterface {
     @Shadow
     private int firstDrawIndexAfterBlur;
     //? if <26.2 {
-    @Final
+    /*@Final
     @Shadow
     private List<GuiRenderer.MeshToDraw> meshesToDraw;
-    //?}
+    *///?}
     @Mutable
     @Final
     @Shadow
@@ -62,27 +62,27 @@ public class GuiRendererMixin implements GuiRendererInterface {
         this.renderState = (GuiRenderState) state;
     }
     //? if >=26.2 {
-    /^@Final
-    @Shadow
-    private net.minecraft.client.renderer.StagedVertexBuffer vertexBuffer;
-    ^///?} else {
     @Final
     @Shadow
+    private net.minecraft.client.renderer.StagedVertexBuffer vertexBuffer;
+    //?} else {
+    /*@Final
+    @Shadow
     private Map<VertexFormat, MappableRingBuffer> vertexBuffers;
-    //?}
+    *///?}
 
     //? if >=26 {
-    /^@Final
+    @Final
     @Shadow
     private Projection guiProjection;
     @Final
     @Shadow
     private ProjectionMatrixBuffer guiProjectionMatrixBuffer;
-    ^///?} else {
-    @Final
+    //?} else {
+    /*@Final
     @Shadow
     private CachedOrthoProjectionMatrixBuffer guiProjectionMatrixBuffer;
-    //?}
+    *///?}
 
     @Shadow
     private void prepare() {
@@ -93,17 +93,17 @@ public class GuiRendererMixin implements GuiRendererInterface {
     }
 
     //? if >=26.2 {
-    /^@Shadow
+    @Shadow
     private void executeDrawRange(Supplier<String> supplier, RenderTarget arg, GpuBufferSlice gpuBufferSlice, int j, int k) {
     }
-    ^///?} else {
-    @Shadow
+    //?} else {
+    /*@Shadow
     private void executeDrawRange(Supplier<String> supplier, RenderTarget arg, GpuBufferSlice gpuBufferSlice, GpuBufferSlice gpuBufferSlice2, GpuBuffer gpuBuffer, VertexFormat.IndexType arg2, int j, int k) {
     }
-    //?}
+    *///?}
 
     //? if >=26.2 {
-    /^@Unique
+    @Unique
     private void chatting$draw(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         if (this.draws.isEmpty()) return;
         WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
@@ -118,17 +118,17 @@ public class GuiRendererMixin implements GuiRendererInterface {
             this.executeDrawRange(() -> "GUI after blur", renderTarget, gpubufferslice, this.firstDrawIndexAfterBlur, this.draws.size());
         }
     }
-    ^///?} else {
-    @Unique
+    //?} else {
+    /*@Unique
     private void chatting$draw(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         if (!this.draws.isEmpty()) {
             //? if >=26 {
-            /^WindowRenderState windowState = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState;
+            WindowRenderState windowState = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState;
             this.guiProjection.setupOrtho(1000.0F, 11000.0F, (float) windowState.width / (float) windowState.guiScale, (float) windowState.height / (float) windowState.guiScale, true);
             RenderSystem.setProjectionMatrix(this.guiProjectionMatrixBuffer.getBuffer(this.guiProjection), ProjectionType.ORTHOGRAPHIC);
-            ^///?} else {
-            RenderSystem.setProjectionMatrix(this.guiProjectionMatrixBuffer.getBuffer((float) Minecraft.getInstance().getWindow().getGuiScaledWidth(), (float) Minecraft.getInstance().getWindow().getGuiScaledHeight()), ProjectionType.ORTHOGRAPHIC);
-            //?}
+            //?} else {
+            /^RenderSystem.setProjectionMatrix(this.guiProjectionMatrixBuffer.getBuffer((float) Minecraft.getInstance().getWindow().getGuiScaledWidth(), (float) Minecraft.getInstance().getWindow().getGuiScaledHeight()), ProjectionType.ORTHOGRAPHIC);
+            ^///?}
 
             int i = 0;
             for (GuiRenderer.Draw guirenderer$draw : this.draws) {
@@ -146,8 +146,8 @@ public class GuiRendererMixin implements GuiRendererInterface {
                     new Vector3f(),
                     new Matrix4f()
                     //? if <1.21.11 {
-                    , 0.0F
-                    //?}
+                    /^, 0.0F
+                    ^///?}
             );
             if (this.firstDrawIndexAfterBlur > 0) {
                 this.executeDrawRange(() -> "GUI before blur", renderTarget, gpuBufferSlice, gpubufferslice, gpubuffer, vertexformat$indextype, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
@@ -159,10 +159,10 @@ public class GuiRendererMixin implements GuiRendererInterface {
             }
         }
     }
-    //?}
+    *///?}
 
     //? if >=26.2 {
-    /^@Override
+    @Override
     public void chatting$render(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         this.prepare();
         this.vertexBuffer.upload();
@@ -175,8 +175,8 @@ public class GuiRendererMixin implements GuiRendererInterface {
         this.firstDrawIndexAfterBlur = Integer.MAX_VALUE;
         this.clearUnusedOversizedItemRenderers();
     }
-    ^///?} else {
-    @Override
+    //?} else {
+    /*@Override
     public void chatting$render(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         this.prepare();
         this.chatting$draw(gpuBufferSlice, renderTarget);
@@ -191,6 +191,6 @@ public class GuiRendererMixin implements GuiRendererInterface {
         this.firstDrawIndexAfterBlur = Integer.MAX_VALUE;
         this.clearUnusedOversizedItemRenderers();
     }
-    //?}
+    *///?}
 }
-*///?}
+//?}

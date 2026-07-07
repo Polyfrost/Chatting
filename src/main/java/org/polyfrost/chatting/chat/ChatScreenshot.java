@@ -24,16 +24,16 @@ import java.util.regex.Pattern;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;
-*///?} else {
-import net.minecraft.client.GuiMessage;
-//?}
+import net.minecraft.client.multiplayer.chat.GuiMessage;
+//?} else {
+/*import net.minecraft.client.GuiMessage;
+*///?}
 
 //? if <1.21.5 {
-import net.minecraft.client.gui.GuiGraphics;
+/*import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
-//?}
+*///?}
 
 public final class ChatScreenshot {
 
@@ -118,46 +118,46 @@ public final class ChatScreenshot {
         int scale = 2; // supersample for a crisp image, mirroring the 1.8.9 2x scale
 
         //? if <1.21.4 {
-        captureLegacy(mc, lines, width, height, scale, shadow);
-        //?} elif <1.21.5 {
+        /*captureLegacy(mc, lines, width, height, scale, shadow);
+        *///?} elif <1.21.5 {
         /*notify("Image screenshot isn't supported on 1.21.4 yet — use right-click / the copy button to copy the text.");
         *///?} else {
-        /*ChatScreenshotModern.capture(mc, lines, width, height, scale, shadow);
-        *///?}
+        ChatScreenshotModern.capture(mc, lines, width, height, scale, shadow);
+        //?}
     }
 
     //? if <1.21.5 {
-    private static void captureLegacy(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
+    /*private static void captureLegacy(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
         RenderTarget rt;
         try {
             //? if <1.21.4 {
-            rt = new TextureTarget(width * scale, height * scale, false, false);
-            //?} else {
-            /*rt = new TextureTarget(width * scale, height * scale, false);
-            *///?}
+            /^rt = new TextureTarget(width * scale, height * scale, false, false);
+            ^///?} else {
+            rt = new TextureTarget(width * scale, height * scale, false);
+            //?}
         } catch (Exception e) {
             notifyError("Screenshot failed.");
             return;
         }
         rt.setClearColor(0f, 0f, 0f, 0f);
         //? if <1.21.4 {
-        rt.clear(false);
-        //?} else {
-        /*rt.clear();
-        *///?}
+        /^rt.clear(false);
+        ^///?} else {
+        rt.clear();
+        //?}
         rt.bindWrite(true);
 
         //? if <1.21.4 {
-        Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, 1000f, 21000f);
+        /^Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, 1000f, 21000f);
         RenderSystem.setProjectionMatrix(projection, com.mojang.blaze3d.vertex.VertexSorting.ORTHOGRAPHIC_Z);
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
         modelView.pushMatrix();
         modelView.translation(0f, 0f, -11000f);
         RenderSystem.applyModelViewMatrix();
-        //?} else {
-        /*Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, -21000f, 21000f);
+        ^///?} else {
+        Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, -21000f, 21000f);
         RenderSystem.setProjectionMatrix(projection, com.mojang.blaze3d.ProjectionType.ORTHOGRAPHIC);
-        *///?}
+        //?}
 
         GuiGraphics graphics = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
         int y = 0;
@@ -173,9 +173,9 @@ public final class ChatScreenshot {
         graphics.flush();
 
         //? if <1.21.4 {
-        modelView.popMatrix();
+        /^modelView.popMatrix();
         RenderSystem.applyModelViewMatrix();
-        //?}
+        ^///?}
         rt.unbindWrite();
         mc.getMainRenderTarget().bindWrite(true);
 
@@ -193,20 +193,20 @@ public final class ChatScreenshot {
         for (int y = 0; y < h / 2; y++) {
             for (int x = 0; x < w; x++) {
                 //? if <1.21.4 {
-                int top = image.getPixelRGBA(x, y);
+                /^int top = image.getPixelRGBA(x, y);
                 int bottom = image.getPixelRGBA(x, h - 1 - y);
                 image.setPixelRGBA(x, y, bottom);
                 image.setPixelRGBA(x, h - 1 - y, top);
-                //?} else {
-                /*int top = image.getPixel(x, y);
+                ^///?} else {
+                int top = image.getPixel(x, y);
                 int bottom = image.getPixel(x, h - 1 - y);
                 image.setPixel(x, y, bottom);
                 image.setPixel(x, h - 1 - y, top);
-                *///?}
+                //?}
             }
         }
     }
-    //?}
+    *///?}
 
     static void persist(NativeImage image) {
         int copyMode = ChattingConfig.INSTANCE.getCopyMode();

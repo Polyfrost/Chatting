@@ -3,6 +3,7 @@ package org.polyfrost.chatting.mixin;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -19,6 +20,7 @@ import org.polyfrost.chatting.chat.Textures;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,18 +33,19 @@ import java.util.Collections;
 import java.util.List;
 
 //? if >=26 {
-/*import net.minecraft.client.multiplayer.chat.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-*///?} else {
-import net.minecraft.client.GuiMessage;
+//?} else {
+/*import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
-//?}
+*///?}
 //? if >=1.21.10 {
-/*import net.minecraft.client.input.MouseButtonEvent;
-*///?}
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 //? if >=1.21.11 {
-/*import net.minecraft.util.Mth;
-*///?}
+import net.minecraft.util.Mth;
+//?}
 
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin extends Screen {
@@ -98,6 +101,9 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_ROW_WIDTH = 100;
     @Unique private static final int CHATTING$NO_CHAT_REPORTS_BUTTON_Y_SHIFT = ChatButtons.BUTTON_WIDTH + 2;
 
+    @Shadow protected EditBox input;
+    @Shadow private CommandSuggestions commandSuggestions;
+
     @Unique private EditBox chatting$searchBox;
 
     @Inject(method = "init", at = @At("TAIL"))
@@ -126,6 +132,17 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$syncSearchBox();
     }
 
+    // Close the search box once it loses focus (e.g. the player clicked or tabbed into the vanilla
+    // chat input). Polled each frame so it runs after the screen's focus machinery, avoiding the
+    // reentrancy of hooking setFocused mid focus-transfer.
+    @Unique
+    private void chatting$closeSearchOnFocusLoss() {
+        if (chatting$searchBox == null || !ChatSearch.INSTANCE.getEnabled()) return;
+        if (chatting$searchBox.isFocused()) return;
+        ChatSearch.INSTANCE.close();
+        chatting$syncSearchBox();
+    }
+
     @Unique
     private void chatting$syncSearchBox() {
         if (chatting$searchBox == null) return;
@@ -133,11 +150,24 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$searchBox.setVisible(on);
         chatting$searchBox.setValue(ChatSearch.INSTANCE.getQuery());
         if (on) {
+            // The vanilla chat input is created with setCanLoseFocus(false), so setFocused(false)
+            // is a no-op and it keeps rendering its blinking caret. Allow it to lose focus while the
+            // search box is active so only one caret shows.
+            input.setCanLoseFocus(true);
+            input.setFocused(false);
+            // Disabling suggestions dismisses the popup and blocks the async completion callback from
+            // re-showing it while the search box is focused; hide() alone leaves that race open.
+            commandSuggestions.setAllowSuggestions(false);
             chatting$searchBox.setFocused(true);
             this.setFocused(chatting$searchBox);
             ChatSearch.INSTANCE.refresh();
         } else {
             chatting$searchBox.setFocused(false);
+            input.setFocused(true);
+            input.setCanLoseFocus(false);
+            this.setFocused(input);
+            commandSuggestions.setAllowSuggestions(true);
+            commandSuggestions.updateCommandInfo();
         }
     }
 
@@ -149,20 +179,21 @@ public abstract class ChatScreenMixin extends Screen {
     // Tabs are drawn at HEAD so the vanilla command-suggestion popup (rendered later in
     // ChatScreen#render) paints on top of them instead of being covered (Polyfrost/Chatting#101).
     //? if <26 {
-    @Inject(method = "render", at = @At("HEAD"))
+    /*@Inject(method = "render", at = @At("HEAD"))
     private void chatting$renderTabsLayer(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
     }
-    //?}
+    *///?}
 
     //? if >=26 {
-    /*@Inject(method = "extractRenderState", at = @At("TAIL"))
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
-    *///?} else {
-    @Inject(method = "render", at = @At("TAIL"))
+    //?} else {
+    /*@Inject(method = "render", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-    //?}
+    *///?}
+        chatting$closeSearchOnFocusLoss();
         chatting$tooltip = null;
         chatting$tooltipFixed = false;
         chatting$lineButtons(graphics, mouseX, mouseY);
@@ -175,19 +206,19 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private void chatting$lineButtons(Object g0, int mouseX, int mouseY) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
-        *///?} else {
-        GuiGraphics graphics = (GuiGraphics) g0;
-        //?}
+        GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        //?} else {
+        /*GuiGraphics graphics = (GuiGraphics) g0;
+        *///?}
         ChattingConfig cfg = ChattingConfig.INSTANCE;
         boolean perLine = ChatButtons.hasPerLineButtons();
         if (!perLine && !cfg.getRightClickCopy()) return;
 
         //? if >=26.2 {
-        /*ChatComponent chat = minecraft.gui.hud.getChat();
-        *///?} else {
-        ChatComponent chat = minecraft.gui.getChat();
-        //?}
+        ChatComponent chat = minecraft.gui.hud.getChat();
+        //?} else {
+        /*ChatComponent chat = minecraft.gui.getChat();
+        *///?}
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
         float chatScale = (float) acc.chatting$getScale();
         if (chatScale <= 0f) return;
@@ -216,22 +247,22 @@ public abstract class ChatScreenMixin extends Screen {
         boolean hud = ChatWindowHud.isActive();
         float hudScale = ChatWindowHud.chatScale();
         //? if <1.21.6 {
-        graphics.pose().pushPose();
+        /*graphics.pose().pushPose();
         if (hud) {
             graphics.pose().translate(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY(), 0f);
             if (hudScale != 1f) graphics.pose().scale(hudScale, hudScale, 1f);
             graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop(), 0f);
         }
         graphics.pose().scale(chatScale, chatScale, 1f);
-        //?} else {
-        /*graphics.pose().pushMatrix();
+        *///?} else {
+        graphics.pose().pushMatrix();
         if (hud) {
             graphics.pose().translate(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY());
             if (hudScale != 1f) graphics.pose().scale(hudScale, hudScale);
             graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop());
         }
         graphics.pose().scale(chatScale, chatScale);
-        *///?}
+        //?}
 
         int slot = 0;
         if (cfg.getChatCopy()) {
@@ -245,10 +276,10 @@ public abstract class ChatScreenMixin extends Screen {
         }
 
         //? if <1.21.6 {
-        graphics.pose().popPose();
-        //?} else {
-        /*graphics.pose().popMatrix();
-        *///?}
+        /*graphics.pose().popPose();
+        *///?} else {
+        graphics.pose().popMatrix();
+        //?}
     }
 
     @Unique
@@ -333,10 +364,10 @@ public abstract class ChatScreenMixin extends Screen {
     private void chatting$globalButtons(Object graphics, int mouseX, int mouseY) {
         ChattingConfig cfg = ChattingConfig.INSTANCE;
         //? if >=26.2 {
-        /*ChatComponent chat = minecraft.gui.hud.getChat();
-        *///?} else {
-        ChatComponent chat = minecraft.gui.getChat();
-        //?}
+        ChatComponent chat = minecraft.gui.hud.getChat();
+        //?} else {
+        /*ChatComponent chat = minecraft.gui.getChat();
+        *///?}
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
 
         int x = width - 12;
@@ -410,10 +441,10 @@ public abstract class ChatScreenMixin extends Screen {
     private boolean chatting$button(Object g0, Object icon, int localX, int localY, float scale,
                                     int mouseX, int mouseY, List<String> tooltip, Runnable action) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
-        *///?} else {
-        GuiGraphics graphics = (GuiGraphics) g0;
-        //?}
+        GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        //?} else {
+        /*GuiGraphics graphics = (GuiGraphics) g0;
+        *///?}
         ChattingConfig cfg = ChattingConfig.INSTANCE;
         int screenX = (int) (localX * scale);
         int screenY = (int) (localY * scale);
@@ -485,10 +516,10 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private void chatting$tooltipBackground(Object g0, int x, int y, int w, int h) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
-        *///?} else {
-        GuiGraphics graphics = (GuiGraphics) g0;
-        //?}
+        GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        //?} else {
+        /*GuiGraphics graphics = (GuiGraphics) g0;
+        *///?}
         int bg = 0xF0100010;
         graphics.fill(x - 3, y - 4, x + w + 3, y - 3, bg);
         graphics.fill(x - 3, y + h + 3, x + w + 3, y + h + 4, bg);
@@ -496,61 +527,61 @@ public abstract class ChatScreenMixin extends Screen {
         graphics.fill(x - 4, y - 3, x - 3, y + h + 3, bg);
         graphics.fill(x + w + 3, y - 3, x + w + 4, y + h + 3, bg);
         //? if <26 {
-        int b1 = 0x505000FF;
+        /*int b1 = 0x505000FF;
         int b2 = 0x5028007F;
         graphics.fillGradient(x - 3, y - 2, x - 2, y + h + 2, b1, b2);
         graphics.fillGradient(x + w + 2, y - 2, x + w + 3, y + h + 2, b1, b2);
         graphics.fill(x - 3, y - 3, x + w + 3, y - 2, b1);
         graphics.fill(x - 3, y + h + 2, x + w + 3, y + h + 3, b2);
-        //?}
+        *///?}
     }
 
     @Unique
     private void chatting$text(Object g0, String s, int x, int y) {
         //? if >=26 {
-        /*((GuiGraphicsExtractor) g0).text(this.font, s, x, y, 0xFFFFFFFF);
-        *///?} else {
-        ((GuiGraphics) g0).drawString(this.font, s, x, y, 0xFFFFFFFF);
-        //?}
+        ((GuiGraphicsExtractor) g0).text(this.font, s, x, y, 0xFFFFFFFF);
+        //?} else {
+        /*((GuiGraphics) g0).drawString(this.font, s, x, y, 0xFFFFFFFF);
+        *///?}
     }
 
     @Unique
     private void chatting$blit(Object g0, Object icon, int x, int y) {
         //? if >=26 {
-        /*GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
-        *///?} else {
-        GuiGraphics graphics = (GuiGraphics) g0;
-        //?}
+        GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
+        //?} else {
+        /*GuiGraphics graphics = (GuiGraphics) g0;
+        *///?}
         //? if <1.21.4 {
-        graphics.blit((net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, 9, 9, 9, 9);
-        //?} elif <1.21.6 {
+        /*graphics.blit((net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, 9, 9, 9, 9);
+        *///?} elif <1.21.6 {
         /*graphics.blit(net.minecraft.client.renderer.RenderType::guiTextured, (net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, 9, 9, 9, 9);
         *///?} elif <1.21.11 {
         /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.ResourceLocation) icon, x, y, 0, 0, 9, 9, 9, 9);
         *///?} else {
-        /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, 9, 9, 9, 9);
-        *///?}
+        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, 9, 9, 9, 9);
+        //?}
     }
 
     @Unique
     private int chatting$hoveredVisualLine(ChatComponent chat, ChatComponentAccessor acc, int mouseY) {
         //? if <1.21.11 {
-        return (int) acc.chatting$screenToChatY(mouseY);
-        //?} else {
-        /*double d = (double) this.minecraft.getWindow().getGuiScaledHeight() - mouseY - 40.0;
+        /*return (int) acc.chatting$screenToChatY(mouseY);
+        *///?} else {
+        double d = (double) this.minecraft.getWindow().getGuiScaledHeight() - mouseY - 40.0;
         // Match FocusedAccessMixin's half-open [entryTop, entryBottom) hover test: exactly on the
         // boundary between two lines the cursor pixel belongs to the lower line (ceil - 1 instead of
         // floor), so the highlighted line and the line the buttons target always agree.
         return (int) Math.ceil(d / (acc.chatting$getScale() * acc.chatting$getLineHeight())) - 1;
-        *///?}
+        //?}
     }
 
     @Unique
     private int chatting$hoveredMessageIndex(ChatComponent chat, ChatComponentAccessor acc, int lineIndex) {
         //? if <1.21.11 {
-        return acc.chatting$getMessageEndIndexAt(0, lineIndex);
-        //?} else {
-        /*if (!chat.isChatFocused()) return -1;
+        /*return acc.chatting$getMessageEndIndexAt(0, lineIndex);
+        *///?} else {
+        if (!chat.isChatFocused()) return -1;
         List<GuiMessage.Line> trimmed = acc.chatting$getTrimmedMessages();
         int i = Math.min(chat.getLinesPerPage(), trimmed.size());
         if (!(lineIndex >= 0 && lineIndex < i)) return -1;
@@ -561,7 +592,7 @@ public abstract class ChatScreenMixin extends Screen {
             j--;
         }
         return j;
-        *///?}
+        //?}
     }
 
     @Unique
@@ -570,13 +601,13 @@ public abstract class ChatScreenMixin extends Screen {
     }
 
     //? if >=26 {
-    /*@Inject(method = "mouseClicked", at = @At("HEAD"))
+    @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         int button = event.button();
         chatting$shortcutHeld = event.hasControlDownWithQuirk();
         chatting$shiftHeld = event.hasShiftDown();
         chatting$altHeld = event.hasAltDown();
-    *///?} elif >=1.21.10 {
+    //?} elif >=1.21.10 {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         int button = event.button();
@@ -584,29 +615,47 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$shiftHeld = event.hasShiftDown();
         chatting$altHeld = event.hasAltDown();
     *///?} else {
-    @Inject(method = "mouseClicked", at = @At("HEAD"))
+    /*@Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         chatting$shortcutHeld = Screen.hasControlDown();
         chatting$shiftHeld = Screen.hasShiftDown();
         chatting$altHeld = Screen.hasAltDown();
-    //?}
+    *///?}
         if (button == 0) chatting$leftClicked = true;
         else if (button == 1) chatting$rightClicked = true;
     }
 
     //? if >=1.21.10 {
-    /*@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         if (event.button() == 0 && ChatTabsRenderer.INSTANCE.click(event.x(), event.y(), event.hasShiftDown())) {
             cir.setReturnValue(true);
         }
     }
-    *///?} else {
-    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    //?} else {
+    /*@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (button == 0 && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
             cir.setReturnValue(true);
         }
     }
-    //?}
+    *///?}
+
+    // While the search box holds focus, swallow the keys ChatScreen would otherwise route to the
+    // vanilla input (Enter to send, Up/Down for chat history) so they don't act on the hidden input.
+    // Text edits, Left/Right and Tab still fall through to the focused widget / focus navigation.
+    //? if >=1.21.10 {
+    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void chatting$suppressSearchKeys(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+        if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
+        int key = event.key();
+        if (event.isConfirmation() || key == 264 || key == 265) cir.setReturnValue(true);
+    }
+    //?} else {
+    /*@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void chatting$suppressSearchKeys(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+        if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
+        if (keyCode == 257 || keyCode == 335 || keyCode == 264 || keyCode == 265) cir.setReturnValue(true);
+    }
+    *///?}
 }

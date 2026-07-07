@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=1.21.11 {
-/*import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,12 +10,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 //? if <26 {
-import net.minecraft.client.gui.GuiGraphics;
-//?} else {
-/^import net.minecraft.client.gui.GuiGraphicsExtractor;
-^///?}
+/*import net.minecraft.client.gui.GuiGraphics;
+*///?} else {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+//?}
 
 @Mixin(targets = "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess")
 public class FocusedAccessMixin {
@@ -24,7 +25,7 @@ public class FocusedAccessMixin {
     @Unique private int chatting$mouseY;
 
     //? if <26 {
-    @Inject(method = "<init>", at = @At("TAIL"))
+    /*@Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureMouse(GuiGraphics graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
         this.chatting$mouseX = mouseX;
         this.chatting$mouseY = mouseY;
@@ -38,14 +39,15 @@ public class FocusedAccessMixin {
 
     @Unique
     private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
+        if (!chatting$chatFocused()) return color;
         Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
         if (m.x >= x1 && m.x < x2 && m.y >= y1 && m.y < y2) {
             return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return color;
     }
-    //?} else {
-    /^@Inject(method = "<init>", at = @At("TAIL"))
+    *///?} else {
+    @Inject(method = "<init>", at = @At("TAIL"))
     private void chatting$captureMouse(GuiGraphicsExtractor graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
         this.chatting$mouseX = mouseX;
         this.chatting$mouseY = mouseY;
@@ -59,16 +61,26 @@ public class FocusedAccessMixin {
 
     @Unique
     private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
+        if (!chatting$chatFocused()) return color;
         Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
         if (m.x >= x1 && m.x < x2 && m.y >= y1 && m.y < y2) {
             return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return color;
     }
-    ^///?}
-}
-*///?}
-//? if <1.21.11 {
-public class FocusedAccessMixin {
+    //?}
+
+    @Unique
+    private boolean chatting$chatFocused() {
+        //? if >=26.2 {
+        return Minecraft.getInstance().gui.screen() instanceof net.minecraft.client.gui.screens.ChatScreen;
+        //?} else {
+        /*return Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen;
+        *///?}
+    }
 }
 //?}
+//? if <1.21.11 {
+/*public class FocusedAccessMixin {
+}
+*///?}

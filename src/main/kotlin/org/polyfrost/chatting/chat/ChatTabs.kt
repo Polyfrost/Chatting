@@ -61,10 +61,10 @@ object ChatTabs {
 
     fun refresh() {
         //? if >=26.2 {
-        /*val chat = Minecraft.getInstance().gui?.hud?.chat ?: return
-        *///?} else {
-        val chat = Minecraft.getInstance().gui?.chat ?: return
-        //?}
+        val chat = Minecraft.getInstance().gui?.hud?.chat ?: return
+        //?} else {
+        /*val chat = Minecraft.getInstance().gui?.chat ?: return
+        *///?}
         (chat as? ChatComponentHook)?.`chatting$refresh`()
     }
 
