@@ -100,6 +100,22 @@ class ChatWindowHud : LegacyHud(
             return HudManager.isEditing || ChattingConfig.chatWindowMoved
         }
 
+        /**
+         * Mirrors OneConfig's per-HUD visibility gating (see `HudManager.render`) for the chat, which
+         * renders through the vanilla [ChatComponent] and so never passes through that gate itself.
+         * The chat screen is exempt from the "Show in GUIs" rule so opening the input to type doesn't
+         * hide the history.
+         */
+        @JvmStatic
+        fun shouldHideForVisibility(chatFocused: Boolean): Boolean {
+            val hud = instance ?: return false
+            if (HudManager.isEditing) return false
+            if (HudManager.isDebugScreenVisible && !hud.showInF3) return true
+            if (HudManager.isTabListVisible && !hud.showInTab) return true
+            if (HudManager.isGuiScreenOpen && !chatFocused && !hud.showInScreens) return true
+            return false
+        }
+
         @JvmStatic
         fun chatScale(): Float = instance?.effectiveScale ?: 1f
 

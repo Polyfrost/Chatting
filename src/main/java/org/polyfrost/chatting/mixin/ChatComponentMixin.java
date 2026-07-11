@@ -87,8 +87,13 @@ public class ChatComponentMixin implements ChatComponentHook {
     //? if >=1.21.11 <26 {
     /*@Unique private boolean chatting$posed;
 
-    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"))
+    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"), cancellable = true)
     private void chatting$beginChatWindow(GuiGraphics graphics, Font font, int ticks, int mouseX, int mouseY, boolean focused, boolean changeCursor, CallbackInfo ci) {
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
         boolean hud = ChatWindowHud.isActive();
         float smoothDy = SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
@@ -113,8 +118,13 @@ public class ChatComponentMixin implements ChatComponentHook {
     *///?} elif >=26 {
     @Unique private boolean chatting$posed;
 
-    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"))
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"), cancellable = true)
     private void chatting$beginChatWindow(GuiGraphicsExtractor graphics, Font font, int ticks, int mouseX, int mouseY, ChatComponent.DisplayMode mode, boolean changeCursor, CallbackInfo ci) {
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
         boolean hud = ChatWindowHud.isActive();
         float smoothDy = SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
@@ -217,8 +227,13 @@ public class ChatComponentMixin implements ChatComponentHook {
     /*@Unique
     private boolean chatting$posed;
 
-    @Inject(method = "render", at = @At("HEAD"))
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void chatting$beginChatWindow(GuiGraphics graphics, int tick, int mouseX, int mouseY, boolean focused, CallbackInfo ci) {
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
         boolean hud = ChatWindowHud.isActive();
         float smoothDy = SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
