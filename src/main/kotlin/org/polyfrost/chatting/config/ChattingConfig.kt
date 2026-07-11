@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatTabs
-import org.polyfrost.chatting.chat.ChatTimestamps
 import org.polyfrost.chatting.config.shortcut.ChatShortcutManagerScreen
 import org.polyfrost.oneconfig.api.platform.v1.Platform
 
@@ -257,73 +256,6 @@ object ChattingConfig : Config(
         Platform.screen().display(ChatShortcutManagerScreen())
     }
 
-    @Switch(
-        title = "Chat Timestamps", category = "Timestamps",
-        description = "Prefix the first line of every chat message with the time it was received."
-    )
-    var chatTimestamps = false
-
-    @Dropdown(
-        title = "Format Mode", category = "Timestamps", options = ["Preset", "Custom"],
-        description = "Build the timestamp from preset options, or write a fully custom format string."
-    )
-    var timestampMode = 0
-
-    @Dropdown(
-        title = "Date", category = "Timestamps",
-        options = ["None", "YYYY-MM-DD", "DD/MM/YYYY", "DD/MM/YY", "DD/MM", "MM/DD/YYYY", "MM/DD/YY", "MM/DD"],
-        description = "The date format to display before the time."
-    )
-    var timestampDate = 0
-
-    @Dropdown(
-        title = "Time", category = "Timestamps", options = ["HH:MM", "HH:MM:SS"],
-        description = "The time format to display."
-    )
-    var timestampTime = 0
-
-    @Switch(
-        title = "24-Hour Time", category = "Timestamps",
-        description = "Use 24-hour time instead of 12-hour time with AM/PM."
-    )
-    var timestamp24Hour = true
-
-    @Switch(
-        title = "Leading Zero", category = "Timestamps",
-        description = "Pad the hour with a leading zero."
-    )
-    var timestampLeadingZero = true
-
-    @Dropdown(
-        title = "Delimiter", category = "Timestamps", options = ["None", "[]", "()"],
-        description = "Brackets surrounding the timestamp."
-    )
-    var timestampDelimiter = 1
-
-    @Color(
-        title = "Date Color", category = "Timestamps",
-        description = "The color of the date."
-    )
-    var timestampDateColor = PolyColor.rgba(85, 85, 255, 255)
-
-    @Color(
-        title = "Time Color", category = "Timestamps",
-        description = "The color of the time."
-    )
-    var timestampTimeColor = PolyColor.rgba(85, 85, 255, 255)
-
-    @Color(
-        title = "Delimiter Color", category = "Timestamps",
-        description = "The color of the delimiter."
-    )
-    var timestampDelimiterColor = PolyColor.rgba(85, 85, 255, 255)
-
-    @Text(
-        title = "Custom Format", category = "Timestamps",
-        description = "A Java DateTimeFormatter pattern. Supports Minecraft color codes (e.g. &a) and hex (<#RRGGBB>)."
-    )
-    var timestampCustomFormat = "&9'['HH:mm']' "
-
     private fun isHypixel(): Boolean {
         val server = Minecraft.getInstance().currentServer ?: return false
         return server.ip.contains("hypixel", ignoreCase = true)
@@ -366,21 +298,5 @@ object ChattingConfig : Config(
         addCallback("peekMode") { Chatting.peeking = false }
         addCallback("chatTabs") { ChatTabs.refresh() }
         addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh() }
-
-        val timestampOptions = listOf(
-            "timestampMode", "timestampDate", "timestampTime", "timestamp24Hour", "timestampLeadingZero",
-            "timestampDelimiter", "timestampDateColor", "timestampTimeColor", "timestampDelimiterColor",
-            "timestampCustomFormat"
-        )
-        timestampOptions.forEach { addDependency(it, "chatTimestamps") }
-        val presetOptions = timestampOptions - "timestampMode" - "timestampCustomFormat"
-        presetOptions.forEach { hideIf(it) { timestampMode != 0 } }
-        hideIf("timestampCustomFormat") { timestampMode != 1 }
-        (listOf("chatTimestamps") + timestampOptions).forEach {
-            addCallback(it) {
-                ChatTimestamps.invalidate()
-                ChatTimestamps.refresh()
-            }
-        }
     }
 }

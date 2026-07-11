@@ -25,7 +25,6 @@ import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Shadow;
 import org.polyfrost.chatting.hook.ChatComponentHook;
 import org.polyfrost.chatting.hook.ChatLineHook;
-import org.polyfrost.chatting.hook.ChatMessageHook;
 import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -44,11 +43,6 @@ import org.spongepowered.asm.mixin.Final;
 *///?}
 //? if <26 {
 /*import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.FormattedText;
-import org.polyfrost.chatting.chat.ChatTimestamps;
-*///?}
-//? if >=1.21.11 <26 {
-/*import com.llamalad7.mixinextras.sugar.Local;
 *///?}
 //? if >=26 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -155,10 +149,6 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @Inject(method = "addMessageToDisplayQueue", at = @At("HEAD"), cancellable = true)
     private void chatting$detectHead(GuiMessage guiMessage, CallbackInfo ci) {
-        if (!chatting$refreshing) {
-            ChatMessageHook h = (ChatMessageHook) (Object) guiMessage;
-            if (h.chatting$getTimestamp() < 0) h.chatting$setTimestamp(System.currentTimeMillis());
-        }
         if (ChatTabs.INSTANCE.shouldFilter() && !ChatTabs.INSTANCE.shouldRender((Component) guiMessage.content())) {
             ci.cancel();
             return;
@@ -208,13 +198,6 @@ public class ChatComponentMixin implements ChatComponentHook {
     private void chatting$endRefresh(CallbackInfo ci) {
         chatting$refreshing = false;
     }
-
-    //? if <26 {
-    /*@ModifyArg(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ComponentRenderUtils;wrapComponents(Lnet/minecraft/network/chat/FormattedText;ILnet/minecraft/client/gui/Font;)Ljava/util/List;"), index = 0)
-    private FormattedText chatting$prependTimestamp(FormattedText content, @Local(argsOnly = true) GuiMessage guiMessage) {
-        return ChatTimestamps.INSTANCE.prepend(((ChatMessageHook) (Object) guiMessage).chatting$getTimestamp(), (Component) content);
-    }
-    *///?}
 
     //? if <=1.21.10 {
     /*@Redirect(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
