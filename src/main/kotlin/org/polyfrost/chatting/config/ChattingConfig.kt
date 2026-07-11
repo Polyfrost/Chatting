@@ -37,6 +37,7 @@ object ChattingConfig : Config(
 
     @Slider(
         title = "Time Before Fade", category = "General",
+        description = "If set to 0, you can only see messages by opening chat.",
         min = 0f, max = 20f
     )
     var fadeTime = 10f
