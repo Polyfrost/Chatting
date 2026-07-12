@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -21,6 +22,11 @@ public class ChattingMixinPlugin implements IMixinConfigPlugin {
         //? if >=1.21.6 {
         mixins.add("GuiRendererMixin");
         //?}
+        if (FabricLoader.getInstance().isModLoaded("text_tunnels")) {
+            mixins.add("MessageReceiveHandlerMixin");
+            mixins.add("ButtonsHandlerMixin");
+            mixins.add("TextTunnelsMixin");
+        }
         return mixins;
     }
 

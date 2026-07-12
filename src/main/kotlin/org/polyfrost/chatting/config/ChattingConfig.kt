@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatTabs
+import org.polyfrost.chatting.compat.TextTunnelsCompat
 import org.polyfrost.chatting.config.shortcut.ChatShortcutManagerScreen
 import org.polyfrost.oneconfig.api.platform.v1.Platform
 
@@ -297,7 +298,7 @@ object ChattingConfig : Config(
         addDependency("improvedHeads", "showChatHeads")
 
         addCallback("peekMode") { Chatting.peeking = false }
-        addCallback("chatTabs") { ChatTabs.refresh() }
-        addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh() }
+        addCallback("chatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
+        addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
     }
 }
