@@ -11,6 +11,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.chatting.config.ChattingConfig
+import kotlin.math.ceil
 
 class ChatWindowHud : LegacyHud(
     id = "chat_window.json",
@@ -62,7 +63,14 @@ class ChatWindowHud : LegacyHud(
 
         private fun chatScaleOption(): Float = mc().options.chatScale().get().toFloat()
 
-        private fun chatWidth(): Float = ChatComponent.getWidth(mc().options.chatWidth().get()).toFloat()
+        // Vanilla draws the chat background from x=-4 to maxWidth+8 in chat space, then
+        // translates by +4 and scales by the chat-scale option, so on screen it occupies
+        // [0, (maxWidth + 12) * scale]. maxWidth is getWidth() divided by that scale.
+        private fun chatWidth(): Float {
+            val scale = chatScaleOption()
+            val maxWidth = ceil(ChatComponent.getWidth(mc().options.chatWidth().get()) / scale)
+            return (maxWidth + 12) * scale
+        }
 
         private fun chatHeight(): Float =
             ChatComponent.getHeight(mc().options.chatHeightUnfocused().get()) * chatScaleOption()
