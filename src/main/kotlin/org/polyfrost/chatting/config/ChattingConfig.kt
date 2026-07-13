@@ -220,6 +220,24 @@ object ChattingConfig : Config(
     var copyMode = 2
 
     @Switch(
+        title = "Add Border", category = "Screenshotting",
+        description = "Adds a 1px black border around the text when neither a shadow nor a background is included."
+    )
+    var screenshotBorder = true
+
+    @Switch(
+        title = "Force Shadow", category = "Screenshotting",
+        description = "Adds the vanilla text shadow to screenshots even if it is disabled in General."
+    )
+    var screenshotForceShadow = false
+
+    @Switch(
+        title = "Include Background", category = "Screenshotting",
+        description = "Includes the chat background in the screenshot."
+    )
+    var screenshotBackground = false
+
+    @Switch(
         title = "Chat Tabs", category = "Tabs",
         description = "Allow filtering chat messages by a tab."
     )

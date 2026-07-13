@@ -38,6 +38,29 @@ public final class ChatScreenshot {
     private ChatScreenshot() {
     }
 
+    public record ScreenshotStyle(boolean shadow, boolean background, boolean border) {
+        public static ScreenshotStyle current() {
+            ChattingConfig c = ChattingConfig.INSTANCE;
+            boolean shadow = c.getTextRenderType() == 1 || c.getScreenshotForceShadow();
+            boolean background = c.getScreenshotBackground();
+            boolean border = c.getScreenshotBorder() && !shadow && !background;
+            return new ScreenshotStyle(shadow, background, border);
+        }
+    }
+
+    static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+
+    // Recolor a sequence to pure black, preserving glyph shapes/positions, so the
+    // outline is black regardless of the message's own color codes.
+    static FormattedCharSequence blackOut(FormattedCharSequence seq) {
+        return sink -> seq.accept((pos, style, cp) -> sink.accept(pos, style.withColor(0), cp));
+    }
+
+    // Vanilla chat background: black at the user's textBackgroundOpacity, full (unfaded) alpha.
+    static int backgroundColor(Minecraft mc) {
+        return ((int) (mc.options.textBackgroundOpacity().get() * 255.0)) << 24;
+    }
+
     // region text copy
     public static void copyText(List<GuiMessage.Line> lines, Component fullMessage) {
         copyText(lines, fullMessage, false);
@@ -105,20 +128,24 @@ public final class ChatScreenshot {
             return;
         }
         int height = lines.size() * 9;
-        boolean shadow = ChattingConfig.INSTANCE.getTextRenderType() == 1;
+        ScreenshotStyle style = ScreenshotStyle.current();
+        // The border draws 1px outside the glyph extent, so pad the canvas to keep it from clipping.
+        int margin = style.border() ? 1 : 0;
+        width += margin * 2;
+        height += margin * 2;
         int scale = 2; // supersample for a crisp image, mirroring the 1.8.9 2x scale
 
         //? if <1.21.4 {
-        /*captureLegacy(mc, lines, width, height, scale, shadow);
+        /*captureLegacy(mc, lines, width, height, scale, style);
         *///?} elif <1.21.5 {
         /*notify("Image screenshot isn't supported on 1.21.4 yet — use right-click / the copy button to copy the text.");
         *///?} else {
-        ChatScreenshotModern.capture(mc, lines, width, height, scale, shadow);
+        ChatScreenshotModern.capture(mc, lines, width, height, scale, style);
         //?}
     }
 
     //? if <1.21.5 {
-    /*private static void captureLegacy(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
+    /*private static void captureLegacy(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ScreenshotStyle style) {
         RenderTarget rt;
         try {
             //? if <1.21.4 {
@@ -151,13 +178,24 @@ public final class ChatScreenshot {
         //?}
 
         GuiGraphics graphics = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
-        int y = 0;
+        if (style.background()) {
+            graphics.fill(0, 0, width, height, backgroundColor(mc));
+        }
+        int m = style.border() ? 1 : 0;
+        int y = m;
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), 0, y - 1, 8);
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m, y - 1, 8);
             }
-            graphics.drawString(mc.font, line.content(), headOffset(line.content()), y, 0xFFFFFFFF, shadow);
+            int hx = headOffset(line.content()) + m;
+            if (style.border()) {
+                FormattedCharSequence bl = blackOut(line.content());
+                for (int[] o : OUTLINE) {
+                    graphics.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
+                }
+            }
+            graphics.drawString(mc.font, line.content(), hx, y, 0xFFFFFFFF, style.shadow());
             y += 9;
         }
         graphics.flush();

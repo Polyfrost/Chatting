@@ -22,8 +22,8 @@ public final class ChatScreenshotModern {
     }
 
     //? if >=1.21.5 {
-    static void capture(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
-        RenderTarget rt = render(mc, lines, width, height, scale, shadow);
+    static void capture(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
+        RenderTarget rt = render(mc, lines, width, height, scale, style);
         if (rt == null) return;
         readbackAndPersist(rt);
     }
@@ -72,7 +72,7 @@ public final class ChatScreenshotModern {
         }
     }
 
-    private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
+    private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
         com.mojang.blaze3d.pipeline.TextureTarget rt;
         try {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
@@ -82,15 +82,26 @@ public final class ChatScreenshotModern {
         }
         OverrideVertexProvider consumer = new OverrideVertexProvider(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256), rt);
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, consumer);
-        com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
+        // This variant's vertex provider only serves the text layer, so context.fill(...) would
+        // crash on a missing vertex format. Paint the background by clearing the target instead.
+        int clearColor = style.background() ? ChatScreenshot.backgroundColor(mc) : 0x00000000;
+        com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), clearColor);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height, 1f);
-        int y = 0;
+        int m = style.border() ? 1 : 0;
+        int y = m;
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, y - 1, 8);
             }
-            context.drawString(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
+            int hx = ChatScreenshot.headOffset(line.content()) + m;
+            if (style.border()) {
+                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                for (int[] o : ChatScreenshot.OUTLINE) {
+                    context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
+                }
+            }
+            context.drawString(mc.font, line.content(), hx, y, 0xFFFFFFFF, style.shadow());
             y += 9;
         }
         context.flush();
@@ -100,7 +111,7 @@ public final class ChatScreenshotModern {
     *///?}
 
     //? if >=1.21.6 <1.21.11 {
-    /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
+    /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
         com.mojang.blaze3d.pipeline.TextureTarget rt;
         try {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
@@ -112,13 +123,24 @@ public final class ChatScreenshotModern {
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, renderState);
         com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
-        int y = 0;
+        if (style.background()) {
+            context.fill(0, 0, width, height, ChatScreenshot.backgroundColor(mc));
+        }
+        int m = style.border() ? 1 : 0;
+        int y = m;
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, y - 1, 8);
             }
-            context.drawString(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
+            int hx = ChatScreenshot.headOffset(line.content()) + m;
+            if (style.border()) {
+                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                for (int[] o : ChatScreenshot.OUTLINE) {
+                    context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
+                }
+            }
+            context.drawString(mc.font, line.content(), hx, y, 0xFFFFFFFF, style.shadow());
             y += 9;
         }
         chatting$flush(mc, renderState, rt);
@@ -127,7 +149,7 @@ public final class ChatScreenshotModern {
     *///?}
 
     //? if >=1.21.11 <26 {
-    /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
+    /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
         com.mojang.blaze3d.pipeline.TextureTarget rt;
         try {
             rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
@@ -139,13 +161,24 @@ public final class ChatScreenshotModern {
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, renderState, 0, 0);
         com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
-        int y = 0;
+        if (style.background()) {
+            context.fill(0, 0, width, height, ChatScreenshot.backgroundColor(mc));
+        }
+        int m = style.border() ? 1 : 0;
+        int y = m;
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), 0, y - 1, 8);
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, y - 1, 8);
             }
-            context.drawString(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
+            int hx = ChatScreenshot.headOffset(line.content()) + m;
+            if (style.border()) {
+                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                for (int[] o : ChatScreenshot.OUTLINE) {
+                    context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
+                }
+            }
+            context.drawString(mc.font, line.content(), hx, y, 0xFFFFFFFF, style.shadow());
             y += 9;
         }
         chatting$flush(mc, renderState, rt);
@@ -154,7 +187,7 @@ public final class ChatScreenshotModern {
     *///?}
 
     //? if >=26 {
-    private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, boolean shadow) {
+    private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
         com.mojang.blaze3d.pipeline.TextureTarget rt;
         try {
             //? if >=26.2 {
@@ -174,13 +207,24 @@ public final class ChatScreenshotModern {
         /*com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         *///?}
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
-        int y = 0;
+        if (style.background()) {
+            context.fill(0, 0, width, height, ChatScreenshot.backgroundColor(mc));
+        }
+        int m = style.border() ? 1 : 0;
+        int y = m;
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(context, info.getSkin(), 0, y - 1, 8);
+                net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(context, info.getSkin(), m, y - 1, 8);
             }
-            context.text(mc.font, line.content(), ChatScreenshot.headOffset(line.content()), y, 0xFFFFFFFF, shadow);
+            int hx = ChatScreenshot.headOffset(line.content()) + m;
+            if (style.border()) {
+                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                for (int[] o : ChatScreenshot.OUTLINE) {
+                    context.text(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
+                }
+            }
+            context.text(mc.font, line.content(), hx, y, 0xFFFFFFFF, style.shadow());
             y += 9;
         }
         chatting$flush(mc, renderState, rt);
