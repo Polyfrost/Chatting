@@ -33,7 +33,7 @@ public class FocusedAccessMixin {
 
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
     private void chatting$hoverFill(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        int chatting$ex2 = x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth();
+        int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
         graphics.fill(x1, y1, chatting$ex2, y2, chatting$hoverColor(graphics.pose(), x1, y1, x2, y2, color));
     }
 
@@ -55,7 +55,7 @@ public class FocusedAccessMixin {
 
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
     private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color) {
-        int chatting$ex2 = x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth();
+        int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
         graphics.fill(x1, y1, chatting$ex2, y2, chatting$hoverColor(graphics.pose(), x1, y1, x2, y2, color));
     }
 
