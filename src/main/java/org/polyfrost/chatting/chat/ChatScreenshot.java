@@ -240,6 +240,9 @@ public final class ChatScreenshot {
         int copyMode = ChattingConfig.INSTANCE.getCopyMode();
         boolean save = copyMode != 1;
         boolean clip = copyMode != 0;
+        if (!save && !clip) {
+            throw new IllegalStateException("Attempted to save a screenshot with no destination");
+        }
         try {
             if (save) {
                 File dir = new File("screenshots/chat");
@@ -250,7 +253,13 @@ public final class ChatScreenshot {
             if (clip) {
                 ClipboardHelper.setImage(toBufferedImage(image));
             }
-            notifySuccess("Chatting", "Chat screenshotted successfully.");
+            if (save && clip) {
+                notifySuccess("Chatting", "Screenshot saved to clipboard and file.");
+            } else if (save) {
+                notifySuccess("Chatting", "Screenshot saved to file.");
+            } else if (clip) {
+                notifySuccess("Chatting", "Screenshot saved to clipboard.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             notifyError("Screenshot failed.");
