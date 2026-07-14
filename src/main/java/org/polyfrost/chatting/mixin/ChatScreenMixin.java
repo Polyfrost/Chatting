@@ -44,6 +44,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 //? if >=1.21.11 {
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.util.Mth;
 //?}
 
@@ -624,6 +625,22 @@ public abstract class ChatScreenMixin extends Screen {
         if (button == 0) chatting$leftClicked = true;
         else if (button == 1) chatting$rightClicked = true;
     }
+
+    // The clickable-text hit-test builds its regions through captureClickableText, which skips the
+    // pose translation the chat HUD applies while rendering, so the regions stay at the vanilla
+    // position. Map the cursor back into that space so clicks land on the shifted/scaled chat (hover
+    // already works because it runs through the posed render path).
+    //? if >=1.21.11 {
+    @ModifyExpressionValue(method = "mouseClicked", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/MouseButtonEvent;x()D"))
+    private double chatting$clickComponentX(double x) {
+        return ChatWindowHud.mapMouseX(x);
+    }
+
+    @ModifyExpressionValue(method = "mouseClicked", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/MouseButtonEvent;y()D"))
+    private double chatting$clickComponentY(double y) {
+        return ChatWindowHud.mapMouseY(y);
+    }
+    //?}
 
     //? if >=1.21.10 {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
