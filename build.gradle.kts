@@ -38,11 +38,13 @@ val accessWidener = when {
     stonecutter.eval(mcversion, ">=1.21.11") -> "chatting-1.21.11.accesswidener"
     stonecutter.eval(mcversion, ">=1.21.6") -> "chatting-1.21.6.accesswidener"
     stonecutter.eval(mcversion, ">=1.21.5") -> "chatting-1.21.5.accesswidener"
+    stonecutter.eval(mcversion, ">=1.21.4") -> "chatting-1.21.4.accesswidener"
     else -> "chatting.accesswidener"
 }
 val allAccessWideners = listOf(
-    "chatting.accesswidener", "chatting-1.21.5.accesswidener", "chatting-1.21.6.accesswidener",
-    "chatting-1.21.11.accesswidener", "chatting-26.accesswidener", "chatting-26.2.accesswidener"
+    "chatting.accesswidener", "chatting-1.21.4.accesswidener", "chatting-1.21.5.accesswidener",
+    "chatting-1.21.6.accesswidener", "chatting-1.21.11.accesswidener", "chatting-26.accesswidener",
+    "chatting-26.2.accesswidener"
 )
 
 base {

@@ -27,7 +27,14 @@ import net.minecraft.client.multiplayer.chat.GuiMessage;
 
 //? if <1.21.5 {
 /*import net.minecraft.client.gui.GuiGraphics;
-import org.joml.Matrix4f;
+*///?}
+
+//? if >=1.21.4 <1.21.5 {
+/*import net.minecraft.client.renderer.RenderType;
+*///?}
+
+//? if <1.21.4 {
+/*import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 *///?}
 
@@ -135,47 +142,32 @@ public final class ChatScreenshot {
         height += margin * 2;
         int scale = 2; // supersample for a crisp image, mirroring the 1.8.9 2x scale
 
-        //? if <1.21.4 {
+        //? if <1.21.5 {
         /*captureLegacy(mc, lines, width, height, scale, style);
-        *///?} elif <1.21.5 {
-        /*notify("Image screenshot isn't supported on 1.21.4 yet — use right-click / the copy button to copy the text.");
         *///?} else {
         ChatScreenshotModern.capture(mc, lines, width, height, scale, style);
         //?}
     }
 
-    //? if <1.21.5 {
+    //? if <1.21.4 {
     /*private static void captureLegacy(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ScreenshotStyle style) {
         RenderTarget rt;
         try {
-            //? if <1.21.4 {
-            /^rt = new TextureTarget(width * scale, height * scale, false, false);
-            ^///?} else {
-            rt = new TextureTarget(width * scale, height * scale, false);
-            //?}
+            rt = new TextureTarget(width * scale, height * scale, false, false);
         } catch (Exception e) {
             notifyError("Screenshot failed.");
             return;
         }
         rt.setClearColor(0f, 0f, 0f, 0f);
-        //? if <1.21.4 {
-        /^rt.clear(false);
-        ^///?} else {
-        rt.clear();
-        //?}
+        rt.clear(false);
         rt.bindWrite(true);
 
-        //? if <1.21.4 {
-        /^Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, 1000f, 21000f);
+        Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, 1000f, 21000f);
         RenderSystem.setProjectionMatrix(projection, com.mojang.blaze3d.vertex.VertexSorting.ORTHOGRAPHIC_Z);
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
         modelView.pushMatrix();
         modelView.translation(0f, 0f, -11000f);
         RenderSystem.applyModelViewMatrix();
-        ^///?} else {
-        Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, -21000f, 21000f);
-        RenderSystem.setProjectionMatrix(projection, com.mojang.blaze3d.ProjectionType.ORTHOGRAPHIC);
-        //?}
 
         GuiGraphics graphics = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
         if (style.background()) {
@@ -200,10 +192,8 @@ public final class ChatScreenshot {
         }
         graphics.flush();
 
-        //? if <1.21.4 {
-        /^modelView.popMatrix();
+        modelView.popMatrix();
         RenderSystem.applyModelViewMatrix();
-        ^///?}
         rt.unbindWrite();
         mc.getMainRenderTarget().bindWrite(true);
 
@@ -214,8 +204,131 @@ public final class ChatScreenshot {
         rt.destroyBuffers();
         persist(image);
     }
+    *///?}
 
-    private static void flipVertically(NativeImage image) {
+    //? if >=1.21.4 <1.21.5 {
+    /*private static net.minecraft.client.renderer.RenderStateShard.OutputStateShard chatting$fbo(RenderTarget rt) {
+        return new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt.bindWrite(true), () -> {});
+    }
+
+    // The vanilla text and guiTextured layers bind the main render target when drawn, so give text and
+    // player-head geometry their own layers whose output is redirected to our offscreen framebuffer.
+    private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
+            "chatting_text", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+            com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432, false, false,
+            RenderType.CompositeState.builder()
+                    .setShaderState(net.minecraft.client.renderer.RenderStateShard.RENDERTYPE_TEXT_SHADER)
+                    .setTextureState(net.minecraft.client.renderer.RenderStateShard.NO_TEXTURE)
+                    .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setLightmapState(net.minecraft.client.renderer.RenderStateShard.LIGHTMAP)
+                    .setOutputState(chatting$fbo(rt))
+                    .createCompositeState(false));
+
+    private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
+        return RenderType.create(
+                "chatting_head", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR,
+                com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432,
+                RenderType.CompositeState.builder()
+                        .setTextureState(new net.minecraft.client.renderer.RenderStateShard.TextureStateShard(skin, net.minecraft.util.TriState.FALSE, false))
+                        .setShaderState(net.minecraft.client.renderer.RenderStateShard.POSITION_TEXTURE_COLOR_SHADER)
+                        .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                        .setDepthTestState(net.minecraft.client.renderer.RenderStateShard.LEQUAL_DEPTH_TEST)
+                        .setOutputState(chatting$fbo(rt))
+                        .createCompositeState(false));
+    }
+
+    private static class OverrideVertexProvider extends net.minecraft.client.renderer.MultiBufferSource.BufferSource {
+        private final RenderTarget rt;
+        private final RenderType textLayer;
+        private final com.mojang.blaze3d.vertex.BufferBuilder textBuffer;
+        private final com.mojang.blaze3d.vertex.ByteBufferBuilder headAllocator;
+
+        private RenderType headLayer;
+        private com.mojang.blaze3d.vertex.BufferBuilder headBuffer;
+
+        private OverrideVertexProvider(com.mojang.blaze3d.vertex.ByteBufferBuilder allocator, RenderTarget rt) {
+            super(allocator, it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps.emptyMap());
+            this.rt = rt;
+            this.textLayer = CUSTOM_TEXT_LAYER.apply(rt);
+            this.textBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
+            this.headAllocator = new com.mojang.blaze3d.vertex.ByteBufferBuilder(256);
+        }
+
+        @Override
+        public com.mojang.blaze3d.vertex.VertexConsumer getBuffer(RenderType renderType) {
+            return this.headBuffer != null ? this.headBuffer : this.textBuffer;
+        }
+
+        // Route the following blit(s) into a dedicated head layer sharing our framebuffer. Each head
+        // has its own skin texture, so its batch must be flushed before the next head begins.
+        public void beginHead(net.minecraft.resources.ResourceLocation skin) {
+            this.headLayer = headLayer(skin, rt);
+            this.headBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
+        }
+
+        public void endHead() {
+            if (this.headBuffer == null) return;
+            this.startedBuilders.put(this.headLayer, this.headBuffer);
+            this.endBatch(this.headLayer);
+            this.headBuffer = null;
+            this.headLayer = null;
+        }
+
+        public void finishDrawing() {
+            this.startedBuilders.put(this.textLayer, this.textBuffer);
+            this.endBatch(this.textLayer);
+            this.headAllocator.close();
+        }
+    }
+
+    private static void captureLegacy(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ScreenshotStyle style) {
+        RenderTarget rt;
+        try {
+            rt = new TextureTarget(width * scale, height * scale, false);
+        } catch (Exception e) {
+            notifyError("Chat window is empty.");
+            return;
+        }
+        int bg = style.background() ? backgroundColor(mc) : 0x00000000;
+        rt.setClearColor(((bg >> 16) & 0xFF) / 255f, ((bg >> 8) & 0xFF) / 255f, (bg & 0xFF) / 255f, (bg >>> 24) / 255f);
+        rt.clear();
+        OverrideVertexProvider consumer = new OverrideVertexProvider(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256), rt);
+        GuiGraphics context = new GuiGraphics(mc, consumer);
+        context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height, 1f);
+        int m = style.border() ? 1 : 0;
+        int y = m;
+        for (GuiMessage.Line line : lines) {
+            PlayerInfo info = headToDraw(line.content());
+            if (info != null) {
+                consumer.beginHead(info.getSkin().texture());
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, y - 1, 8);
+                consumer.endHead();
+            }
+            int hx = headOffset(line.content()) + m;
+            if (style.border()) {
+                FormattedCharSequence bl = blackOut(line.content());
+                for (int[] o : OUTLINE) {
+                    context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
+                }
+            }
+            context.drawString(mc.font, line.content(), hx, y, 0xFFFFFFFF, style.shadow());
+            y += 9;
+        }
+        context.flush();
+        consumer.finishDrawing();
+        mc.getMainRenderTarget().bindWrite(true);
+
+        NativeImage image = new NativeImage(rt.width, rt.height, false);
+        RenderSystem.bindTexture(rt.getColorTextureId());
+        image.downloadTexture(0, false);
+        flipVertically(image);
+        rt.destroyBuffers();
+        persist(image);
+    }
+    *///?}
+
+    //? if <1.21.5 {
+    /*private static void flipVertically(NativeImage image) {
         int w = image.getWidth();
         int h = image.getHeight();
         for (int y = 0; y < h / 2; y++) {
@@ -287,10 +400,6 @@ public final class ChatScreenshot {
             i++;
         }
         return file;
-    }
-
-    static void notify(String message) {
-        Notifications.send("Chatting", message, NotificationType.INFO);
     }
 
     static void notifySuccess(String title, String message) {
