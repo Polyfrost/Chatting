@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.hook.HeadHook;
@@ -34,6 +35,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
@@ -86,6 +88,13 @@ public class ChatComponentMixin implements ChatComponentHook {
             : mode;
     }
     //?}
+
+    @Inject(method = "getHeight()I", at = @At("HEAD"), cancellable = true)
+    private void chatting$peekHeight(CallbackInfoReturnable<Integer> cir) {
+        if (Chatting.INSTANCE.getPeeking() && !((ChatComponent) (Object) this).isChatFocused()) {
+            cir.setReturnValue(ChatComponent.getHeight(Minecraft.getInstance().options.chatHeightFocused().get()));
+        }
+    }
 
     //? if >=1.21.11 <26 {
     /*@Unique private boolean chatting$posed;
