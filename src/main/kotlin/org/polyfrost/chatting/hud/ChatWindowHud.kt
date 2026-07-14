@@ -27,7 +27,10 @@ class ChatWindowHud : LegacyHud(
 
     override val height: Float get() = chatHeight()
 
-    override fun update() = false
+    override fun update(): Boolean {
+        tickPosition(this)
+        return false
+    }
 
     override fun hasBackground() = false
 
@@ -37,8 +40,16 @@ class ChatWindowHud : LegacyHud(
 
     override fun defaultPosition(): Pair<Float, Float> = DEFAULT_LEFT to defaultTop()
 
+    override fun setup() {
+        val onReset = Runnable { onPositionReset() }
+        addCallback("section", onReset)
+        addCallback("relativeX", onReset)
+        addCallback("relativeY", onReset)
+    }
+
     override fun render(mcCtx: GuiGraphics) {
         if (!HudManager.isEditing) return
+        tickPosition(this)
         val w = width.toInt()
         val h = height.toInt()
         mcCtx.fill(0, 0, w, h, 0x40000000)
@@ -79,31 +90,57 @@ class ChatWindowHud : LegacyHud(
         private fun defaultTop(): Float =
             mc().window.guiScaledHeight - BOTTOM_MARGIN - chatHeight()
 
-        private var baselineKnown = false
-        private var lastRelX = 0f
-        private var lastRelY = 0f
-        private var lastSection: Section? = null
+        private var hasBaseline = false
+        private var baseSection: Section? = null
+        private var baseRelX = 0f
+        private var baseRelY = 0f
 
-        private fun detectMove(hud: ChatWindowHud) {
-            if (!baselineKnown) {
-                baselineKnown = true
-            } else if (!ChattingConfig.chatWindowMoved &&
-                (hud.section != lastSection ||
-                    hud.relativeX != lastRelX ||
-                    hud.relativeY != lastRelY)
+        /**
+         * Pins the HUD's stored position to the live vanilla chat anchor while the user hasn't moved
+         * it, so the HUD editor's box tracks where the chat actually renders across window resizes and
+         * GUI-scale changes (rather than a resolution-frozen snapshot). A position change we didn't
+         * make ourselves — an editor drag — flips [ChattingConfig.chatWindowMoved] and hands control
+         * over to the stored position. Our own writes are recorded as the [baseSection]/[baseRelX]/
+         * [baseRelY] baseline so they aren't mistaken for a move.
+         */
+        private fun tickPosition(hud: ChatWindowHud) {
+            if (ChattingConfig.chatWindowMoved) {
+                hasBaseline = false
+                return
+            }
+            if (hasBaseline &&
+                (hud.section != baseSection ||
+                    hud.relativeX != baseRelX ||
+                    hud.relativeY != baseRelY)
             ) {
                 ChattingConfig.chatWindowMoved = true
                 ChattingConfig.save()
+                hasBaseline = false
+                return
             }
-            lastSection = hud.section
-            lastRelX = hud.relativeX
-            lastRelY = hud.relativeY
+            hud.setAbsolutePosition(DEFAULT_LEFT, defaultTop())
+            baseSection = hud.section
+            baseRelX = hud.relativeX
+            baseRelY = hud.relativeY
+            hasBaseline = true
+        }
+
+        /**
+         * Fired when the position is reset to default from the HUD editor (see [setup]). Returns the
+         * chat to the vanilla-tracking state so "reset to default" matches the real vanilla position
+         * instead of the frozen snapshot captured at load.
+         */
+        private fun onPositionReset() {
+            if (ChattingConfig.chatWindowMoved) {
+                ChattingConfig.chatWindowMoved = false
+                ChattingConfig.save()
+            }
+            hasBaseline = false
         }
 
         @JvmStatic
         fun isActive(): Boolean {
             val hud = instance ?: return false
-            detectMove(hud)
             if (hud.hidden) return false
             return HudManager.isEditing || ChattingConfig.chatWindowMoved
         }
