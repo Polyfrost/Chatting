@@ -10,10 +10,11 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 /**
- * Expands user-defined chat shortcuts (e.g. typing `gg` sends `good game`) when a message is sent.
+ * Expands user-defined chat shortcuts (e.g. typing `/gg` sends `/good game`) when a command is sent.
  *
  * Ported from the 1.8.9 version; the store now lives in the Fabric config directory and the lookup
- * is applied from [org.polyfrost.chatting.mixin.ChatScreenMixin].
+ * is applied from [org.polyfrost.chatting.mixin.ChatScreenMixin]. As in the legacy version, shortcuts
+ * only expand within commands (messages beginning with `/`), never plain chat messages.
  */
 object ChatShortcuts {
 
@@ -64,12 +65,17 @@ object ChatShortcuts {
         shortcutsFile.writeText(obj.toString())
     }
 
-    /** Applies the first matching shortcut to a sent (non-command) message. */
-    fun handleSentMessage(message: String): String {
-        if (!ChattingConfig.chatShortcuts) return message
+    /**
+     * Applies the first matching shortcut to a sent command, matching the alias against the text
+     * after the leading `/`. Plain chat messages are returned untouched; the preserved `/` prefix
+     * keeps the expansion a command so vanilla routes it through the command packet.
+     */
+    fun handleSentCommand(message: String): String {
+        if (!ChattingConfig.chatShortcuts || !message.startsWith("/")) return message
+        val command = message.substring(1)
         shortcuts.forEach {
-            if (message == it.first || (message.startsWith(it.first) && message.substringAfter(it.first).startsWith(" "))) {
-                return message.replaceFirst(it.first, it.second)
+            if (command == it.first || (command.startsWith(it.first) && command.substringAfter(it.first).startsWith(" "))) {
+                return "/" + command.replaceFirst(it.first, it.second)
             }
         }
         return message

@@ -172,9 +172,12 @@ public abstract class ChatScreenMixin extends Screen {
         }
     }
 
+    // Expand command shortcuts before vanilla routes the message: handleChatInput sends anything
+    // still starting with "/" through sendCommand, so a preserved "/" prefix keeps the expansion a
+    // command rather than a chat message.
     @ModifyVariable(method = "handleChatInput", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private String chatting$applyShortcuts(String message) {
-        return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentMessage(message));
+        return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentCommand(message));
     }
 
     // Tabs are drawn before the vanilla command-suggestion popup so the suggestions paint on top of

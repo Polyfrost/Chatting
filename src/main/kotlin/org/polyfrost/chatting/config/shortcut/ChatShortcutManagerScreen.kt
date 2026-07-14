@@ -352,8 +352,8 @@ private fun ShortcutRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            EllipsizedText(shortcut.first, color = theme.textColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-            EllipsizedText(shortcut.second, color = theme.textColorSecondary, fontSize = 12.sp)
+            EllipsizedText("/" + shortcut.first, color = theme.textColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            EllipsizedText("/" + shortcut.second, color = theme.textColorSecondary, fontSize = 12.sp)
         }
         IconAction("trash", onClick = onDelete, subtle = true)
     }
@@ -397,7 +397,7 @@ private fun ShortcutEditor(
         LabeledField("Alias") {
             ShortcutTextField(
                 value = state.alias,
-                placeholder = "gg",
+                placeholder = "m",
                 onValueChange = { onChange(state.copy(alias = it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -406,7 +406,7 @@ private fun ShortcutEditor(
         LabeledField("Replacement") {
             ShortcutTextField(
                 value = state.replacement,
-                placeholder = "good game",
+                placeholder = "msg",
                 onValueChange = { onChange(state.copy(replacement = it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -472,11 +472,17 @@ private fun ShortcutTextField(
             .border(1.dp, borderColor, theme.sideBarNavigationEntryShape)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         decorationBox = { innerTextField ->
-            Box {
-                if (value.isEmpty() && !focused) {
-                    Text(placeholder, color = theme.textColorSecondary, fontSize = 14.sp)
+            // The leading slash is a fixed adornment, not part of the stored value: commands always
+            // begin with one, and rendering it here keeps players from doubling it up by accident
+            // while still letting them type extra slashes (e.g. `//set` for WorldEdit).
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("/", color = theme.textColorSecondary, fontSize = 14.sp)
+                Box(modifier = Modifier.weight(1f)) {
+                    if (value.isEmpty() && !focused) {
+                        Text(placeholder, color = theme.textColorSecondary, fontSize = 14.sp)
+                    }
+                    innerTextField()
                 }
-                innerTextField()
             }
         },
     )
