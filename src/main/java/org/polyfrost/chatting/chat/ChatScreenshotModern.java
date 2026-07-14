@@ -51,24 +51,60 @@ public final class ChatScreenshotModern {
                     .setLightmapState(net.minecraft.client.renderer.RenderStateShard.LIGHTMAP)
                     .createCompositeState(false));
 
+    // A textured GUI layer bound to the given skin and redirected to our framebuffer. Player heads
+    // blit through RenderType.guiTextured, whose vertex format lacks the lightmap element the shared
+    // text layer requires, so they need their own compatible layer instead of the text buffer.
+    private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
+        return RenderType.create(
+                "chatting_head", 786432, false, false,
+                net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+                RenderType.CompositeState.builder()
+                        .setTextureState(new net.minecraft.client.renderer.RenderStateShard.TextureStateShard(skin, net.minecraft.util.TriState.FALSE, false))
+                        .setOutputState(new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
+                        .createCompositeState(false));
+    }
+
     private static class OverrideVertexProvider extends net.minecraft.client.renderer.MultiBufferSource.BufferSource {
-        private final RenderType currentLayer;
-        public com.mojang.blaze3d.vertex.BufferBuilder bufferBuilder;
+        private final RenderTarget rt;
+        private final RenderType textLayer;
+        private final com.mojang.blaze3d.vertex.BufferBuilder textBuffer;
+        private final com.mojang.blaze3d.vertex.ByteBufferBuilder headAllocator;
+
+        private RenderType headLayer;
+        private com.mojang.blaze3d.vertex.BufferBuilder headBuffer;
 
         private OverrideVertexProvider(com.mojang.blaze3d.vertex.ByteBufferBuilder allocator, RenderTarget rt) {
             super(allocator, it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps.emptyMap());
-            this.currentLayer = CUSTOM_TEXT_LAYER.apply(rt);
-            this.bufferBuilder = new com.mojang.blaze3d.vertex.BufferBuilder(this.sharedBuffer, currentLayer.mode(), currentLayer.format());
+            this.rt = rt;
+            this.textLayer = CUSTOM_TEXT_LAYER.apply(rt);
+            this.textBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
+            this.headAllocator = new com.mojang.blaze3d.vertex.ByteBufferBuilder(256);
         }
 
         @Override
         public com.mojang.blaze3d.vertex.VertexConsumer getBuffer(RenderType renderType) {
-            return this.bufferBuilder;
+            return this.headBuffer != null ? this.headBuffer : this.textBuffer;
+        }
+
+        // Route the following blit(s) into a dedicated head layer sharing our framebuffer. Each head
+        // has its own skin texture, so its batch must be flushed before the next head begins.
+        public void beginHead(net.minecraft.resources.ResourceLocation skin) {
+            this.headLayer = headLayer(skin, rt);
+            this.headBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
+        }
+
+        public void endHead() {
+            if (this.headBuffer == null) return;
+            this.startedBuilders.put(this.headLayer, this.headBuffer);
+            this.endBatch(this.headLayer);
+            this.headBuffer = null;
+            this.headLayer = null;
         }
 
         public void finishDrawing() {
-            this.startedBuilders.put(this.currentLayer, this.bufferBuilder);
-            this.endBatch(this.currentLayer);
+            this.startedBuilders.put(this.textLayer, this.textBuffer);
+            this.endBatch(this.textLayer);
+            this.headAllocator.close();
         }
     }
 
@@ -92,7 +128,9 @@ public final class ChatScreenshotModern {
         for (GuiMessage.Line line : lines) {
             net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
+                consumer.beginHead(info.getSkin().texture());
                 net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, y - 1, 8);
+                consumer.endHead();
             }
             int hx = ChatScreenshot.headOffset(line.content()) + m;
             if (style.border()) {

@@ -10,3 +10,5 @@ accessible	method	net/minecraft/client/renderer/RenderType$CompositeState$Compos
 accessible	field	net/minecraft/client/renderer/RenderStateShard	NO_TEXTURE	Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;
 accessible	field	net/minecraft/client/renderer/RenderStateShard	LIGHTMAP	Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;
 accessible	class	net/minecraft/client/renderer/RenderStateShard$OutputStateShard
+accessible	class	net/minecraft/client/renderer/RenderStateShard$TextureStateShard
+accessible	method	net/minecraft/client/renderer/RenderStateShard$TextureStateShard	<init>	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/util/TriState;Z)V
