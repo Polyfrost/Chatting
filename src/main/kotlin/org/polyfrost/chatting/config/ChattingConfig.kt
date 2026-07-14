@@ -56,7 +56,7 @@ object ChattingConfig : Config(
         title = "Chat Peek", category = "Chat Peek",
         description = "Allows you to view / scroll chat while moving around."
     )
-    var chatPeek = false
+    var chatPeek = true
 
     @Switch(
         title = "Chat Peek Scrolling", category = "Chat Peek",
