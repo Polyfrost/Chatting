@@ -177,9 +177,16 @@ public abstract class ChatScreenMixin extends Screen {
         return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentMessage(message));
     }
 
-    // Tabs are drawn at HEAD so the vanilla command-suggestion popup (rendered later in
-    // ChatScreen#render) paints on top of them instead of being covered (Polyfrost/Chatting#101).
-    //? if <26 {
+    // Tabs are drawn before the vanilla command-suggestion popup so the suggestions paint on top of
+    // them instead of being covered (Polyfrost/Chatting#101, Polyfrost/Chatting#135). On <26 the popup
+    // is rendered later in ChatScreen#render, so drawing at HEAD suffices; on 26+ the popup is the last
+    // thing extracted, so we inject just before its extraction.
+    //? if >=26 {
+    @Inject(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/CommandSuggestions;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V"))
+    private void chatting$renderTabsLayer(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
+    }
+    //?} else {
     /*@Inject(method = "render", at = @At("HEAD"))
     private void chatting$renderTabsLayer(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
@@ -189,7 +196,6 @@ public abstract class ChatScreenMixin extends Screen {
     //? if >=26 {
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        ChatTabsRenderer.INSTANCE.draw(graphics, mouseX, mouseY);
     //?} else {
     /*@Inject(method = "render", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
