@@ -308,6 +308,7 @@ object ChattingConfig : Config(
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
         addDependency("hypixelOnlyChatTabs", "chatTabs")
         addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
+        hideIf("openChatShortcutsScreen", "chatShortcuts")
         addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("messageSpeed", "smoothChat")
         addDependency("peekScrolling", "chatPeek")
