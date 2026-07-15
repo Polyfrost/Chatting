@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer
 import org.polyfrost.chatting.chat.ChatShortcuts
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.compat.ChatHeadsCompat
+import org.polyfrost.chatting.compat.ChatImpressiveAnimationCompat
 import org.polyfrost.chatting.compat.TextTunnelsCompat
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.hud.ChatWindowHud
@@ -23,5 +24,6 @@ object ChattingClient : ClientModInitializer {
 
         EventManager.register(ServerJoinEvent::class.java, Runnable { TextTunnelsCompat.reevaluate() })
         EventManager.register(ServerJoinEvent::class.java, Runnable { ChatHeadsCompat.reevaluate() })
+        EventManager.register(ServerJoinEvent::class.java, Runnable { ChatImpressiveAnimationCompat.reevaluate() })
     }
 }
