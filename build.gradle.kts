@@ -118,11 +118,6 @@ dependencies {
     modImplementation("org.polyfrost.oneconfig:notifications:$oneconfigversion")
 
     modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") { isTransitive = false }
-
-    if (mcversion == "26.2") {
-        // OneConfig beta.5 pulls 8.1.3, which lacks Fabric API 26.2's BuiltInBlockModels access rules.
-        modRuntimeOnly("net.fabricmc.fabric-api:fabric-transitive-access-wideners-v1:8.1.4+67c847259e")
-    }
 }
 
 bloom {
