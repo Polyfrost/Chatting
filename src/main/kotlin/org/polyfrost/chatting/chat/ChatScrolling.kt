@@ -2,6 +2,7 @@ package org.polyfrost.chatting.chat
 
 import org.polyfrost.chatting.config.ChattingConfig
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 object ChatScrolling {
 
@@ -48,7 +49,7 @@ object ChatScrolling {
             val x = ((System.nanoTime() - startNanos) / 1_000_000f / durationMs).coerceIn(0f, 1f)
             if (x >= 1f) to else from + (to - from) * (1f - (1f - x) * (1f - x)) // ease-out-quad
         }
-        frozen = current.toInt()
+        frozen = current.roundToInt()
     }
 
     fun shift(delta: Int) {
@@ -56,7 +57,7 @@ object ChatScrolling {
         from += delta
         to += delta
         current += delta
-        frozen = current.toInt()
+        frozen = current.roundToInt()
     }
 
     fun pos(): Int = frozen
