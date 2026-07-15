@@ -34,7 +34,7 @@ object ChatScrolling {
             if (shouldSmooth && abs(actual - current) > 1f) {
                 from = current
                 to = actual.toFloat()
-                durationMs = (1f - ChattingConfig.scrollingSpeed) * 1000f
+                durationMs = ChattingConfig.smoothScrollingMs
                 startNanos = System.nanoTime()
             } else {
                 from = actual.toFloat()

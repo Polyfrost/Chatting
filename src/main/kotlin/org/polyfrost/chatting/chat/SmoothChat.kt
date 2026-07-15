@@ -22,7 +22,7 @@ object SmoothChat {
             animating = false
             return
         }
-        durationMs = (1f - ChattingConfig.messageSpeed) * 1000f
+        durationMs = ChattingConfig.smoothChatMs
         animating = durationMs > 0f
         startNanos = System.nanoTime()
     }

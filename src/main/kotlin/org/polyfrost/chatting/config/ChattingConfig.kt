@@ -84,12 +84,12 @@ object ChattingConfig : Config(
     var smoothChat = true
 
     @Slider(
-        title = "Message Animation Speed",
+        title = "Message Animation Duration (ms)",
         category = "Animations", subcategory = "Messages",
-        min = 0.0f, max = 1.0f, step = 0.05f,
-        description = "The speed at which chat messages animate."
+        min = 0f, max = 1000f, step = 50f,
+        description = "How long the chat message animation lasts, in milliseconds (0 = instant, 1000 = slowest)."
     )
-    var messageSpeed = 0.5f
+    var smoothChatMs = 500f
 
     @Switch(
         title = "Smooth Chat Scrolling",
@@ -99,12 +99,12 @@ object ChattingConfig : Config(
     var smoothScrolling = true
 
     @Slider(
-        title = "Scrolling Animation Speed",
+        title = "Scrolling Animation Duration (ms)",
         category = "Animations", subcategory = "Scrolling",
-        min = 0.0f, max = 1.0f, step = 0.05f,
-        description = "The speed at which scrolling animates."
+        min = 0f, max = 1000f, step = 50f,
+        description = "How long the scrolling animation lasts, in milliseconds (0 = instant, 1000 = slowest)."
     )
-    var scrollingSpeed = 0.15f
+    var smoothScrollingMs = 150f
 
     @Switch(
         title = "Remove Scroll Bar",
@@ -311,8 +311,8 @@ object ChattingConfig : Config(
         addDependency("hypixelOnlyChatTabs", "chatTabs")
         addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
         hideIf("openChatShortcutsScreen", "chatShortcuts")
-        addDependency("scrollingSpeed", "smoothScrolling")
-        addDependency("messageSpeed", "smoothChat")
+        addDependency("smoothScrollingMs", "smoothScrolling")
+        addDependency("smoothChatMs", "smoothChat")
         addDependency("peekScrolling", "chatPeek")
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
