@@ -33,7 +33,7 @@ object ChatScrolling {
             if (shouldSmooth && abs(actual - current) > 1f) {
                 from = current
                 to = actual.toFloat()
-                durationMs = ChattingConfig.scrollingSpeed * 1000f
+                durationMs = (1f - ChattingConfig.scrollingSpeed) * 1000f
                 startNanos = System.nanoTime()
             } else {
                 from = actual.toFloat()
@@ -48,6 +48,14 @@ object ChatScrolling {
             val x = ((System.nanoTime() - startNanos) / 1_000_000f / durationMs).coerceIn(0f, 1f)
             if (x >= 1f) to else from + (to - from) * (1f - (1f - x) * (1f - x)) // ease-out-quad
         }
+        frozen = current.toInt()
+    }
+
+    fun shift(delta: Int) {
+        if (!ChattingConfig.smoothScrolling || !initialized) return
+        from += delta
+        to += delta
+        current += delta
         frozen = current.toInt()
     }
 

@@ -173,6 +173,11 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Unique
     private PlayerInfo chatting$lastHeadOwner;
 
+    @Unique
+    private boolean chatting$addingMessage;
+    @Unique
+    private int chatting$scrollPosBefore;
+
     @Inject(method = "addMessageToDisplayQueue", at = @At("HEAD"), cancellable = true)
     private void chatting$detectHead(GuiMessage guiMessage, CallbackInfo ci) {
         if (ChatTabs.INSTANCE.shouldFilter() && !ChatTabs.INSTANCE.shouldRender((Component) guiMessage.content())) {
@@ -191,6 +196,16 @@ public class ChatComponentMixin implements ChatComponentHook {
             && ChatHeads.INSTANCE.sameOwner(chatting$pendingHead, chatting$lastHeadOwner);
         chatting$lastHeadOwner = chatting$pendingHead;
         if (!chatting$refreshing) SmoothChat.INSTANCE.start();
+        chatting$addingMessage = true;
+        chatting$scrollPosBefore = chatScrollbarPos;
+    }
+
+    @Inject(method = "addMessageToDisplayQueue", at = @At("RETURN"))
+    private void chatting$endDisplayQueue(GuiMessage guiMessage, CallbackInfo ci) {
+        if (!chatting$addingMessage) return;
+        chatting$addingMessage = false;
+        int delta = chatScrollbarPos - chatting$scrollPosBefore;
+        if (delta != 0) ChatScrolling.INSTANCE.shift(delta);
     }
 
     @Unique
@@ -240,6 +255,7 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @Inject(method = "scrollChat", at = @At("HEAD"))
     private void chatting$armSmoothScroll(int amount, CallbackInfo ci) {
+        if (chatting$addingMessage) return;
         ChatScrolling.INSTANCE.setShouldSmooth(true);
     }
 
