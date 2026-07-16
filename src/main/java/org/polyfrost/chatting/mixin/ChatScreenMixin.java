@@ -251,6 +251,10 @@ public abstract class ChatScreenMixin extends Screen {
         // Anchor the buttons at the message background's right edge (text width + the background's
         // right edge offset) so they sit just outside it when "Extend Chat Backgrounds" is disabled.
         int stripStart = (int) Math.ceil(acc.chatting$getWidth() / chatScale) + ChatButtons.BACKGROUND_RIGHT_EDGE;
+        // Only reveal the buttons when the cursor is over the chat background or the button strip — a
+        // contiguous span from the background's left edge (local x 0) to the strip's right edge. Without
+        // this, a cursor anywhere on the row shows them, however far right of the chat it sits.
+        if (mx < 0 || mx > (stripStart + ChatButtons.perLineButtonsWidth()) * chatScale) return;
         int top = chatting$chatBottomLocal(chatScale) - (lineIndex + 1) * lineHeight
                 + (int) Math.ceil((lineHeight - 9) / 2.0);
 

@@ -41,7 +41,11 @@ public class FocusedAccessMixin {
     private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
         if (!chatting$chatFocused()) return color;
         Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-        if (m.x >= x1 && m.x < x2 && m.y >= y1 && m.y < y2) {
+        // The per-line buttons sit just past the background's right edge, so extend the hovered-line
+        // hit test across them: hovering a copy/delete button still highlights the message, whether or
+        // not the background is extended to cover the buttons.
+        int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
+        if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
             return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return color;
@@ -63,7 +67,11 @@ public class FocusedAccessMixin {
     private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
         if (!chatting$chatFocused()) return color;
         Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-        if (m.x >= x1 && m.x < x2 && m.y >= y1 && m.y < y2) {
+        // The per-line buttons sit just past the background's right edge, so extend the hovered-line
+        // hit test across them: hovering a copy/delete button still highlights the message, whether or
+        // not the background is extended to cover the buttons.
+        int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
+        if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
             return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return color;
