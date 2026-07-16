@@ -76,12 +76,6 @@ repositories {
             includeGroup("com.terraformersmc")
         }
     }
-    /*maven("https://central.sonatype.com/repository/maven-snapshots/") {
-        content {
-            includeGroup("net.kyori")
-        }
-    }*/
-    //maven("https://redirector.kotlinlang.org/maven/compose-dev")
 }
 
 loom {
