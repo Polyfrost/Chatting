@@ -18,6 +18,7 @@ import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatTabsRenderer;
 import org.polyfrost.chatting.chat.Textures;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -346,6 +347,10 @@ public abstract class ChatScreenMixin extends Screen {
     private Component chatting$messageForLine(ChatComponentAccessor acc, int lineIndex) {
         lineIndex += acc.chatting$getScrollbarPos();
         List<GuiMessage.Line> trimmed = acc.chatting$getTrimmedMessages();
+        if (lineIndex < 0 || lineIndex >= trimmed.size()) return null;
+        GuiMessage parent = ((ChatLineHook) (Object) trimmed.get(lineIndex)).chatting$getParent();
+        if (parent != null) return parent.content();
+        // Fallback for lines that never passed through the message pipeline (e.g. HUD-editor preview).
         List<GuiMessage> all = acc.chatting$getAllMessages();
         int fullIndex = -1;
         for (int i = 0; i < trimmed.size(); i++) {

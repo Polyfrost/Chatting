@@ -42,4 +42,32 @@ public class GuiMessageLineMixin implements ChatLineHook {
     public void chatting$setHeadHidden(boolean hidden) {
         this.chatting$headHidden = hidden;
     }
+
+    //? if >=26 {
+    @Override
+    @Nullable
+    public GuiMessage chatting$getParent() {
+        return ((GuiMessage.Line) (Object) this).parent();
+    }
+
+    @Override
+    public void chatting$setParent(@Nullable GuiMessage parent) {
+        // 26.1+ carries the parent natively on the line record; nothing to store.
+    }
+    //?} else {
+    /*@Unique
+    @Nullable
+    private GuiMessage chatting$parent;
+
+    @Override
+    @Nullable
+    public GuiMessage chatting$getParent() {
+        return chatting$parent;
+    }
+
+    @Override
+    public void chatting$setParent(@Nullable GuiMessage parent) {
+        this.chatting$parent = parent;
+    }
+    *///?}
 }

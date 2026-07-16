@@ -42,9 +42,11 @@ import net.minecraft.client.gui.Font;
 //? if <= 1.21.11
 //import net.minecraft.client.gui.components.PlayerFaceRenderer;
 //? if <=1.21.10 {
-/*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
+/*import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.util.FormattedCharSequence;
+*///?}
+//? if <=1.21.5 {
+/*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 *///?}
 //? if <26 {
 /*import net.minecraft.client.gui.GuiGraphics;
@@ -178,6 +180,9 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Unique
     private int chatting$scrollPosBefore;
 
+    @Unique
+    private GuiMessage chatting$currentMessage;
+
     @Inject(method = "addMessageToDisplayQueue", at = @At("HEAD"), cancellable = true)
     private void chatting$detectHead(GuiMessage guiMessage, CallbackInfo ci) {
         if (ChatTabs.INSTANCE.shouldFilter() && !ChatTabs.INSTANCE.shouldRender((Component) guiMessage.content())) {
@@ -188,6 +193,7 @@ public class ChatComponentMixin implements ChatComponentHook {
             ci.cancel();
             return;
         }
+        chatting$currentMessage = guiMessage;
         chatting$headConsumed = false;
         chatting$pendingHead = ChattingConfig.INSTANCE.getShowChatHeads()
             ? ChatHeads.INSTANCE.detect(guiMessage.content().getString())
@@ -211,6 +217,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Unique
     private void chatting$applyHead(Object element) {
         if (!chatting$refreshing) SmoothChat.INSTANCE.addLine(((GuiMessage.Line) element).content());
+        ((ChatLineHook) element).chatting$setParent(chatting$currentMessage);
         if (chatting$headConsumed) return;
         chatting$headConsumed = true;
         ((ChatLineHook) element).chatting$setPlayerInfo(chatting$pendingHead);
@@ -335,12 +342,14 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 1)
     private int chatting$renderMouseX(int mouseX) {
-        return (int) ChatWindowHud.mapMouseX(mouseX);
+        chatting$mouseX = (int) ChatWindowHud.mapMouseX(mouseX);
+        return chatting$mouseX;
     }
 
     @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 2)
     private int chatting$renderMouseY(int mouseY) {
-        return (int) ChatWindowHud.mapMouseY(mouseY);
+        chatting$mouseY = (int) ChatWindowHud.mapMouseY(mouseY);
+        return chatting$mouseY;
     }
 
     @ModifyVariable(method = "getClickedComponentStyleAt", at = @At("HEAD"), argsOnly = true, ordinal = 0)
@@ -376,7 +385,10 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     //? if <=1.21.10 {
     /*@Unique
-    private int chatting$hovered = -2;
+    private int chatting$mouseX;
+
+    @Unique
+    private int chatting$mouseY;
 
     @Unique
     private int chatting$drawHead(GuiGraphics graphics, GuiMessage.Line line, int x, int y, int alpha) {
@@ -405,20 +417,37 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (focused) {
             x2 += ChatButtons.extraBackgroundWidth();
         }
-        if (focused && chatting$hovered >= 0 && trimmedMessages.indexOf(line) == chatting$hovered) {
+        if (focused && line == chatting$hoveredLine()) {
             graphics.fill(x1, y1, x2, y2, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         } else {
             graphics.fill(x1, y1, x2, y2, color);
         }
     }
 
-    @ModifyExpressionValue(
-        method = "render",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;getMessageEndIndexAt(DD)I")
-    )
-    private int chatting$captureHover(int hovered) {
-        chatting$hovered = hovered;
-        return hovered;
+    // Resolve the line under the (HUD-mapped) cursor by position and key the highlight on that line's
+    // identity. GuiMessage.Line is a record, so trimmedMessages.indexOf(line) collapses duplicate
+    // messages (same time, text and signature - e.g. Hypixel's blank /help separators) onto the first
+    // match; and getMessageEndIndexAt only ever points at a message's bottom line and returns -1 once
+    // the cursor passes the text, so the buttons never lit their row. The hit test reaches across the
+    // per-line button strip so hovering copy/delete keeps the line highlighted.
+    @Unique
+    private GuiMessage.Line chatting$hoveredLine() {
+        ChatComponent self = (ChatComponent) (Object) this;
+        if (!self.isChatFocused()) return null;
+        ChatComponentAccessor acc = (ChatComponentAccessor) (Object) this;
+        double scale = acc.chatting$getScale();
+        if (scale <= 0.0) return null;
+        double hovered = acc.chatting$screenToChatY(chatting$mouseY);
+        if (hovered < 0.0) return null;
+        int display = (int) hovered;
+        if (display >= Math.min(self.getLinesPerPage(), trimmedMessages.size())) return null;
+        double localX = chatting$mouseX / scale - 4.0;
+        double rightEdge = Math.ceil(acc.chatting$getWidth() / scale)
+                + ChatButtons.BACKGROUND_RIGHT_EDGE + ChatButtons.perLineButtonsWidth();
+        if (localX < -4.0 || localX >= rightEdge) return null;
+        int index = display + chatScrollbarPos;
+        if (index < 0 || index >= trimmedMessages.size()) return null;
+        return trimmedMessages.get(index);
     }
 
     //? if <=1.21.5 {
