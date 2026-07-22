@@ -119,7 +119,13 @@ public abstract class ChatScreenMixin extends Screen {
         box.setVisible(ChatSearch.INSTANCE.getEnabled());
         addRenderableWidget(box);
         chatting$searchBox = box;
-        chatting$syncSearchBox();
+        // Only sync when search is already active (e.g. a resize recreated the screen). When it is
+        // inactive, leave the vanilla suggestion state alone: force-enabling suggestions here would
+        // show the command popup immediately for a chat opened with "/", unlike vanilla which waits
+        // for the first typed character.
+        if (ChatSearch.INSTANCE.getEnabled()) {
+            chatting$syncSearchBox();
+        }
         chatting$offsetNoChatReportsButtons();
     }
 
