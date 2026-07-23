@@ -17,6 +17,7 @@ public class ChattingMixinPlugin implements IMixinConfigPlugin {
         //? if >=1.21.11 {
         mixins.add("GraphicsAccessMixin");
         mixins.add("FocusedAccessMixin");
+        mixins.add("BackgroundAccessMixin");
         mixins.add("GuiTextRenderStateMixin");
         //?}
         //? if >=1.21.6 {

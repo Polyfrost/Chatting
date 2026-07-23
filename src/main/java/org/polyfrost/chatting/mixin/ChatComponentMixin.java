@@ -16,11 +16,13 @@ import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import org.objectweb.asm.Opcodes;
+import net.minecraft.util.Mth;
 import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatHeads;
 import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatTabs;
+import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.chat.SmoothChat;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Shadow;
@@ -295,8 +297,17 @@ public class ChatComponentMixin implements ChatComponentHook {
     /*@Unique
     private boolean chatting$posed;
 
+    @Unique
+    private boolean chatting$sawLineFill;
+
+    //? if <=1.21.5 {
+    /^@Unique
+    private int chatting$visibleLines;
+    ^///?}
+
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void chatting$beginChatWindow(GuiGraphics graphics, int tick, int mouseX, int mouseY, boolean focused, CallbackInfo ci) {
+        chatting$sawLineFill = false;
         if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
             chatting$posed = false;
             ci.cancel();
@@ -304,6 +315,12 @@ public class ChatComponentMixin implements ChatComponentHook {
         }
         chatting$installPreview();
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
+        //? if <=1.21.5 {
+        /^// The peek ModifyVariable also targets HEAD and may run after this inject, so the
+        // effective focused state is recomputed here; the OR is idempotent if it already ran.
+        chatting$visibleLines = chatting$countVisibleLines(tick,
+            focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing());
+        ^///?}
         boolean hud = ChatWindowHud.isActive();
         float smoothDy = chatting$previewing ? 0f : SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
         chatting$posed = hud || smoothDy != 0f;
@@ -418,10 +435,36 @@ public class ChatComponentMixin implements ChatComponentHook {
             x2 += ChatButtons.extraBackgroundWidth();
         }
         if (focused && line == chatting$hoveredLine()) {
-            graphics.fill(x1, y1, x2, y2, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
-        } else {
-            graphics.fill(x1, y1, x2, y2, color);
+            color = ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
+        int chatBottom = RoundedChat.chatBottom(graphics.guiHeight());
+        //? if <=1.21.5 {
+        /^// The render loop iterates bottom to top, so the top line is found via the precomputed
+        // visible-line count; the fill's bottom edge sits at chatBottom - index * lineHeight.
+        int index = (chatBottom - y2) / ((ChatComponentAccessor) (Object) this).chatting$getLineHeight();
+        boolean top = index == chatting$visibleLines - 1;
+        ^///?} else {
+        // forEachLine iterates top to bottom with faded lines skipped, so the first fill per
+        // render pass is the topmost visible line.
+        boolean top = !chatting$sawLineFill;
+        //?}
+        boolean bottom = y2 == chatBottom;
+        chatting$sawLineFill = true;
+        //? if <1.21.6 {
+        /^RoundedChat.fill(graphics::fill, (factor, body) -> {
+            graphics.pose().pushPose();
+            graphics.pose().scale(factor, factor, 1f);
+            body.run();
+            graphics.pose().popPose();
+        }, x1, y1, x2, y2, color, top, bottom);
+        ^///?} else {
+        RoundedChat.fill(graphics::fill, (factor, body) -> {
+            graphics.pose().pushMatrix();
+            graphics.pose().scale(factor, factor);
+            body.run();
+            graphics.pose().popMatrix();
+        }, x1, y1, x2, y2, color, top, bottom);
+        //?}
     }
 
     // Resolve the line under the (HUD-mapped) cursor by position and key the highlight on that line's
@@ -449,6 +492,38 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (index < 0 || index >= trimmedMessages.size()) return null;
         return trimmedMessages.get(index);
     }
+
+    //? if <=1.21.5 {
+    /^// Replicates the render loop's per-line visibility gate (including this mod's fade shift
+    // and smooth-scroll position) to find the topmost line whose background fill will run.
+    @Unique
+    private int chatting$countVisibleLines(int tickCount, boolean focused) {
+        int perPage = ((ChatComponent) (Object) this).getLinesPerPage();
+        int scroll = chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+        double opacity = Minecraft.getInstance().options.chatOpacity().get() * 0.8999999761581421 + 0.10000000149011612;
+        int top = 0;
+        for (int i = 0; i + scroll < trimmedMessages.size() && i < perPage; i++) {
+            GuiMessage.Line line = trimmedMessages.get(i + scroll);
+            if (line == null) continue;
+            int added = ChattingConfig.INSTANCE.getFade() ? line.addedTime() - chatting$fadeOffset() : Integer.MAX_VALUE;
+            int age = tickCount - added;
+            if (!(age < 200 || focused)) continue;
+            double factor = focused ? 1.0 : chatting$timeFactor(age);
+            if ((int) (255.0 * factor * opacity) > 3) top = i + 1;
+        }
+        return top;
+    }
+
+    // Copy of the vanilla render loop's getTimeFactor.
+    @Unique
+    private static double chatting$timeFactor(int age) {
+        double t = age / 200.0;
+        t = 1.0 - t;
+        t *= 10.0;
+        t = Mth.clamp(t, 0.0, 1.0);
+        return t * t;
+    }
+    ^///?}
 
     //? if <=1.21.5 {
     /^@Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))

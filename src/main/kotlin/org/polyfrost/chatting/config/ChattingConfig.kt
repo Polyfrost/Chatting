@@ -33,6 +33,19 @@ object ChattingConfig : Config(
     var hoveredChatBackgroundColor = PolyColor.rgba(80, 80, 80, 128)
 
     @Switch(
+        title = "Rounded Chat Corners", category = "General",
+        description = "Round the outer corners of the chat message block."
+    )
+    var roundedChatCorners = false
+
+    @Slider(
+        title = "Corner Radius", category = "General",
+        description = "Radius of the rounded chat corners, in chat pixels.",
+        min = 1f, max = 16f, step = 1f
+    )
+    var chatCornerRadius = 6f
+
+    @Switch(
         title = "Message Fade", category = "General",
         description = "Fade out chat messages after a period of time."
     )
@@ -305,6 +318,7 @@ object ChattingConfig : Config(
 
     init {
         addDependency("rightClickCopyCtrl", "rightClickCopy")
+        addDependency("chatCornerRadius", "roundedChatCorners")
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
