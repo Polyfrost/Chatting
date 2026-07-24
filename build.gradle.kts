@@ -112,6 +112,9 @@ dependencies {
     modImplementation("org.polyfrost.oneconfig:notifications:$oneconfigversion")
 
     modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") { isTransitive = false }
+
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
+    testImplementation("net.fabricmc:fabric-loader-junit:$loaderversion")
 }
 
 bloom {
@@ -139,6 +142,10 @@ tasks.processResources {
 
     // Bundle only the selected widener
     allAccessWideners.filter { it != accessWidener }.forEach { exclude(it) }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.withType<JavaCompile>().configureEach {
