@@ -27,6 +27,12 @@ object ChattingConfig : Config(
     var textRenderType = 1
 
     @Color(
+        title = "Chat Background Color", category = "General",
+        description = "The color of the chat background (alpha is scaled by the vanilla text background opacity)."
+    )
+    var chatBackgroundColor = PolyColor.rgba(0, 0, 0, 255)
+
+    @Color(
         title = "Hover Message Background Color", category = "General",
         description = "The color of the chat background when hovering over a message."
     )

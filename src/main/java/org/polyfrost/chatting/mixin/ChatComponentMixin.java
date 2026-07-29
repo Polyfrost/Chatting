@@ -17,6 +17,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import org.objectweb.asm.Opcodes;
 import net.minecraft.util.Mth;
+import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatHeads;
 import org.polyfrost.chatting.chat.ChatScrolling;
@@ -436,6 +437,8 @@ public class ChatComponentMixin implements ChatComponentHook {
         }
         if (focused && line == chatting$hoveredLine()) {
             color = ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+        } else {
+            color = ChatBackground.tint(color);
         }
         int chatBottom = RoundedChat.chatBottom(graphics.guiHeight());
         //? if <=1.21.5 {

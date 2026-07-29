@@ -3,6 +3,7 @@ package org.polyfrost.chatting.mixin;
 //? if >=1.21.11 {
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
+import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,10 +37,10 @@ public class FocusedAccessMixin {
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
     private void chatting$hoverFill(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
         int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
-        int chatting$c = chatting$hoverColor(graphics.pose(), x1, y1, x2, y2, color);
         // Line backgrounds are the only fills through this method with x1 == -4; the line loop
         // iterates top to bottom with faded lines skipped, and the bottom line ends at chatBottom.
         boolean chatting$lineFill = x1 == -4;
+        int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill
             && y2 == org.polyfrost.chatting.chat.RoundedChat.chatBottom(graphics.guiHeight());
@@ -53,17 +54,18 @@ public class FocusedAccessMixin {
     }
 
     @Unique
-    private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
-        if (!chatting$chatFocused()) return color;
-        Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-        // The per-line buttons sit just past the background's right edge, so extend the hovered-line
-        // hit test across them: hovering a copy/delete button still highlights the message, whether or
-        // not the background is extended to cover the buttons.
-        int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
-        if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
-            return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+    private int chatting$lineColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
+        if (chatting$chatFocused()) {
+            Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
+            // The per-line buttons sit just past the background's right edge, so extend the hovered-line
+            // hit test across them: hovering a copy/delete button still highlights the message, whether or
+            // not the background is extended to cover the buttons.
+            int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
+            if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
+                return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+            }
         }
-        return color;
+        return ChatBackground.tint(color);
     }
     *///?} else {
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -75,10 +77,10 @@ public class FocusedAccessMixin {
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
     private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color) {
         int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
-        int chatting$c = chatting$hoverColor(graphics.pose(), x1, y1, x2, y2, color);
         // Line backgrounds are the only fills through this method with x1 == -4; the line loop
         // iterates top to bottom with faded lines skipped, and the bottom line ends at chatBottom.
         boolean chatting$lineFill = x1 == -4;
+        int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill
             && y2 == org.polyfrost.chatting.chat.RoundedChat.chatBottom(graphics.guiHeight());
@@ -92,17 +94,18 @@ public class FocusedAccessMixin {
     }
 
     @Unique
-    private int chatting$hoverColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
-        if (!chatting$chatFocused()) return color;
-        Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-        // The per-line buttons sit just past the background's right edge, so extend the hovered-line
-        // hit test across them: hovering a copy/delete button still highlights the message, whether or
-        // not the background is extended to cover the buttons.
-        int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
-        if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
-            return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+    private int chatting$lineColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
+        if (chatting$chatFocused()) {
+            Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
+            // The per-line buttons sit just past the background's right edge, so extend the hovered-line
+            // hit test across them: hovering a copy/delete button still highlights the message, whether or
+            // not the background is extended to cover the buttons.
+            int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
+            if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
+                return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+            }
         }
-        return color;
+        return ChatBackground.tint(color);
     }
     //?}
 

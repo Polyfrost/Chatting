@@ -3,6 +3,7 @@ package org.polyfrost.chatting.mixin;
 //? if >=1.21.11 {
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.RoundedChat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,12 +29,13 @@ public class BackgroundAccessMixin {
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill && y2 == RoundedChat.chatBottom(graphics.guiHeight());
         if (chatting$lineFill) chatting$sawLineFill = true;
+        int chatting$c = chatting$lineFill ? ChatBackground.tint(color) : color;
         RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), (chatting$factor, chatting$body) -> {
             graphics.pose().pushMatrix();
             graphics.pose().scale(chatting$factor, chatting$factor);
             chatting$body.run();
             graphics.pose().popMatrix();
-        }, x1, y1, x2, y2, color, chatting$top, chatting$bottom);
+        }, x1, y1, x2, y2, chatting$c, chatting$top, chatting$bottom);
     }
     *///?} else {
     @WrapOperation(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
@@ -44,12 +46,13 @@ public class BackgroundAccessMixin {
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill && y2 == RoundedChat.chatBottom(graphics.guiHeight());
         if (chatting$lineFill) chatting$sawLineFill = true;
+        int chatting$c = chatting$lineFill ? ChatBackground.tint(color) : color;
         RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), (chatting$factor, chatting$body) -> {
             graphics.pose().pushMatrix();
             graphics.pose().scale(chatting$factor, chatting$factor);
             chatting$body.run();
             graphics.pose().popMatrix();
-        }, x1, y1, x2, y2, color, chatting$top, chatting$bottom);
+        }, x1, y1, x2, y2, chatting$c, chatting$top, chatting$bottom);
     }
     //?}
 }
