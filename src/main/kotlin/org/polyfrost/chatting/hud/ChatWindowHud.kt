@@ -38,6 +38,10 @@ class ChatWindowHud : LegacyHud(
 
     override fun deletable() = false
 
+    // Intrinsic to the mod rather than something picked out of the HUD library, so it is placed
+    // automatically instead of having to be dragged in from the design studio.
+    override fun showByDefault() = true
+
     override fun defaultPosition(): Pair<Float, Float> = DEFAULT_LEFT to defaultTop()
 
     override fun setup() {
@@ -138,9 +142,16 @@ class ChatWindowHud : LegacyHud(
             hasBaseline = false
         }
 
+        /**
+         * The placed widget, or `null` while only the registered provider exists. A provider carries no
+         * stored position, so every position query falls back to the vanilla anchor rather than to the
+         * provider's unset top-left origin.
+         */
+        private fun placed(): ChatWindowHud? = instance?.takeIf { it.isReal }
+
         @JvmStatic
         fun isActive(): Boolean {
-            val hud = instance ?: return false
+            val hud = placed() ?: return false
             if (hud.hidden) return false
             return HudManager.isEditing || ChattingConfig.chatWindowMoved
         }
@@ -153,7 +164,7 @@ class ChatWindowHud : LegacyHud(
          */
         @JvmStatic
         fun shouldHideForVisibility(chatFocused: Boolean): Boolean {
-            val hud = instance ?: return false
+            val hud = placed() ?: return false
             if (HudManager.isEditing) return false
             if (HudManager.isDebugScreenVisible && !hud.showInF3) return true
             if (HudManager.isTabListVisible && !hud.showInTab) return true
@@ -162,13 +173,13 @@ class ChatWindowHud : LegacyHud(
         }
 
         @JvmStatic
-        fun chatScale(): Float = instance?.effectiveScale ?: 1f
+        fun chatScale(): Float = placed()?.effectiveScale ?: 1f
 
         @JvmStatic
-        fun chatTranslateX(): Float = instance?.x ?: DEFAULT_LEFT
+        fun chatTranslateX(): Float = placed()?.x ?: DEFAULT_LEFT
 
         @JvmStatic
-        fun chatTranslateY(): Float = instance?.y ?: defaultTop()
+        fun chatTranslateY(): Float = placed()?.y ?: defaultTop()
 
         @JvmStatic
         fun anchorLeft(): Float = DEFAULT_LEFT
