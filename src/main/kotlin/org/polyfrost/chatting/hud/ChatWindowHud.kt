@@ -6,10 +6,10 @@ import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 /*import net.minecraft.client.gui.GuiGraphics
 *///?}
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.components.ChatComponent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.Section
+import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.config.ChattingConfig
 import kotlin.math.ceil
 
@@ -89,12 +89,19 @@ class ChatWindowHud : LegacyHud(
 
         private fun chatWidth(): Float {
             val scale = chatScaleOption()
-            val maxWidth = ceil(ChatComponent.getWidth(mc().options.chatWidth().get()) / scale)
-            return (maxWidth + 12) * scale
+            val maxWidth = ceil(ChatDimensions.width() / scale)
+            val configuredWidth = (maxWidth + 12) * scale
+            return capToAvailableSpace(configuredWidth, mc().window.guiScaledWidth)
         }
 
-        private fun chatHeight(): Float =
-            ChatComponent.getHeight(mc().options.chatHeightUnfocused().get()) * chatScaleOption()
+        private fun chatHeight(): Float {
+            val configuredHeight = ChatDimensions.height(focused = false) * chatScaleOption()
+            val availableHeight = mc().window.guiScaledHeight - BOTTOM_MARGIN
+            return capToAvailableSpace(configuredHeight, availableHeight)
+        }
+
+        private fun capToAvailableSpace(configuredSize: Float, availableSize: Int): Float =
+            if (availableSize > 0) configuredSize.coerceAtMost(availableSize.toFloat()) else configuredSize
 
         private fun defaultTop(): Float =
             mc().window.guiScaledHeight - BOTTOM_MARGIN - chatHeight()
@@ -120,7 +127,9 @@ class ChatWindowHud : LegacyHud(
                 hasBaseline = false
                 return
             }
-            hud.setAbsolutePosition(DEFAULT_LEFT, defaultTop())
+            hud.section = Section.BottomLeft
+            hud.x = DEFAULT_LEFT
+            hud.y = defaultTop()
             baseSection = hud.section
             baseRelX = hud.relativeX
             baseRelY = hud.relativeY

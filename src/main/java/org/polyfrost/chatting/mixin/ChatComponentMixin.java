@@ -19,6 +19,7 @@ import org.objectweb.asm.Opcodes;
 import net.minecraft.util.Mth;
 import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.ChatButtons;
+import org.polyfrost.chatting.chat.ChatDimensions;
 import org.polyfrost.chatting.chat.ChatHeads;
 import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.chat.ChatSearch;
@@ -94,11 +95,19 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
     //?}
 
-    @Inject(method = "getHeight()I", at = @At("HEAD"), cancellable = true)
-    private void chatting$peekHeight(CallbackInfoReturnable<Integer> cir) {
-        if (Chatting.INSTANCE.getPeeking() && !((ChatComponent) (Object) this).isChatFocused()) {
-            cir.setReturnValue(ChatComponent.getHeight(Minecraft.getInstance().options.chatHeightFocused().get()));
+    @Inject(method = "getWidth()I", at = @At("HEAD"), cancellable = true)
+    private void chatting$width(CallbackInfoReturnable<Integer> cir) {
+        if (ChattingConfig.INSTANCE.getCustomChatWidth()) {
+            cir.setReturnValue(ChatDimensions.width());
         }
+    }
+
+    @Inject(method = "getHeight()I", at = @At("HEAD"), cancellable = true)
+    private void chatting$height(CallbackInfoReturnable<Integer> cir) {
+        boolean focused = ((ChatComponent) (Object) this).isChatFocused();
+        boolean peeking = Chatting.INSTANCE.getPeeking() && !focused;
+        if (!peeking && !ChattingConfig.INSTANCE.getCustomChatHeight()) return;
+        cir.setReturnValue(ChatDimensions.height(focused || peeking));
     }
 
     //? if >=1.21.11 <26 {

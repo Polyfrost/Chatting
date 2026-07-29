@@ -6,6 +6,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 import org.polyfrost.chatting.Chatting
+import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.compat.ChatHeadsCompat
 import org.polyfrost.chatting.compat.ChatImpressiveAnimationCompat
@@ -75,6 +76,42 @@ object ChattingConfig : Config(
 
     @Include
     var chatWindowLockMigrated = false
+
+    @Switch(
+        title = "Custom Chat Width", category = "Chat Window",
+        description = "Set an exact width for the chat window instead of using the vanilla chat width option."
+    )
+    var customChatWidth = false
+
+    @Slider(
+        title = "Chat Width (px)", category = "Chat Window",
+        description = "The width of the chat window, in GUI pixels.",
+        min = 40f, max = 2160f, step = 1f
+    )
+    var chatWidth = 320
+        get() = field.coerceIn(40, 2160)
+
+    @Switch(
+        title = "Custom Chat Height", category = "Chat Window",
+        description = "Set exact heights for the chat window instead of using the vanilla chat height options."
+    )
+    var customChatHeight = false
+
+    @Slider(
+        title = "Focused Height (px)", category = "Chat Window",
+        description = "The height of the chat window while chat is open, before the chat scale option is applied.",
+        min = 20f, max = 2160f, step = 1f
+    )
+    var focusedChatHeight = 180
+        get() = field.coerceIn(20, 2160)
+
+    @Slider(
+        title = "Unfocused Height (px)", category = "Chat Window",
+        description = "The height of the chat window while chat is closed, before the chat scale option is applied.",
+        min = 20f, max = 2160f, step = 1f
+    )
+    var unfocusedChatHeight = 90
+        get() = field.coerceIn(20, 2160)
 
     @Switch(
         title = "Chat Peek", category = "Chat Peek",
@@ -340,7 +377,13 @@ object ChattingConfig : Config(
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
         addDependency("improvedHeads", "showChatHeads")
+        addDependency("chatWidth", "customChatWidth")
+        addDependency("focusedChatHeight", "customChatHeight")
+        addDependency("unfocusedChatHeight", "customChatHeight")
 
+        for (option in listOf("customChatWidth", "chatWidth", "customChatHeight", "focusedChatHeight", "unfocusedChatHeight")) {
+            addCallback(option) { ChatDimensions.refresh() }
+        }
         addCallback("peekMode") { Chatting.peeking = false }
         addCallback("showChatHeads") { ChatHeadsCompat.reevaluate() }
         addCallback("smoothChat") { ChatImpressiveAnimationCompat.reevaluate() }
