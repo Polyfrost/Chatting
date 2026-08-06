@@ -21,6 +21,7 @@ class ChatWindowHud : LegacyHud(
 
     init {
         instance = this
+        locked = true
     }
 
     override val width: Float get() = chatWidth()
@@ -38,17 +39,25 @@ class ChatWindowHud : LegacyHud(
 
     override fun deletable() = false
 
-    // Intrinsic to the mod rather than something picked out of the HUD library, so it is placed
-    // automatically instead of having to be dragged in from the design studio.
     override fun showByDefault() = true
 
     override fun defaultPosition(): Pair<Float, Float> = DEFAULT_LEFT to defaultTop()
 
     override fun setup() {
+        migrateLockDefault()
         val onReset = Runnable { onPositionReset() }
         addCallback("section", onReset)
         addCallback("relativeX", onReset)
         addCallback("relativeY", onReset)
+    }
+
+    private fun migrateLockDefault() {
+        if (ChattingConfig.chatWindowLockMigrated) return
+        ChattingConfig.chatWindowLockMigrated = true
+        ChattingConfig.save()
+        if (ChattingConfig.chatWindowMoved || locked) return
+        locked = true
+        save()
     }
 
     override fun render(mcCtx: GuiGraphics) {
@@ -71,16 +80,12 @@ class ChatWindowHud : LegacyHud(
 
         private const val DEFAULT_LEFT = 0f
 
-        // Vanilla anchors the chat bottom 40px above the bottom of the screen
         private const val BOTTOM_MARGIN = 40
 
         private fun mc() = Minecraft.getInstance()
 
         private fun chatScaleOption(): Float = mc().options.chatScale().get().toFloat()
 
-        // Vanilla draws the chat background from x=-4 to maxWidth+8 in chat space, then
-        // translates by +4 and scales by the chat-scale option, so on screen it occupies
-        // [0, (maxWidth + 12) * scale]. maxWidth is getWidth() divided by that scale.
         private fun chatWidth(): Float {
             val scale = chatScaleOption()
             val maxWidth = ceil(ChatComponent.getWidth(mc().options.chatWidth().get()) / scale)
@@ -90,7 +95,6 @@ class ChatWindowHud : LegacyHud(
         private fun chatHeight(): Float =
             ChatComponent.getHeight(mc().options.chatHeightUnfocused().get()) * chatScaleOption()
 
-        /** Y of the vanilla chat's top-left by default */
         private fun defaultTop(): Float =
             mc().window.guiScaledHeight - BOTTOM_MARGIN - chatHeight()
 
@@ -100,12 +104,7 @@ class ChatWindowHud : LegacyHud(
         private var baseRelY = 0f
 
         /**
-         * Pins the HUD's stored position to the live vanilla chat anchor while the user hasn't moved
-         * it, so the HUD editor's box tracks where the chat actually renders across window resizes and
-         * GUI-scale changes (rather than a resolution-frozen snapshot). A position change we didn't
-         * make ourselves — an editor drag — flips [ChattingConfig.chatWindowMoved] and hands control
-         * over to the stored position. Our own writes are recorded as the [baseSection]/[baseRelX]/
-         * [baseRelY] baseline so they aren't mistaken for a move.
+         * If the user hasn't moved the chat window, sync it to the vanilla position.
          */
         private fun tickPosition(hud: ChatWindowHud) {
             if (ChattingConfig.chatWindowMoved) {
@@ -129,11 +128,6 @@ class ChatWindowHud : LegacyHud(
             hasBaseline = true
         }
 
-        /**
-         * Fired when the position is reset to default from the HUD editor (see [setup]). Returns the
-         * chat to the vanilla-tracking state so "reset to default" matches the real vanilla position
-         * instead of the frozen snapshot captured at load.
-         */
         private fun onPositionReset() {
             if (ChattingConfig.chatWindowMoved) {
                 ChattingConfig.chatWindowMoved = false
@@ -142,11 +136,6 @@ class ChatWindowHud : LegacyHud(
             hasBaseline = false
         }
 
-        /**
-         * The placed widget, or `null` while only the registered provider exists. A provider carries no
-         * stored position, so every position query falls back to the vanilla anchor rather than to the
-         * provider's unset top-left origin.
-         */
         private fun placed(): ChatWindowHud? = instance?.takeIf { it.isReal }
 
         @JvmStatic
@@ -156,12 +145,6 @@ class ChatWindowHud : LegacyHud(
             return HudManager.isEditing || ChattingConfig.chatWindowMoved
         }
 
-        /**
-         * Mirrors OneConfig's per-HUD visibility gating (see `HudManager.render`) for the chat, which
-         * renders through the vanilla [ChatComponent] and so never passes through that gate itself.
-         * The chat screen is exempt from the "Show in GUIs" rule so opening the input to type doesn't
-         * hide the history.
-         */
         @JvmStatic
         fun shouldHideForVisibility(chatFocused: Boolean): Boolean {
             val hud = placed() ?: return false

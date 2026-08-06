@@ -73,6 +73,9 @@ object ChattingConfig : Config(
     @Include
     var chatWindowMoved = false
 
+    @Include
+    var chatWindowLockMigrated = false
+
     @Switch(
         title = "Chat Peek", category = "Chat Peek",
         description = "Allows you to view / scroll chat while moving around."
