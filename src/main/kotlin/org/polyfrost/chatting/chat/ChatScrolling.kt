@@ -54,11 +54,11 @@ object ChatScrolling {
 
     fun shift(delta: Int) {
         if (!ChattingConfig.smoothScrolling || !initialized) return
-        from += delta
-        to += delta
-        current += delta
+        from = (from + delta).coerceAtLeast(0f)
+        to = (to + delta).coerceAtLeast(0f)
+        current = (current + delta).coerceAtLeast(0f)
         frozen = current.roundToInt()
     }
 
-    fun pos(): Int = frozen
+    fun pos(): Int = frozen.coerceAtLeast(0)
 }
