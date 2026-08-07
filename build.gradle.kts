@@ -71,8 +71,7 @@ repositories {
             includeGroup("net.fabricmc")
         }
     }
-    //maven("https://maven.terraformersmc.com/releases") {
-    maven("https://maven.gnomecraft.net/releases/") {
+    maven("https://maven.terraformersmc.com/") {
         content {
             includeGroup("com.terraformersmc")
         }
