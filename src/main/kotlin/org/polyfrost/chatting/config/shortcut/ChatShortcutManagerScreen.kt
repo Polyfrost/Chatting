@@ -472,9 +472,7 @@ private fun ShortcutTextField(
             .border(1.dp, borderColor, theme.sideBarNavigationEntryShape)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         decorationBox = { innerTextField ->
-            // The leading slash is a fixed adornment, not part of the stored value: commands always
-            // begin with one, and rendering it here keeps players from doubling it up by accident
-            // while still letting them type extra slashes (e.g. `//set` for WorldEdit).
+            // the leading slash is a fixed adornment not part of the stored value so players can still type an extra slash for commands like //set
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("/", color = theme.textColorSecondary, fontSize = 14.sp)
                 Box(modifier = Modifier.weight(1f)) {

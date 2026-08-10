@@ -51,9 +51,7 @@ public final class ChatScreenshotModern {
                     .setLightmapState(net.minecraft.client.renderer.RenderStateShard.LIGHTMAP)
                     .createCompositeState(false));
 
-    // A textured GUI layer bound to the given skin and redirected to our framebuffer. Player heads
-    // blit through RenderType.guiTextured, whose vertex format lacks the lightmap element the shared
-    // text layer requires, so they need their own compatible layer instead of the text buffer.
+    // heads blit through RenderType.guiTextured whose vertex format lacks the lightmap element the shared text layer needs so they get their own layer
     private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
         return RenderType.create(
                 "chatting_head", 786432, false, false,
@@ -86,8 +84,7 @@ public final class ChatScreenshotModern {
             return this.headBuffer != null ? this.headBuffer : this.textBuffer;
         }
 
-        // Route the following blit(s) into a dedicated head layer sharing our framebuffer. Each head
-        // has its own skin texture, so its batch must be flushed before the next head begins.
+        // route following blits into a dedicated head layer sharing our framebuffer because each head has its own skin texture and must flush first
         public void beginHead(net.minecraft.resources.ResourceLocation skin) {
             this.headLayer = headLayer(skin, rt);
             this.headBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
@@ -118,8 +115,7 @@ public final class ChatScreenshotModern {
         }
         OverrideVertexProvider consumer = new OverrideVertexProvider(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256), rt);
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, consumer);
-        // This variant's vertex provider only serves the text layer, so context.fill(...) would
-        // crash on a missing vertex format. Paint the background by clearing the target instead.
+        // this variant's vertex provider only serves the text layer so context.fill would crash on a missing vertex format and we clear the target instead
         int clearColor = style.background() ? ChatScreenshot.backgroundColor(mc) : 0x00000000;
         com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), clearColor);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height, 1f);

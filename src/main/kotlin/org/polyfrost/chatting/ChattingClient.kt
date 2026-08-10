@@ -15,7 +15,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 object ChattingClient : ClientModInitializer {
 
     override fun onInitializeClient() {
-        ChattingConfig.preload() //pre-init
+        ChattingConfig.preload()
 
         ChatShortcuts.initialize()
         ChatTabs.initialize()

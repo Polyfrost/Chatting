@@ -34,7 +34,7 @@ data class ChatTab(
     @Transient
     var messages: List<String>? = ArrayList()
 
-    /** GSON skips the `@Transient` fields, so compile the regexes after deserialisation. */
+    /** GSON skips @Transient fields so compile the regexes after deserialisation */
     fun initialize() {
         compiledRegex = ChatRegexes(uncompiledRegex)
         compiledIgnoreRegex = ChatRegexes(uncompiledIgnoreRegex)

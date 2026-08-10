@@ -4,15 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import org.polyfrost.chatting.config.ChattingConfig;
 
-/**
- * Draws chat background rectangles with optionally rounded outer corners, approximated
- * as horizontal strips so it works with any plain fill(x1, y1, x2, y2, color) sink.
- * Strips are emitted under a temporarily downscaled pose at {@link #SUBPIXELS} rows per
- * chat pixel, so the arc is rasterized at (or beyond) screen resolution.
- */
+// rounded corners are approximated as horizontal strips under a downscaled pose so the arc rasterizes at screen resolution
 public final class RoundedChat {
 
-    /** Strip rows per chat pixel; covers GUI scale times chat/HUD scale products up to 8. */
+    // strip rows per chat pixel covers scale products up to 8
     private static final int SUBPIXELS = 8;
 
     @FunctionalInterface
@@ -20,7 +15,7 @@ public final class RoundedChat {
         void fill(int x1, int y1, int x2, int y2, int color);
     }
 
-    /** Runs body with the pose scaled by factor, so sink coordinates inside body are in 1/factor units. */
+    // runs body with the pose scaled by factor so sink coordinates inside body are in 1/factor units
     @FunctionalInterface
     public interface PoseScaler {
         void scaled(float factor, Runnable body);
@@ -33,16 +28,13 @@ public final class RoundedChat {
         return ChattingConfig.INSTANCE.getRoundedChatCorners();
     }
 
-    /** Mirrors ChatComponent's chatBottom: Mth.floor((screenHeight - 40) / chatScale). */
+    // mirrors ChatComponent's chatBottom
     public static int chatBottom(int guiHeight) {
         float scale = (float) (double) Minecraft.getInstance().options.chatScale().get();
         return Mth.floor((guiHeight - 40) / scale);
     }
 
-    /**
-     * Draws the rect [x1,y1)-[x2,y2) with the requested corners rounded. All emitted strips
-     * are disjoint, so translucent colors blend exactly once per pixel.
-     */
+    // emitted strips are disjoint so translucent colors blend exactly once per pixel
     public static void fill(FillSink sink, PoseScaler poser, int x1, int y1, int x2, int y2, int color,
                             boolean roundTop, boolean roundBottom) {
         int w = x2 - x1, h = y2 - y1;
@@ -82,7 +74,7 @@ public final class RoundedChat {
         }
     }
 
-    /** Circle-equation x-inset for row i (sampled at row center) of a radius-r corner; row 0 is outermost. */
+    // circle equation x inset for row i of a radius r corner sampled at row center with row 0 outermost
     private static int inset(int i, int r) {
         double dy = r - i - 0.5;
         double dx = Math.sqrt((double) r * r - dy * dy);

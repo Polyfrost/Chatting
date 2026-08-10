@@ -7,13 +7,7 @@ import org.polyfrost.oneconfig.api.notifications.v1.Notifications
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-/**
- * Temporarily suppresses the third-party Text Tunnels mod's chat-line hiding and tunnel buttons while
- * Chatting's Chat Tabs feature is active, without ever touching Text Tunnels' saved config.
- *
- * References Text Tunnels only via reflection strings, so it is safe to load on every version and when
- * the mod is absent.
- */
+/** references Text Tunnels only via reflection strings so it is safe to load when the mod is absent */
 object TextTunnelsCompat {
 
     private val loaded = FabricLoader.getInstance().isModLoaded("text_tunnels")
@@ -23,9 +17,7 @@ object TextTunnelsCompat {
     var suppressing = false
         private set
 
-    // Toast guard: shown at most once per game session. Reevaluation fires on every JoinGame packet
-    // (including proxy/BungeeCord backend switches on servers like Hypixel, which re-send JoinGame over
-    // the same connection), so this must NOT reset per join or the toast would spam on every world change.
+    // never reset per join because JoinGame re-fires on proxy backend switches and the toast would spam
     private var warningShown = false
 
     private var getMethod: Method? = null
@@ -35,11 +27,7 @@ object TextTunnelsCompat {
     private fun shouldSuppressTextTunnels(): Boolean =
         loaded && ChattingConfig.chatTabs && isTextTunnelsEnabled()
 
-    /**
-     * Reflectively reads `ConfigManager.get().mainConfig.enabled`. Resolved handles are cached lazily, but
-     * a failure is never latched: this only runs from [reevaluate] (a rare transition, never a hot path), so
-     * a transient failure (e.g. Text Tunnels' config not yet initialized) self-heals on the next call.
-     */
+    /** failure is never latched so an uninitialized Text Tunnels config self heals on the next call */
     private fun isTextTunnelsEnabled(): Boolean {
         return try {
             var method = getMethod

@@ -103,9 +103,7 @@ class ChatWindowHud : LegacyHud(
         private var baseRelX = 0f
         private var baseRelY = 0f
 
-        /**
-         * If the user hasn't moved the chat window, sync it to the vanilla position.
-         */
+        /** syncs to the vanilla position unless the user has moved the chat window */
         private fun tickPosition(hud: ChatWindowHud) {
             if (ChattingConfig.chatWindowMoved) {
                 hasBaseline = false

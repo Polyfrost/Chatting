@@ -12,7 +12,6 @@ import net.minecraft.client.multiplayer.chat.GuiMessageSource
 /*import net.minecraft.client.GuiMessage
 *///?}
 
-/** Fixed placeholder messages shown in place of real chat while the chat window HUD is being edited. */
 object ChatPreview {
 
     private val MESSAGES = listOf(
@@ -26,7 +25,7 @@ object ChatPreview {
     private var cached: List<GuiMessage.Line>? = null
     private var cachedWidth = -1
 
-    /** Placeholder lines wrapped to the current chat width, ordered newest-first like the vanilla trimmed messages. */
+    /** ordered newest first like the vanilla trimmed messages */
     @JvmStatic
     fun lines(): List<GuiMessage.Line> {
         val mc = Minecraft.getInstance()

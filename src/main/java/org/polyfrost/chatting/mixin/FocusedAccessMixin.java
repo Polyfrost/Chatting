@@ -24,7 +24,7 @@ public class FocusedAccessMixin {
 
     @Unique private int chatting$mouseX;
     @Unique private int chatting$mouseY;
-    // A fresh DrawingFocusedGraphicsAccess is constructed per render pass, so no reset is needed.
+    // a fresh DrawingFocusedGraphicsAccess is constructed per render pass so no reset is needed
     @Unique private boolean chatting$sawLineFill;
 
     //? if <26 {
@@ -37,8 +37,7 @@ public class FocusedAccessMixin {
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
     private void chatting$hoverFill(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
         int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
-        // Line backgrounds are the only fills through this method with x1 == -4; the line loop
-        // iterates top to bottom with faded lines skipped, and the bottom line ends at chatBottom.
+        // line backgrounds are the only fills through this method with x1 == -4
         boolean chatting$lineFill = x1 == -4;
         int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
@@ -57,9 +56,7 @@ public class FocusedAccessMixin {
     private int chatting$lineColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
         if (chatting$chatFocused()) {
             Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-            // The per-line buttons sit just past the background's right edge, so extend the hovered-line
-            // hit test across them: hovering a copy/delete button still highlights the message, whether or
-            // not the background is extended to cover the buttons.
+            // per line buttons sit just past the background right edge so the hovered line hit test extends across them
             int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
             if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
                 return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
@@ -77,8 +74,7 @@ public class FocusedAccessMixin {
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
     private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color) {
         int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
-        // Line backgrounds are the only fills through this method with x1 == -4; the line loop
-        // iterates top to bottom with faded lines skipped, and the bottom line ends at chatBottom.
+        // line backgrounds are the only fills through this method with x1 == -4
         boolean chatting$lineFill = x1 == -4;
         int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
@@ -97,9 +93,7 @@ public class FocusedAccessMixin {
     private int chatting$lineColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
         if (chatting$chatFocused()) {
             Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-            // The per-line buttons sit just past the background's right edge, so extend the hovered-line
-            // hit test across them: hovering a copy/delete button still highlights the message, whether or
-            // not the background is extended to cover the buttons.
+            // per line buttons sit just past the background right edge so the hovered line hit test extends across them
             int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
             if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
                 return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();

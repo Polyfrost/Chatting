@@ -57,18 +57,15 @@ public final class ChatScreenshot {
 
     static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
-    // Recolor a sequence to pure black, preserving glyph shapes/positions, so the
-    // outline is black regardless of the message's own color codes.
     static FormattedCharSequence blackOut(FormattedCharSequence seq) {
         return sink -> seq.accept((pos, style, cp) -> sink.accept(pos, style.withColor(0), cp));
     }
 
-    // Vanilla chat background: black at the user's textBackgroundOpacity, full (unfaded) alpha.
+    // black at textBackgroundOpacity with full unfaded alpha
     static int backgroundColor(Minecraft mc) {
         return ((int) (mc.options.textBackgroundOpacity().get() * 255.0)) << 24;
     }
 
-    // region text copy
     public static void copyText(List<GuiMessage.Line> lines, Component fullMessage) {
         copyText(lines, fullMessage, false);
     }
@@ -136,11 +133,11 @@ public final class ChatScreenshot {
         }
         int height = lines.size() * 9;
         ScreenshotStyle style = ScreenshotStyle.current();
-        // The border draws 1px outside the glyph extent, so pad the canvas to keep it from clipping.
+        // border draws 1px outside the glyph extent so pad the canvas
         int margin = style.border() ? 1 : 0;
         width += margin * 2;
         height += margin * 2;
-        int scale = 2; // supersample for a crisp image, mirroring the 1.8.9 2x scale
+        int scale = 2; // supersample mirroring the 1.8.9 2x scale
 
         //? if <1.21.5 {
         /*captureLegacy(mc, lines, width, height, scale, style);
@@ -211,8 +208,7 @@ public final class ChatScreenshot {
         return new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt.bindWrite(true), () -> {});
     }
 
-    // The vanilla text and guiTextured layers bind the main render target when drawn, so give text and
-    // player-head geometry their own layers whose output is redirected to our offscreen framebuffer.
+    // vanilla text and guiTextured layers bind the main render target so give text and head geometry their own layers redirected to our framebuffer
     private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
             "chatting_text", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
             com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432, false, false,
@@ -259,8 +255,7 @@ public final class ChatScreenshot {
             return this.headBuffer != null ? this.headBuffer : this.textBuffer;
         }
 
-        // Route the following blit(s) into a dedicated head layer sharing our framebuffer. Each head
-        // has its own skin texture, so its batch must be flushed before the next head begins.
+        // route following blits into a dedicated head layer sharing our framebuffer because each head has its own skin texture and must flush first
         public void beginHead(net.minecraft.resources.ResourceLocation skin) {
             this.headLayer = headLayer(skin, rt);
             this.headBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());

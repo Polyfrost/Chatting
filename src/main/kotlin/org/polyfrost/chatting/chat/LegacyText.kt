@@ -8,14 +8,10 @@ import net.minecraft.network.chat.TextColor
 import net.minecraft.util.FormattedCharSequence
 import java.util.Optional
 
-/**
- * [Component] but with "§" codes for chat tabs
- */
 object LegacyText {
 
     //? if >=26.2 {
-    // 26.2 stripped the color metadata off ChatFormatting; TextColor.fromLegacyFormat now
-    // resolves the RGB for the 16 color codes (and returns null for the format-only codes).
+    // 26.2 stripped the color metadata off ChatFormatting so TextColor.fromLegacyFormat resolves the RGB instead
     private val byColor: Map<Int, ChatFormatting> =
         ChatFormatting.values().mapNotNull { cf -> TextColor.fromLegacyFormat(cf)?.let { it.value to cf } }.toMap()
     //?} else {

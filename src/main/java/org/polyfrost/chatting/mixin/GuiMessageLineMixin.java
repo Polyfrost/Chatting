@@ -11,7 +11,6 @@ import org.polyfrost.chatting.hook.ChatLineHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-/** (see {@link ChatLineHook}) */
 @Mixin(GuiMessage.Line.class)
 public class GuiMessageLineMixin implements ChatLineHook {
 
@@ -52,7 +51,7 @@ public class GuiMessageLineMixin implements ChatLineHook {
 
     @Override
     public void chatting$setParent(@Nullable GuiMessage parent) {
-        // 26.1+ carries the parent natively on the line record; nothing to store.
+        // 26.1+ carries the parent natively on the line record so nothing to store
     }
     //?} else {
     /*@Unique

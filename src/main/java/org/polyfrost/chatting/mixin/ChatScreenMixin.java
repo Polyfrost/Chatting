@@ -119,10 +119,7 @@ public abstract class ChatScreenMixin extends Screen {
         box.setVisible(ChatSearch.INSTANCE.getEnabled());
         addRenderableWidget(box);
         chatting$searchBox = box;
-        // Only sync when search is already active (e.g. a resize recreated the screen). When it is
-        // inactive, leave the vanilla suggestion state alone: force-enabling suggestions here would
-        // show the command popup immediately for a chat opened with "/", unlike vanilla which waits
-        // for the first typed character.
+        // only sync when already active otherwise enabling suggestions pops the command list immediately for a chat opened with slash
         if (ChatSearch.INSTANCE.getEnabled()) {
             chatting$syncSearchBox();
         }
@@ -140,9 +137,7 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$syncSearchBox();
     }
 
-    // Close the search box once it loses focus (e.g. the player clicked or tabbed into the vanilla
-    // chat input). Polled each frame so it runs after the screen's focus machinery, avoiding the
-    // reentrancy of hooking setFocused mid focus-transfer.
+    // polled each frame so it runs after screen focus machinery avoiding reentrancy of hooking setFocused mid transfer
     @Unique
     private void chatting$closeSearchOnFocusLoss() {
         if (chatting$searchBox == null || !ChatSearch.INSTANCE.getEnabled()) return;
@@ -158,13 +153,10 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$searchBox.setVisible(on);
         chatting$searchBox.setValue(ChatSearch.INSTANCE.getQuery());
         if (on) {
-            // The vanilla chat input is created with setCanLoseFocus(false), so setFocused(false)
-            // is a no-op and it keeps rendering its blinking caret. Allow it to lose focus while the
-            // search box is active so only one caret shows.
+            // vanilla input uses setCanLoseFocus(false) so setFocused(false) does nothing and it keeps its caret
             input.setCanLoseFocus(true);
             input.setFocused(false);
-            // Disabling suggestions dismisses the popup and blocks the async completion callback from
-            // re-showing it while the search box is focused; hide() alone leaves that race open.
+            // disabling suggestions also blocks the async completion callback from reshowing the popup which hide() alone leaves open
             commandSuggestions.setAllowSuggestions(false);
             chatting$searchBox.setFocused(true);
             this.setFocused(chatting$searchBox);
@@ -179,18 +171,13 @@ public abstract class ChatScreenMixin extends Screen {
         }
     }
 
-    // Expand command shortcuts before vanilla routes the message: handleChatInput sends anything
-    // still starting with "/" through sendCommand, so a preserved "/" prefix keeps the expansion a
-    // command rather than a chat message.
+    // handleChatInput routes anything still starting with slash through sendCommand so expand shortcuts before vanilla routes it
     @ModifyVariable(method = "handleChatInput", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private String chatting$applyShortcuts(String message) {
         return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentCommand(message));
     }
 
-    // Tabs are drawn before the vanilla command-suggestion popup so the suggestions paint on top of
-    // them instead of being covered (Polyfrost/Chatting#101, Polyfrost/Chatting#135). On <26 the popup
-    // is rendered later in ChatScreen#render, so drawing at HEAD suffices; on 26+ the popup is the last
-    // thing extracted, so we inject just before its extraction.
+    // draw tabs before the vanilla suggestion popup so suggestions paint on top Polyfrost/Chatting#101 Polyfrost/Chatting#135
     //? if >=26 {
     @Inject(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/CommandSuggestions;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V"))
     private void chatting$renderTabsLayer(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
@@ -255,12 +242,8 @@ public abstract class ChatScreenMixin extends Screen {
         }
 
         int lineHeight = acc.chatting$getLineHeight();
-        // Anchor the buttons at the message background's right edge (text width + the background's
-        // right edge offset) so they sit just outside it when "Extend Chat Backgrounds" is disabled.
         int stripStart = (int) Math.ceil(acc.chatting$getWidth() / chatScale) + ChatButtons.BACKGROUND_RIGHT_EDGE;
-        // Only reveal the buttons when the cursor is over the chat background or the button strip — a
-        // contiguous span from the background's left edge (local x 0) to the strip's right edge. Without
-        // this, a cursor anywhere on the row shows them, however far right of the chat it sits.
+        // only reveal buttons when the cursor is over the chat background or the button strip not anywhere on the row
         if (mx < 0 || mx > (stripStart + ChatButtons.perLineButtonsWidth()) * chatScale) return;
         int top = chatting$chatBottomLocal(chatScale) - (lineIndex + 1) * lineHeight
                 + (int) Math.ceil((lineHeight - 9) / 2.0);
@@ -356,7 +339,7 @@ public abstract class ChatScreenMixin extends Screen {
         if (lineIndex < 0 || lineIndex >= trimmed.size()) return null;
         GuiMessage parent = ((ChatLineHook) (Object) trimmed.get(lineIndex)).chatting$getParent();
         if (parent != null) return parent.content();
-        // Fallback for lines that never passed through the message pipeline (e.g. HUD-editor preview).
+        // fallback for lines that never passed through the message pipeline such as HUD editor preview
         List<GuiMessage> all = acc.chatting$getAllMessages();
         int fullIndex = -1;
         for (int i = 0; i < trimmed.size(); i++) {
@@ -446,7 +429,7 @@ public abstract class ChatScreenMixin extends Screen {
         String className = widget.getClass().getName();
         if (className.startsWith(CHATTING$NO_CHAT_REPORTS_PACKAGE)) return true;
 
-        // NCR 26.x uses a vanilla CycleButton for the rightmost safety-state button.
+        // NCR 26.x uses a vanilla CycleButton for the rightmost safety state button
         return widget.getX() == width - CHATTING$NO_CHAT_REPORTS_BUTTON_RIGHT_MARGIN;
     }
 
@@ -523,7 +506,7 @@ public abstract class ChatScreenMixin extends Screen {
         int textW = chatting$tooltipWidth(lines);
         int lineH = 10;
         int textH = chatting$tooltipHeight(lines);
-        // x/y is the top-left of the text content; the vanilla background frame extends 3-4px around it.
+        // x/y is the top left of the text content and the vanilla background frame extends 3 to 4px around it
         int x = fixed ? fixedX : mouseX + 12;
         int y = fixed ? fixedY : mouseY - 12;
         if (x + textW + 4 > this.width) x = Math.max(4, this.width - textW - 4);
@@ -594,9 +577,7 @@ public abstract class ChatScreenMixin extends Screen {
         /*return (int) acc.chatting$screenToChatY(mouseY);
         *///?} else {
         double d = (double) this.minecraft.getWindow().getGuiScaledHeight() - mouseY - 40.0;
-        // Match FocusedAccessMixin's half-open [entryTop, entryBottom) hover test: exactly on the
-        // boundary between two lines the cursor pixel belongs to the lower line (ceil - 1 instead of
-        // floor), so the highlighted line and the line the buttons target always agree.
+        // match FocusedAccessMixin half open hover test so ceil minus 1 puts a boundary pixel on the lower line agreeing with the highlight
         return (int) Math.ceil(d / (acc.chatting$getScale() * acc.chatting$getLineHeight())) - 1;
         //?}
     }
@@ -650,10 +631,7 @@ public abstract class ChatScreenMixin extends Screen {
         else if (button == 1) chatting$rightClicked = true;
     }
 
-    // The clickable-text hit-test builds its regions through captureClickableText, which skips the
-    // pose translation the chat HUD applies while rendering, so the regions stay at the vanilla
-    // position. Map the cursor back into that space so clicks land on the shifted/scaled chat (hover
-    // already works because it runs through the posed render path).
+    // captureClickableText builds hit regions without the chat HUD pose so map the cursor back into vanilla space
     //? if >=1.21.11 {
     @ModifyExpressionValue(method = "mouseClicked", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/MouseButtonEvent;x()D"))
     private double chatting$clickComponentX(double x) {
@@ -682,9 +660,7 @@ public abstract class ChatScreenMixin extends Screen {
     }
     *///?}
 
-    // While the search box holds focus, swallow the keys ChatScreen would otherwise route to the
-    // vanilla input (Enter to send, Up/Down for chat history) so they don't act on the hidden input.
-    // Text edits, Left/Right and Tab still fall through to the focused widget / focus navigation.
+    // swallow enter and up down while the search box is focused so they do not act on the hidden vanilla input
     //? if >=1.21.10 {
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void chatting$suppressSearchKeys(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {

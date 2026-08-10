@@ -101,7 +101,7 @@ object ChatTabsRenderer {
             hovered -> tab.hoveredColor ?: ChatTab.HOVERED_COLOR
             else -> tab.color ?: ChatTab.COLOR
         }
-        //force alhpha proprekrly
+        // force alpha
         return if (rgb and -0x1000000 == 0) rgb or -0x1000000 else rgb
     }
 }

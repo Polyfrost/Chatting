@@ -317,8 +317,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         chatting$installPreview();
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
         //? if <=1.21.5 {
-        /^// The peek ModifyVariable also targets HEAD and may run after this inject, so the
-        // effective focused state is recomputed here; the OR is idempotent if it already ran.
+        /^// peek ModifyVariable also targets HEAD and may run after this inject so focused is recomputed here and the OR is idempotent
         chatting$visibleLines = chatting$countVisibleLines(tick,
             focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing());
         ^///?}
@@ -442,13 +441,11 @@ public class ChatComponentMixin implements ChatComponentHook {
         }
         int chatBottom = RoundedChat.chatBottom(graphics.guiHeight());
         //? if <=1.21.5 {
-        /^// The render loop iterates bottom to top, so the top line is found via the precomputed
-        // visible-line count; the fill's bottom edge sits at chatBottom - index * lineHeight.
+        /^// render loop iterates bottom to top so the top line comes from the precomputed visible line count
         int index = (chatBottom - y2) / ((ChatComponentAccessor) (Object) this).chatting$getLineHeight();
         boolean top = index == chatting$visibleLines - 1;
         ^///?} else {
-        // forEachLine iterates top to bottom with faded lines skipped, so the first fill per
-        // render pass is the topmost visible line.
+        // forEachLine iterates top to bottom with faded lines skipped so the first fill per render pass is the topmost visible line
         boolean top = !chatting$sawLineFill;
         //?}
         boolean bottom = y2 == chatBottom;
@@ -470,12 +467,8 @@ public class ChatComponentMixin implements ChatComponentHook {
         //?}
     }
 
-    // Resolve the line under the (HUD-mapped) cursor by position and key the highlight on that line's
-    // identity. GuiMessage.Line is a record, so trimmedMessages.indexOf(line) collapses duplicate
-    // messages (same time, text and signature - e.g. Hypixel's blank /help separators) onto the first
-    // match; and getMessageEndIndexAt only ever points at a message's bottom line and returns -1 once
-    // the cursor passes the text, so the buttons never lit their row. The hit test reaches across the
-    // per-line button strip so hovering copy/delete keeps the line highlighted.
+    // resolve the hovered line by position because trimmedMessages.indexOf collapses duplicate messages and getMessageEndIndexAt returns -1 past the text
+    // the hit test spans the per line button strip so hovering copy or delete keeps the line highlighted
     @Unique
     private GuiMessage.Line chatting$hoveredLine() {
         ChatComponent self = (ChatComponent) (Object) this;
@@ -497,8 +490,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
 
     //? if <=1.21.5 {
-    /^// Replicates the render loop's per-line visibility gate (including this mod's fade shift
-    // and smooth-scroll position) to find the topmost line whose background fill will run.
+    /^// replicates the render loop per line visibility gate to find the topmost line whose background fill will run
     @Unique
     private int chatting$countVisibleLines(int tickCount, boolean focused) {
         int perPage = ((ChatComponent) (Object) this).getLinesPerPage();
@@ -517,7 +509,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         return top;
     }
 
-    // Copy of the vanilla render loop's getTimeFactor.
+    // copy of the vanilla render loop getTimeFactor
     @Unique
     private static double chatting$timeFactor(int age) {
         double t = age / 200.0;
@@ -547,7 +539,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
     ^///?} else {
     
-    // method_71991 = line text (drawString), method_71992 = line background (fill)
+    // method_71991 = line text drawString and method_71992 = line background fill
     @Redirect(method = "method_71992", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
     private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, @Local(argsOnly = true) GuiMessage.Line line) {
         chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line);
