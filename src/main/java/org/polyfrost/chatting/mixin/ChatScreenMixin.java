@@ -560,14 +560,15 @@ public abstract class ChatScreenMixin extends Screen {
         //?} else {
         /*GuiGraphics graphics = (GuiGraphics) g0;
         *///?}
+        int size = ChatButtons.BUTTON_WIDTH;
         //? if <1.21.4 {
-        /*graphics.blit((net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, 9, 9, 9, 9);
+        /*graphics.blit((net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size);
         *///?} elif <1.21.6 {
-        /*graphics.blit(net.minecraft.client.renderer.RenderType::guiTextured, (net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, 9, 9, 9, 9);
+        /*graphics.blit(net.minecraft.client.renderer.RenderType::guiTextured, (net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size);
         *///?} elif <1.21.11 {
-        /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.ResourceLocation) icon, x, y, 0, 0, 9, 9, 9, 9);
+        /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.ResourceLocation) icon, x, y, 0, 0, size, size, size, size);
         *///?} else {
-        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, 9, 9, 9, 9);
+        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, size, size, size, size);
         //?}
     }
 
