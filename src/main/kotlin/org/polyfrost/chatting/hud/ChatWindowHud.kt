@@ -45,7 +45,8 @@ class ChatWindowHud : LegacyHud(
 
     override fun setup() {
         migrateLockDefault()
-        val onReset = Runnable { onPositionReset() }
+        hasBaseline = false
+        val onReset = Runnable { if (isReal) onPositionReset() }
         addCallback("section", onReset)
         addCallback("relativeX", onReset)
         addCallback("relativeY", onReset)
