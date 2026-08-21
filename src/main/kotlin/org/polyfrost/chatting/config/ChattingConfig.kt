@@ -262,6 +262,18 @@ object ChattingConfig : Config(
     )
     var improvedHeads = true
 
+    @Dropdown(
+        title = "Chat Head Shadow", category = "Chat Heads", options = ["Off", "Normal", "Legacy"],
+        description = "Draw a drop shadow behind the chat head. Normal darkens the head texture, Legacy uses a single averaged color.",
+    )
+    var chatHeadShadow = 0
+
+    @Switch(
+        title = "Center Chat Heads", category = "Chat Heads",
+        description = "Vertically center the chat head with the message instead of offsetting it upwards.",
+    )
+    var centerChatHeads = false
+
     @Switch(
         title = "Offset Non-Player Messages", category = "Chat Heads",
         description = "Offset all messages, even if a player has not been detected.",
@@ -377,6 +389,8 @@ object ChattingConfig : Config(
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
         addDependency("improvedHeads", "showChatHeads")
+        addDependency("chatHeadShadow", "showChatHeads")
+        addDependency("centerChatHeads", "showChatHeads")
         addDependency("chatWidth", "customChatWidth")
         addDependency("focusedChatHeight", "customChatHeight")
         addDependency("unfocusedChatHeight", "customChatHeight")

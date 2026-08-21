@@ -54,10 +54,22 @@ public class GraphicsAccessMixin {
         boolean hidden = ChatHeads.INSTANCE.isHidden(seq);
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
             int alpha = Math.round(SmoothChat.INSTANCE.fade(seq, opacity) * 255f);
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(this.chatting$graphics, info.getSkin().body().texturePath(),0, textTop - 1, 8, 0xFFFFFF | (alpha << 24), true, false);
-            else PlayerFaceRenderer.draw(this.chatting$graphics, info.getSkin(), 0, textTop - 1, 8, 0xFFFFFF | (alpha << 24));
+            if (ChatHeads.INSTANCE.shouldDrawShadow()) {
+                chatting$face(info, ChatHeads.SHADOW_OFFSET, ChatHeads.INSTANCE.headY(textTop) + ChatHeads.SHADOW_OFFSET, ChatHeads.INSTANCE.shadowColor(info, alpha), ChatHeads.INSTANCE.isLegacyShadow());
+            }
+            chatting$face(info, 0, ChatHeads.INSTANCE.headY(textTop), 0xFFFFFF | (alpha << 24), false);
         }
         chatting$shift = ChatHeads.INSTANCE.shouldOffset(info);
+    }
+
+    @Unique
+    private void chatting$face(PlayerInfo info, int x, int y, int color, boolean solid) {
+        float dy = ChatHeads.INSTANCE.headYFraction();
+        if (dy != 0f) this.chatting$graphics.pose().translate(0f, dy);
+        if (solid) this.chatting$graphics.fill(x, y, x + 8, y + 8, color);
+        else if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(this.chatting$graphics, info.getSkin().body().texturePath(), x, y, 8, color, true, false);
+        else PlayerFaceRenderer.draw(this.chatting$graphics, info.getSkin(), x, y, 8, color);
+        if (dy != 0f) this.chatting$graphics.pose().translate(0f, -dy);
     }
 
     @Inject(method = "handleMessage", at = @At("RETURN"))
@@ -107,10 +119,22 @@ public class GraphicsAccessMixin {
         boolean hidden = ChatHeads.INSTANCE.isHidden(seq);
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
             int alpha = Math.round(SmoothChat.INSTANCE.fade(seq, opacity) * 255f);
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceExtractor).chatting$draw(this.chatting$graphics, info.getSkin().body().texturePath(),0, textTop - 1, 8, 0xFFFFFF | (alpha << 24), true, false);
-            else PlayerFaceExtractor.extractRenderState(this.chatting$graphics, info.getSkin(), 0, textTop - 1, 8, 0xFFFFFF | (alpha << 24));
+            if (ChatHeads.INSTANCE.shouldDrawShadow()) {
+                chatting$face(info, ChatHeads.SHADOW_OFFSET, ChatHeads.INSTANCE.headY(textTop) + ChatHeads.SHADOW_OFFSET, ChatHeads.INSTANCE.shadowColor(info, alpha), ChatHeads.INSTANCE.isLegacyShadow());
+            }
+            chatting$face(info, 0, ChatHeads.INSTANCE.headY(textTop), 0xFFFFFF | (alpha << 24), false);
         }
         chatting$shift = ChatHeads.INSTANCE.shouldOffset(info);
+    }
+
+    @Unique
+    private void chatting$face(PlayerInfo info, int x, int y, int color, boolean solid) {
+        float dy = ChatHeads.INSTANCE.headYFraction();
+        if (dy != 0f) this.chatting$graphics.pose().translate(0f, dy);
+        if (solid) this.chatting$graphics.fill(x, y, x + 8, y + 8, color);
+        else if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceExtractor).chatting$draw(this.chatting$graphics, info.getSkin().body().texturePath(), x, y, 8, color, true, false);
+        else PlayerFaceExtractor.extractRenderState(this.chatting$graphics, info.getSkin(), x, y, 8, color);
+        if (dy != 0f) this.chatting$graphics.pose().translate(0f, -dy);
     }
 
     @Inject(method = "handleMessage", at = @At("RETURN"))

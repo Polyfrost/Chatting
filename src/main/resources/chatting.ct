@@ -16,6 +16,7 @@ classTweaker v2 official
 #accessible	class	net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
 #accessible	field	net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_TEXT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
 #accessible	field	net/minecraft/client/renderer/RenderStateShard	POSITION_TEXTURE_COLOR_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
+#accessible	field	net/minecraft/client/renderer/RenderStateShard	POSITION_COLOR_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
 #accessible	field	net/minecraft/client/renderer/RenderStateShard	NO_TEXTURE	Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;
 #accessible	field	net/minecraft/client/renderer/RenderStateShard	TRANSLUCENT_TRANSPARENCY	Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
 #accessible	field	net/minecraft/client/renderer/RenderStateShard	LIGHTMAP	Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;

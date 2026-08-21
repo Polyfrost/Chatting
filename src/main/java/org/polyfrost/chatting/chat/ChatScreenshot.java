@@ -175,7 +175,21 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m, y - 1, 8);
+                int hy = ChatHeads.INSTANCE.headY(y);
+                float dy = ChatHeads.INSTANCE.headYFraction();
+                if (dy != 0f) graphics.pose().translate(0f, dy, 0f);
+                if (ChatHeads.INSTANCE.shouldDrawShadow()) {
+                    if (ChatHeads.INSTANCE.isLegacyShadow()) {
+                        graphics.fill(m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, m + ChatHeads.SHADOW_OFFSET + 8, hy + ChatHeads.SHADOW_OFFSET + 8, ChatHeads.INSTANCE.shadowColor(info, 255));
+                    } else {
+                        float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
+                        graphics.setColor(s, s, s, 1f);
+                        net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, 8);
+                        graphics.setColor(1f, 1f, 1f, 1f);
+                    }
+                }
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m, hy, 8);
+                if (dy != 0f) graphics.pose().translate(0f, -dy, 0f);
             }
             int hx = headOffset(line.content()) + m;
             if (style.border()) {
@@ -220,6 +234,15 @@ public final class ChatScreenshot {
                     .setOutputState(chatting$fbo(rt))
                     .createCompositeState(false));
 
+    private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_SOLID_LAYER = (rt) -> RenderType.create(
+            "chatting_solid", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR,
+            com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432, false, false,
+            RenderType.CompositeState.builder()
+                    .setShaderState(net.minecraft.client.renderer.RenderStateShard.POSITION_COLOR_SHADER)
+                    .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setOutputState(chatting$fbo(rt))
+                    .createCompositeState(false));
+
     private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
         return RenderType.create(
                 "chatting_head", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR,
@@ -239,12 +262,16 @@ public final class ChatScreenshot {
         private final com.mojang.blaze3d.vertex.BufferBuilder textBuffer;
         private final com.mojang.blaze3d.vertex.ByteBufferBuilder headAllocator;
 
+        private final RenderType solidLayer;
+
         private RenderType headLayer;
         private com.mojang.blaze3d.vertex.BufferBuilder headBuffer;
+        private com.mojang.blaze3d.vertex.BufferBuilder solidBuffer;
 
         private OverrideVertexProvider(com.mojang.blaze3d.vertex.ByteBufferBuilder allocator, RenderTarget rt) {
             super(allocator, it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps.emptyMap());
             this.rt = rt;
+            this.solidLayer = CUSTOM_SOLID_LAYER.apply(rt);
             this.textLayer = CUSTOM_TEXT_LAYER.apply(rt);
             this.textBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
             this.headAllocator = new com.mojang.blaze3d.vertex.ByteBufferBuilder(256);
@@ -252,7 +279,8 @@ public final class ChatScreenshot {
 
         @Override
         public com.mojang.blaze3d.vertex.VertexConsumer getBuffer(RenderType renderType) {
-            return this.headBuffer != null ? this.headBuffer : this.textBuffer;
+            if (this.headBuffer != null) return this.headBuffer;
+            return this.solidBuffer != null ? this.solidBuffer : this.textBuffer;
         }
 
         // route following blits into a dedicated head layer sharing our framebuffer because each head has its own skin texture and must flush first
@@ -267,6 +295,17 @@ public final class ChatScreenshot {
             this.endBatch(this.headLayer);
             this.headBuffer = null;
             this.headLayer = null;
+        }
+
+        public void beginSolid() {
+            this.solidBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, solidLayer.mode(), solidLayer.format());
+        }
+
+        public void endSolid() {
+            if (this.solidBuffer == null) return;
+            this.startedBuilders.put(this.solidLayer, this.solidBuffer);
+            this.endBatch(this.solidLayer);
+            this.solidBuffer = null;
         }
 
         public void finishDrawing() {
@@ -295,8 +334,19 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
+                int hy = ChatHeads.INSTANCE.headY(y);
+                float dy = ChatHeads.INSTANCE.headYFraction();
+                if (dy != 0f) context.pose().translate(0f, dy, 0f);
+                boolean legacy = ChatHeads.INSTANCE.isLegacyShadow();
+                if (ChatHeads.INSTANCE.shouldDrawShadow() && legacy) {
+                    consumer.beginSolid();
+                    context.fill(m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, m + ChatHeads.SHADOW_OFFSET + 8, hy + ChatHeads.SHADOW_OFFSET + 8, ChatHeads.INSTANCE.shadowColor(info, 255));
+                    consumer.endSolid();
+                }
                 consumer.beginHead(info.getSkin().texture());
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, y - 1, 8);
+                if (ChatHeads.INSTANCE.shouldDrawShadow() && !legacy) net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, 8, ChatHeads.INSTANCE.shadowColor(255));
+                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, hy, 8);
+                if (dy != 0f) context.pose().translate(0f, -dy, 0f);
                 consumer.endHead();
             }
             int hx = headOffset(line.content()) + m;

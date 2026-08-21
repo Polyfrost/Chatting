@@ -422,17 +422,39 @@ public class ChatComponentMixin implements ChatComponentHook {
         PlayerInfo info = ((ChatLineHook) (Object) line).chatting$getPlayerInfo();
         boolean hidden = ((ChatLineHook) (Object) line).chatting$isHeadHidden();
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
+            int shadow = ChatHeads.SHADOW_OFFSET;
+            int headY = ChatHeads.INSTANCE.headY(y);
+            boolean drawShadow = ChatHeads.INSTANCE.shouldDrawShadow();
+            float dy = ChatHeads.INSTANCE.headYFraction();
+            if (dy != 0f) graphics.pose().translate(0f, dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
             //? if 1.21.1 {
             /^RenderSystem.enableBlend();
+            if (drawShadow) {
+                if (ChatHeads.INSTANCE.isLegacyShadow()) {
+                    graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, ChatHeads.INSTANCE.shadowColor(info, alpha));
+                } else {
+                    float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
+                    graphics.setColor(s, s, s, alpha / 255f);
+                    if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x + shadow, headY + shadow, 8, -1, true, false);
+                    else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8);
+                }
+            }
             graphics.setColor(1f, 1f, 1f, alpha / 255f);
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, y - 1, 8, -1, true, false);
-            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8);
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, headY, 8, -1, true, false);
+            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8);
             RenderSystem.disableBlend();
             graphics.setColor(1f, 1f, 1f, 1f);
             ^///?} else {
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x, y - 1, 8, 0xFFFFFF | (alpha << 24), true, false);
-            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, y - 1, 8, 0xFFFFFF | (alpha << 24));
+            if (drawShadow) {
+                int shadowColor = ChatHeads.INSTANCE.shadowColor(info, alpha);
+                if (ChatHeads.INSTANCE.isLegacyShadow()) graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, shadowColor);
+                else if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x + shadow, headY + shadow, 8, shadowColor, true, false);
+                else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8, shadowColor);
+            }
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x, headY, 8, 0xFFFFFF | (alpha << 24), true, false);
+            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8, 0xFFFFFF | (alpha << 24));
             //?}
+            if (dy != 0f) graphics.pose().translate(0f, -dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
         }
         return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10 : x;
     }
