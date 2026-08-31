@@ -1,2 +1,2 @@
-## 3.1.3
-- Chat Window HUD is now locked by default to prevent accidentally moving it. You can unlock it from the HUD Design Studio if you want to move it.
+## 3.1.4
+Fix screenshots not being copied to the clipboard

@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 //? if >=26 {
@@ -43,6 +44,14 @@ public final class ChatScreenshot {
     private static final Pattern FORMATTING = Pattern.compile("§[0-9a-zA-Z]");
 
     private ChatScreenshot() {
+    }
+
+    public static void allowAwtClipboard() {
+        // MacOS *will* crash if you did this
+        if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("mac")) return;
+        if ("true".equalsIgnoreCase(System.getProperty("java.awt.headless"))) {
+            System.clearProperty("java.awt.headless");
+        }
     }
 
     public record ScreenshotStyle(boolean shadow, boolean background, boolean border) {
@@ -408,15 +417,17 @@ public final class ChatScreenshot {
                 File file = uniqueFile(dir);
                 image.writeToFile(file);
             }
-            if (clip) {
-                ClipboardHelper.setImage(toBufferedImage(image));
-            }
-            if (save && clip) {
+            boolean copied = clip && ClipboardHelper.setImage(toBufferedImage(image));
+            if (save && copied) {
                 notifySuccess("Chatting", "Screenshot saved to clipboard and file.");
-            } else if (save) {
-                notifySuccess("Chatting", "Screenshot saved to file.");
-            } else if (clip) {
+            } else if (copied) {
                 notifySuccess("Chatting", "Screenshot saved to clipboard.");
+            } else if (save) {
+                notifySuccess("Chatting", clip
+                        ? "Screenshot saved to file. The clipboard was unavailable."
+                        : "Screenshot saved to file.");
+            } else {
+                notifyError("Could not copy the screenshot to the clipboard.");
             }
         } catch (Exception e) {
             e.printStackTrace();
