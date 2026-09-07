@@ -12,11 +12,11 @@ import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 *///?}
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.MappableRingBuffer;
@@ -165,6 +165,7 @@ public class GuiRendererMixin implements GuiRendererInterface {
     @Override
     public void chatting$render(GpuBufferSlice gpuBufferSlice, RenderTarget renderTarget) {
         this.prepare();
+        // upload() grows the shared auto-storage index buffers for every draw it stages, so drawing needs no further resize
         this.vertexBuffer.upload();
         this.chatting$draw(gpuBufferSlice, renderTarget);
         this.vertexBuffer.endDraw();

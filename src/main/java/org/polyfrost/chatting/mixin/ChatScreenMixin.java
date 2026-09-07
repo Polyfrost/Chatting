@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -628,8 +629,8 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$shiftHeld = Screen.hasShiftDown();
         chatting$altHeld = Screen.hasAltDown();
     *///?}
-        if (button == 0) chatting$leftClicked = true;
-        else if (button == 1) chatting$rightClicked = true;
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) chatting$leftClicked = true;
+        else if (button == InputConstants.MOUSE_BUTTON_RIGHT) chatting$rightClicked = true;
     }
 
     // captureClickableText builds hit regions without the chat HUD pose so map the cursor back into vanilla space
@@ -648,14 +649,14 @@ public abstract class ChatScreenMixin extends Screen {
     //? if >=1.21.10 {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
-        if (event.button() == 0 && ChatTabsRenderer.INSTANCE.click(event.x(), event.y(), event.hasShiftDown())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && ChatTabsRenderer.INSTANCE.click(event.x(), event.y(), event.hasShiftDown())) {
             cir.setReturnValue(true);
         }
     }
     //?} else {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (button == 0 && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
             cir.setReturnValue(true);
         }
     }
@@ -667,13 +668,14 @@ public abstract class ChatScreenMixin extends Screen {
     private void chatting$suppressSearchKeys(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
         if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
         int key = event.key();
-        if (event.isConfirmation() || key == 264 || key == 265) cir.setReturnValue(true);
+        if (event.isConfirmation() || key == InputConstants.KEY_DOWN || key == InputConstants.KEY_UP) cir.setReturnValue(true);
     }
     //?} else {
     /*@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void chatting$suppressSearchKeys(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
-        if (keyCode == 257 || keyCode == 335 || keyCode == 264 || keyCode == 265) cir.setReturnValue(true);
+        if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER
+                || keyCode == InputConstants.KEY_DOWN || keyCode == InputConstants.KEY_UP) cir.setReturnValue(true);
     }
     *///?}
 }
