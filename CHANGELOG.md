@@ -1,2 +1,2 @@
-## 3.1.4
-Fix screenshots not being copied to the clipboard
+## 3.1.5
+- fix chat heads showing twice on mcpvp
