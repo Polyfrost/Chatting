@@ -3,6 +3,7 @@ package org.polyfrost.chatting.chat
 import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.client.renderer.texture.DynamicTexture
+import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -122,7 +123,32 @@ object ChatHeads {
 
     fun isHidden(content: FormattedCharSequence): Boolean = hiddenHeads.contains(content)
 
-    fun detect(message: String): PlayerInfo? {
+    //? if >=1.21.10 {
+    fun hasServerHeadFor(component: Component, info: PlayerInfo): Boolean {
+        val contents = component.contents
+        if (contents is net.minecraft.network.chat.contents.ObjectContents) {
+            val sprite = contents.contents()
+            if (sprite is net.minecraft.network.chat.contents.objects.PlayerSprite &&
+                sameOwner(sprite.player().partialProfile(), info)
+            ) return true
+        }
+        return component.siblings.any { hasServerHeadFor(it, info) }
+    }
+
+    private fun sameOwner(profile: com.mojang.authlib.GameProfile, info: PlayerInfo): Boolean =
+        profile.id == info.profile.id ||
+            (profile.name.isNotEmpty() && profile.name.equals(info.profile.name, ignoreCase = true))
+    //?} else {
+    /*@Suppress("UNUSED_PARAMETER")
+    fun hasServerHeadFor(component: Component, info: PlayerInfo): Boolean = false
+    *///?}
+
+    fun detect(message: Component): PlayerInfo? {
+        val info = detect(message.string) ?: return null
+        return if (hasServerHeadFor(message, info)) null else info
+    }
+
+    private fun detect(message: String): PlayerInfo? {
         val connection = mc.connection ?: return null
         val before = message.substringBefore(":")
         val words = SPLIT.split(before).filter { it.isNotEmpty() }

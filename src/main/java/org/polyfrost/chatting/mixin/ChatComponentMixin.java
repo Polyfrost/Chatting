@@ -208,7 +208,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         chatting$currentMessage = guiMessage;
         chatting$headConsumed = false;
         chatting$pendingHead = ChattingConfig.INSTANCE.getShowChatHeads()
-            ? ChatHeads.INSTANCE.detect(guiMessage.content().getString())
+            ? ChatHeads.INSTANCE.detect((Component) guiMessage.content())
             : null;
         chatting$pendingHideHead = ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()
             && ChatHeads.INSTANCE.sameOwner(chatting$pendingHead, chatting$lastHeadOwner);
