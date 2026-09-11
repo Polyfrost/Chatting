@@ -13,12 +13,12 @@ import org.polyfrost.oneconfig.api.notifications.v1.NotificationType;
 import org.polyfrost.oneconfig.api.notifications.v1.Notifications;
 import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
@@ -41,7 +41,6 @@ import org.joml.Matrix4fStack;
 *///?}
 
 public final class ChatScreenshot {
-
     private static final Pattern FORMATTING = Pattern.compile("§[0-9a-zA-Z]");
 
     private ChatScreenshot() {

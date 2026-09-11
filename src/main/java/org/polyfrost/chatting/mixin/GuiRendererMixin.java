@@ -1,21 +1,21 @@
 package org.polyfrost.chatting.mixin;
-//? if >=1.21.6 {
 
+//? if >=1.21.6 {
 //? if >=26 {
 import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
-import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 //?} else {
 /*import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 *///?}
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
@@ -36,7 +36,6 @@ import java.util.function.Supplier;
 
 @Mixin(GuiRenderer.class)
 public class GuiRendererMixin implements GuiRendererInterface {
-
     @Final
     @Shadow
     private List<GuiRenderer.Draw> draws;

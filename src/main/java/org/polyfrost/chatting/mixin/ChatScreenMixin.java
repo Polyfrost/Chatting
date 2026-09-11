@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -10,10 +11,9 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.fabricmc.loader.api.FabricLoader;
 import org.polyfrost.chatting.chat.ChatButtons;
-import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatScreenshot;
+import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatTabsRenderer;
@@ -35,8 +35,8 @@ import java.util.Collections;
 import java.util.List;
 
 //? if >=26 {
-import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
 /*import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
@@ -52,7 +52,6 @@ import net.minecraft.util.Mth;
 
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin extends Screen {
-
     protected ChatScreenMixin(Component title) {
         super(title);
     }
