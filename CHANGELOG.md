@@ -1,2 +1,2 @@
-## 3.1.5
-- fix chat heads showing twice on mcpvp
+## 3.2.0
+- Added support for Minecraft 26.3
