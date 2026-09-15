@@ -6,18 +6,34 @@ import net.minecraft.client.Minecraft;
 
 import java.util.List;
 
+//? if >=26.2 {
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import org.joml.Vector4f;
+//?}
+
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
 /*import net.minecraft.client.GuiMessage;
 *///?}
 
-//? if >=1.21.5 <1.21.6 {
-/*import net.minecraft.client.renderer.RenderType;
+//? if >=1.21.5 {
+import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+//?}
+
+//? if =1.21.5 {
+/*import com.mojang.renderpearl.api.buffers.BufferType;
+import com.mojang.renderpearl.api.buffers.BufferUsage;
+import net.minecraft.client.renderer.RenderType;
 *///?}
 
 public final class ChatScreenshotModern {
-
     private ChatScreenshotModern() {
     }
 
@@ -30,7 +46,6 @@ public final class ChatScreenshotModern {
     //?}
 
     //? if >=1.21.6 {
-    
     private static void chatting$flush(Minecraft mc, Object renderState, RenderTarget rt) {
         net.minecraft.client.gui.render.GuiRenderer guiRenderer = mc.gameRenderer.guiRenderer;
         org.polyfrost.chatting.hook.GuiRendererInterface gri = (org.polyfrost.chatting.hook.GuiRendererInterface) (Object) guiRenderer;
@@ -41,7 +56,7 @@ public final class ChatScreenshotModern {
     }
     //?}
 
-    //? if >=1.21.5 <1.21.6 {
+    //? if =1.21.5 {
     /*private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
             "chatting_text", 786432, false, false,
             net.minecraft.client.renderer.RenderPipelines.TEXT,
@@ -129,9 +144,9 @@ public final class ChatScreenshotModern {
     }
 
     private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
-        com.mojang.blaze3d.pipeline.TextureTarget rt;
+        TextureTarget rt;
         try {
-            rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
+            rt = new TextureTarget(null, width * scale, height * scale, false);
         } catch (IllegalArgumentException e) {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
@@ -140,7 +155,7 @@ public final class ChatScreenshotModern {
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, consumer);
         // this variant's vertex provider only serves the text layer so context.fill would crash on a missing vertex format and we clear the target instead
         int clearColor = style.background() ? ChatScreenshot.backgroundColor(mc) : 0x00000000;
-        com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), clearColor);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), clearColor);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height, 1f);
         int m = style.border() ? 1 : 0;
         int y = m;
@@ -180,16 +195,16 @@ public final class ChatScreenshotModern {
 
     //? if >=1.21.6 <1.21.11 {
     /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
-        com.mojang.blaze3d.pipeline.TextureTarget rt;
+        TextureTarget rt;
         try {
-            rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
+            rt = new TextureTarget(null, width * scale, height * scale, false);
         } catch (IllegalArgumentException e) {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
         net.minecraft.client.gui.render.state.GuiRenderState renderState = new net.minecraft.client.gui.render.state.GuiRenderState();
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, renderState);
-        com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
         if (style.background()) {
             context.fill(0, 0, width, height, ChatScreenshot.backgroundColor(mc));
@@ -226,16 +241,16 @@ public final class ChatScreenshotModern {
 
     //? if >=1.21.11 <26 {
     /*private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
-        com.mojang.blaze3d.pipeline.TextureTarget rt;
+        TextureTarget rt;
         try {
-            rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
+            rt = new TextureTarget(null, width * scale, height * scale, false);
         } catch (IllegalArgumentException e) {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
         net.minecraft.client.gui.render.state.GuiRenderState renderState = new net.minecraft.client.gui.render.state.GuiRenderState();
         net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, renderState, 0, 0);
-        com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
         if (style.background()) {
             context.fill(0, 0, width, height, ChatScreenshot.backgroundColor(mc));
@@ -272,12 +287,14 @@ public final class ChatScreenshotModern {
 
     //? if >=26 {
     private static RenderTarget render(Minecraft mc, List<GuiMessage.Line> lines, int width, int height, int scale, ChatScreenshot.ScreenshotStyle style) {
-        com.mojang.blaze3d.pipeline.TextureTarget rt;
+        TextureTarget rt;
         try {
-            //? if >=26.2 {
-            rt = new com.mojang.blaze3d.pipeline.TextureTarget("chatting_screenshot", width * scale, height * scale, false, com.mojang.blaze3d.GpuFormat.RGBA8_UNORM);
-            //?} else {
-            /*rt = new com.mojang.blaze3d.pipeline.TextureTarget(null, width * scale, height * scale, false);
+            //? if >=26.3 {
+            rt = new TextureTarget("chatting_screenshot", width * scale, height * scale, GpuFormat.RGBA8_UNORM, null);
+            //?} elif >=26.2 {
+            /*rt = new TextureTarget("chatting_screenshot", width * scale, height * scale, false, GpuFormat.RGBA8_UNORM);
+            *///?} else {
+            /*rt = new TextureTarget(null, width * scale, height * scale, false);
             *///?}
         } catch (IllegalArgumentException e) {
             ChatScreenshot.notifyError("Chat window is empty.");
@@ -286,9 +303,9 @@ public final class ChatScreenshotModern {
         net.minecraft.client.renderer.state.gui.GuiRenderState renderState = new net.minecraft.client.renderer.state.gui.GuiRenderState();
         net.minecraft.client.gui.GuiGraphicsExtractor context = new net.minecraft.client.gui.GuiGraphicsExtractor(mc, renderState, 0, 0);
         //? if >=26.2 {
-        com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), new org.joml.Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
         //?} else {
-        /*com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
+        /*RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         *///?}
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
         if (style.background()) {
@@ -324,16 +341,16 @@ public final class ChatScreenshotModern {
     }
     //?}
 
-    //? if >=1.21.5 <1.21.6 {
+    //? if =1.21.5 {
     /*private static void readbackAndPersist(RenderTarget rt) {
         int i = rt.width, j = rt.height;
-        com.mojang.blaze3d.textures.GpuTexture tex = rt.getColorTexture();
+        GpuTexture tex = rt.getColorTexture();
         int px = tex.getFormat().pixelSize();
-        com.mojang.blaze3d.systems.GpuDevice device = com.mojang.blaze3d.systems.RenderSystem.getDevice();
-        com.mojang.blaze3d.buffers.GpuBuffer buffer = device.createBuffer(null, com.mojang.blaze3d.buffers.BufferType.PIXEL_PACK, com.mojang.blaze3d.buffers.BufferUsage.STATIC_READ, i * j * px);
-        com.mojang.blaze3d.systems.CommandEncoder encoder = device.createCommandEncoder();
+        GpuDevice device = RenderSystem.getDevice();
+        GpuBuffer buffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, i * j * px);
+        CommandEncoder encoder = device.createCommandEncoder();
         encoder.copyTextureToBuffer(tex, buffer, 0, () -> {
-            try (com.mojang.blaze3d.buffers.GpuBuffer.ReadView view = device.createCommandEncoder().readBuffer(buffer)) {
+            try (GpuBuffer.ReadView view = device.createCommandEncoder().readBuffer(buffer)) {
                 NativeImage image = new NativeImage(i, j, false);
                 for (int k = 0; k < j; k++) {
                     for (int l = 0; l < i; l++) {
@@ -352,20 +369,20 @@ public final class ChatScreenshotModern {
     //? if >=1.21.6 {
     private static void readbackAndPersist(RenderTarget rt) {
         int i = rt.width, j = rt.height;
-        com.mojang.blaze3d.textures.GpuTexture tex = rt.getColorTexture();
+        GpuTexture tex = rt.getColorTexture();
         //? if >=26.2 {
         int px = tex.getFormat().blockSize();
         //?} else {
         /*int px = tex.getFormat().pixelSize();
         *///?}
-        com.mojang.blaze3d.systems.GpuDevice device = com.mojang.blaze3d.systems.RenderSystem.getDevice();
-        com.mojang.blaze3d.buffers.GpuBuffer buffer = device.createBuffer(null, com.mojang.blaze3d.buffers.GpuBuffer.USAGE_COPY_DST | com.mojang.blaze3d.buffers.GpuBuffer.USAGE_MAP_READ, i * j * px);
-        com.mojang.blaze3d.systems.CommandEncoder encoder = device.createCommandEncoder();
+        GpuDevice device = RenderSystem.getDevice();
+        GpuBuffer buffer = device.createBuffer(null, GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_MAP_READ, i * j * px);
+        CommandEncoder encoder = device.createCommandEncoder();
         encoder.copyTextureToBuffer(tex, buffer, 0, () -> {
             //? if >=26.2 {
-            try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView view = buffer.map(true, false)) {
+            try (GpuBufferSlice.MappedView view = buffer.map(true, false)) {
             //?} else {
-            /*try (com.mojang.blaze3d.buffers.GpuBuffer.MappedView view = encoder.mapBuffer(buffer, true, false)) {
+            /*try (GpuBuffer.MappedView view = encoder.mapBuffer(buffer, true, false)) {
             *///?}
                 NativeImage image = new NativeImage(i, j, false);
                 for (int k = 0; k < j; k++) {

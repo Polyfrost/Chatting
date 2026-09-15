@@ -13,12 +13,12 @@ import org.polyfrost.oneconfig.api.notifications.v1.NotificationType;
 import org.polyfrost.oneconfig.api.notifications.v1.Notifications;
 import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
@@ -30,8 +30,9 @@ import net.minecraft.client.multiplayer.chat.GuiMessage;
 /*import net.minecraft.client.gui.GuiGraphics;
 *///?}
 
-//? if >=1.21.4 <1.21.5 {
-/*import net.minecraft.client.renderer.RenderType;
+//? if =1.21.4 {
+/*import com.mojang.renderpearl.api.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderType;
 *///?}
 
 //? if <1.21.4 {
@@ -40,7 +41,6 @@ import org.joml.Matrix4fStack;
 *///?}
 
 public final class ChatScreenshot {
-
     private static final Pattern FORMATTING = Pattern.compile("§[0-9a-zA-Z]");
 
     private ChatScreenshot() {
@@ -226,7 +226,7 @@ public final class ChatScreenshot {
     }
     *///?}
 
-    //? if >=1.21.4 <1.21.5 {
+    //? if =1.21.4 {
     /*private static net.minecraft.client.renderer.RenderStateShard.OutputStateShard chatting$fbo(RenderTarget rt) {
         return new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt.bindWrite(true), () -> {});
     }
@@ -234,7 +234,7 @@ public final class ChatScreenshot {
     // vanilla text and guiTextured layers bind the main render target so give text and head geometry their own layers redirected to our framebuffer
     private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
             "chatting_text", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
-            com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432, false, false,
+            VertexFormat.Mode.QUADS, 786432, false, false,
             RenderType.CompositeState.builder()
                     .setShaderState(net.minecraft.client.renderer.RenderStateShard.RENDERTYPE_TEXT_SHADER)
                     .setTextureState(net.minecraft.client.renderer.RenderStateShard.NO_TEXTURE)
@@ -245,7 +245,7 @@ public final class ChatScreenshot {
 
     private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_SOLID_LAYER = (rt) -> RenderType.create(
             "chatting_solid", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR,
-            com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432, false, false,
+            VertexFormat.Mode.QUADS, 786432, false, false,
             RenderType.CompositeState.builder()
                     .setShaderState(net.minecraft.client.renderer.RenderStateShard.POSITION_COLOR_SHADER)
                     .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
@@ -255,7 +255,7 @@ public final class ChatScreenshot {
     private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
         return RenderType.create(
                 "chatting_head", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR,
-                com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, 786432,
+                VertexFormat.Mode.QUADS, 786432,
                 RenderType.CompositeState.builder()
                         .setTextureState(new net.minecraft.client.renderer.RenderStateShard.TextureStateShard(skin, net.minecraft.util.TriState.FALSE, false))
                         .setShaderState(net.minecraft.client.renderer.RenderStateShard.POSITION_TEXTURE_COLOR_SHADER)
