@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "chatting",
+  "version": "${version}",
+  "name": "Chatting",
+  "description": "Advanced chat-focused utilities and improvements.",
+  "authors": ["Polyfrost"],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "client-init": ["org.polyfrost.chatting.Chatting"]
+  },
+  "mixins": ["mixins.chatting.ornithe.json"],
+  "depends": {
+    "minecraft": "1.8.9",
+    "fabricloader": ">=0.19.3",
+    "oneconfig": ">=1.2.0",
+    "osl-keybinds": ">=0.3.0",
+    "osl-lifecycle-events": ">=0.6.1"
+  }
+}

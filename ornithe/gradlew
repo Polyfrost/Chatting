@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Reuse the verified Gradle 9 wrapper used by the existing 1.8.9 Ornithe ports.
+exec "$(dirname "$0")/../../betterhurtcam-ornithe-1.8.9/gradlew" -p "$(dirname "$0")" "$@"
