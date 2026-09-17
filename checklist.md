@@ -13,8 +13,8 @@ Status meanings:
 
 ## Architecture
 
-- [ ] Replace legacy-only bootstrap/config wiring with modern feature-module
-  ownership (ChattingClient, constants, feature-specific state).
+- [x] Establish modern-style client lifecycle ownership (ChattingClient),
+  shared constants, and a feature-specific dimensions module.
 - [ ] Port modern configuration descriptions, callbacks, migrations, and
   runtime refresh behavior without exposing options before their feature works.
 - [ ] Port modern compatibility reevaluation only where the target mod and API

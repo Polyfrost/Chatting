@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
 import net.minecraft.client.gui.GuiNewChat;
-import org.polyfrost.chatting.Chatting;
+import org.polyfrost.chatting.chat.ChatDimensions;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,12 +16,12 @@ public abstract class GuiNewChatMixin_ChatHeight {
     @Inject(method = "getChatHeight", at = @At("HEAD"), cancellable = true)
     private void customHeight_getChatHeight(CallbackInfoReturnable<Integer> cir) {
         if (ChattingConfig.INSTANCE.getCustomChatHeight())
-            cir.setReturnValue(Chatting.INSTANCE.getChatHeight(getChatOpen()));
+            cir.setReturnValue(ChatDimensions.height(getChatOpen()));
     }
 
     @Inject(method = "getChatWidth", at = @At("HEAD"), cancellable = true)
     private void customWidth_getChatWidth(CallbackInfoReturnable<Integer> cir) {
         if (ChattingConfig.INSTANCE.getCustomChatWidth())
-            cir.setReturnValue(Chatting.INSTANCE.getChatWidth());
+            cir.setReturnValue(ChatDimensions.width());
     }
 }
