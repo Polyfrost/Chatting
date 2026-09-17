@@ -166,6 +166,13 @@ object ChattingConfig : Config(
     @Color(title = "Chat Button Hovered Background Color", category = "Buttons")
     var chatButtonHoveredBackgroundColor = PolyColor.rgba(255, 255, 255, 128)
 
+    @Switch(
+        title = "Chat Copying Button",
+        category = "Buttons",
+        description = "Show a copy button beside the chat line under the cursor while chat is open.",
+    )
+    var chatCopy = true
+
     @Switch(title = "Delete Chat History Button", category = "Buttons")
     var chatDeleteHistory = true
 
