@@ -59,6 +59,12 @@ object ChattingConfig : Config(
     @Slider(title = "Custom Width (px)", category = "Chat Window", min = 20f, max = 2160f)
     var customWidth = 320
 
+    @Switch(title = "Smooth Chat Messages", category = "Animations", subcategory = "Messages")
+    var smoothChat = true
+
+    @Slider(title = "Message Animation Duration (ms)", category = "Animations", subcategory = "Messages", min = 0f, max = 1000f, step = 50f)
+    var smoothChatMs = 500f
+
     @Switch(title = "Smooth Chat Scrolling", category = "Animations", subcategory = "Scrolling")
     var smoothScrolling = true
 
@@ -109,6 +115,7 @@ object ChattingConfig : Config(
         addDependency("focusedHeight", "customChatHeight")
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")
+        addDependency("smoothChatMs", "smoothChat")
         addDependency("smoothScrollingMs", "smoothScrolling")
     }
 }
