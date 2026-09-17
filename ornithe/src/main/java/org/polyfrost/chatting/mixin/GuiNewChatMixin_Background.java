@@ -44,18 +44,19 @@ public abstract class GuiNewChatMixin_Background {
         int visibleLines = Math.min(getLineCount(), Math.max(0, drawnChatLines.size() - scrollPos));
         int firstVisibleBackground = -1;
         int lastVisibleBackground = -1;
-        boolean chatOpen = getChatOpen();
+        boolean keepMessagesVisible = !ChattingConfig.INSTANCE.getFade() || getChatOpen();
         float opacity = mc.gameSettings.chatOpacity * 0.9F + 0.1F;
 
         for (int lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
             ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
-            int age = updateCounter - line.getUpdatedCounter();
-            if (age >= 200 && !chatOpen) continue;
+            int age = chatting$fadeAge(updateCounter - line.getUpdatedCounter());
+            if (age >= 200 && !keepMessagesVisible) continue;
 
             double fade = 1.0D - age / 200.0D;
             fade *= 10.0D;
             fade = Math.max(0.0D, Math.min(1.0D, fade));
-            int alpha = chatOpen ? 255 : (int) (255.0D * fade);
+            fade *= fade;
+            int alpha = keepMessagesVisible ? 255 : (int) (255.0D * fade);
             alpha = (int) (alpha * opacity);
             if (alpha <= 3) continue;
 
@@ -68,13 +69,14 @@ public abstract class GuiNewChatMixin_Background {
         int width = (int) Math.ceil(getChatWidth() / getChatScale());
         for (int lineIndex = firstVisibleBackground; lineIndex <= lastVisibleBackground; lineIndex++) {
             ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
-            int age = updateCounter - line.getUpdatedCounter();
-            if (age >= 200 && !chatOpen) continue;
+            int age = chatting$fadeAge(updateCounter - line.getUpdatedCounter());
+            if (age >= 200 && !keepMessagesVisible) continue;
 
             double fade = 1.0D - age / 200.0D;
             fade *= 10.0D;
             fade = Math.max(0.0D, Math.min(1.0D, fade));
-            int alpha = chatOpen ? 255 : (int) (255.0D * fade);
+            fade *= fade;
+            int alpha = keepMessagesVisible ? 255 : (int) (255.0D * fade);
             alpha = (int) (alpha * opacity);
             if (alpha <= 3) continue;
 
@@ -94,6 +96,10 @@ public abstract class GuiNewChatMixin_Background {
     )
     private int chatting$hideVanillaLineBackground(int vanillaColor) {
         return vanillaColor & 0x00FFFFFF;
+    }
+
+    private int chatting$fadeAge(int age) {
+        return age + 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20f);
     }
 
     private boolean chatting$hovered(int left, int top, int right, int bottom) {
