@@ -45,7 +45,7 @@ Status meanings:
 - [ ] Per-message copy button.
 - [ ] Right-click copy and shortcut-key gating.
 - [ ] Per-message delete button.
-- [ ] Modern clear-history button behavior.
+- [x] Modern clear-history button behavior.
 - [ ] Chat screenshot button and screenshot keybind.
 - [ ] Chat search UI and filtered-render refresh behavior.
 

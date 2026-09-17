@@ -194,7 +194,11 @@ object ChattingConfig : Config(
     )
     var rightClickCopyCtrl = true
 
-    @Switch(title = "Delete Chat History Button", category = "Buttons")
+    @Switch(
+        title = "Delete Chat History Button",
+        category = "Buttons",
+        description = "Show a button that immediately clears the local chat history.",
+    )
     var chatDeleteHistory = true
 
     @Switch(title = "Chat Searching", category = "Buttons")
