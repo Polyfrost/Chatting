@@ -17,6 +17,7 @@ import org.polyfrost.chatting.chat.ChatDeleteButton;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.ClearButton;
 import org.polyfrost.chatting.gui.components.SearchButton;
+import org.polyfrost.chatting.gui.components.ScreenshotButton;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -112,6 +113,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         chatting$searchButton = new SearchButton();
         if (ChattingConfig.INSTANCE.getChatSearch()) buttonList.add(chatting$searchButton);
         if (ChattingConfig.INSTANCE.getChatDeleteHistory()) buttonList.add(new ClearButton());
+        if (ChattingConfig.INSTANCE.getChatScreenshot()) buttonList.add(new ScreenshotButton());
         if (ChattingConfig.INSTANCE.getChatTabs()) ChatTabs.INSTANCE.getTabs().forEach(tab -> buttonList.add(tab.getButton()));
     }
 

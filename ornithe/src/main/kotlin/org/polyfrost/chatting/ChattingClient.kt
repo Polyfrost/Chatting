@@ -3,6 +3,7 @@ package org.polyfrost.chatting
 import net.minecraft.client.Minecraft
 import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents
 import org.polyfrost.chatting.chat.ChatShortcuts
+import org.polyfrost.chatting.chat.ChatScreenshot
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.config.ChattingConfig
 
@@ -18,6 +19,7 @@ object ChattingClient {
         if (initialized) return
         initialized = true
         ChattingConfig.preload()
+        ChatScreenshot.initialize()
         MinecraftClientEvents.TICK_END.register(::initializeDeferredFeatures)
     }
 

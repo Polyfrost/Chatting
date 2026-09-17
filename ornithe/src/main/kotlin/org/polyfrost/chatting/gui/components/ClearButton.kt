@@ -7,7 +7,11 @@ import org.polyfrost.chatting.config.ChattingConfig
 
 class ClearButton : CleanButton(
     13379014,
-    { ScaledResolution(Minecraft.getMinecraft()).scaledWidth - if (ChattingConfig.chatSearch) 28 else 14 },
+    {
+        ScaledResolution(Minecraft.getMinecraft()).scaledWidth - 14 * (
+            1 + (if (ChattingConfig.chatSearch) 1 else 0) + (if (ChattingConfig.chatScreenshot) 1 else 0)
+        )
+    },
     12, 12, "", { RenderType.NONE },
 ) {
     override fun onMousePress() {

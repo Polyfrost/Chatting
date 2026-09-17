@@ -215,8 +215,24 @@ object ChattingConfig : Config(
     )
     var chatDeleteHistory = true
 
+    @Switch(
+        title = "Chat Screenshot Button",
+        category = "Buttons",
+        description = "Show a button that captures the visible chat lines.",
+    )
+    var chatScreenshot = true
+
     @Switch(title = "Chat Searching", category = "Buttons")
     var chatSearch = true
+
+    @Dropdown(
+        title = "Screenshot Mode",
+        category = "Screenshotting",
+        options = ["Save To System", "Add To Clipboard", "Both"],
+        description = "Choose whether chat screenshots are saved, copied, or both.",
+    )
+    var screenshotMode = 0
+        get() = field.coerceIn(0, 2)
 
     @Switch(title = "Remove Scroll Bar", category = "Animations", subcategory = "Scrolling")
     var removeScrollBar = true
