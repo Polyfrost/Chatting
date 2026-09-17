@@ -174,6 +174,13 @@ object ChattingConfig : Config(
     var chatCopy = true
 
     @Switch(
+        title = "Delete Chat Message Button",
+        category = "Buttons",
+        description = "Show a delete button beside the chat line under the cursor while chat is open.",
+    )
+    var chatDelete = true
+
+    @Switch(
         title = "Right Click to Copy Chat Message",
         category = "Buttons",
         description = "Copy a chat message by right-clicking its text.",

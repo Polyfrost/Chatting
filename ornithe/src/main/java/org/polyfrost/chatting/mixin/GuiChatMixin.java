@@ -1,6 +1,8 @@
 package org.polyfrost.chatting.mixin;
 
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.ChatLine;
+import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.IChatComponent;
@@ -11,6 +13,7 @@ import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.chat.ChatCopyButton;
+import org.polyfrost.chatting.chat.ChatDeleteButton;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.ClearButton;
 import org.polyfrost.chatting.gui.components.SearchButton;
@@ -67,6 +70,14 @@ public abstract class GuiChatMixin extends GuiScreen {
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$copyHoveredLine(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
+        if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatDelete()) {
+            ChatLine line = ChatDeleteButton.consume();
+            if (line != null) {
+                chatting$deleteLine(line);
+                ci.cancel();
+                return;
+            }
+        }
         if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatCopy()) {
             String text = ChatCopyButton.consumeHoveredText();
             if (text == null) return;
@@ -80,6 +91,20 @@ public abstract class GuiChatMixin extends GuiScreen {
         if (component == null) return;
         GuiScreen.setClipboardString(component.getUnformattedText());
         ci.cancel();
+    }
+
+    @Unique
+    private void chatting$deleteLine(ChatLine line) {
+        GuiNewChatAccessor accessor = (GuiNewChatAccessor) mc.ingameGUI.getChatGUI();
+        accessor.getDrawnChatLines().remove(line);
+        for (java.util.Iterator<ChatLine> it = accessor.getChatLines().iterator(); it.hasNext();) {
+            ChatLine candidate = it.next();
+            if (candidate.getUpdatedCounter() == line.getUpdatedCounter()
+                && candidate.getChatComponent().getFormattedText().equals(line.getChatComponent().getFormattedText())) {
+                it.remove();
+                break;
+            }
+        }
     }
 
     @Unique
