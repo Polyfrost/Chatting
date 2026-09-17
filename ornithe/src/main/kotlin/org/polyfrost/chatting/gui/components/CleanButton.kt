@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
-import org.polyfrost.chatting.chat.ChatHooks
 import org.polyfrost.chatting.config.ChattingConfig
 
 /** Vanilla chat-control base without Forge or OmniCore helpers. */
@@ -30,7 +29,7 @@ open class CleanButton(
 
     open fun setPositionY() {
         val scaledHeight = ScaledResolution(Minecraft.getMinecraft()).scaledHeight
-        yPosition = scaledHeight - 27 + if (org.polyfrost.chatting.Chatting.chatInput.compactInputBox && xPosition - ChatHooks.inputBoxRight >= 1) 13 else 0
+        yPosition = scaledHeight - 27
     }
 
     override fun mousePressed(mc: Minecraft, mouseX: Int, mouseY: Int): Boolean {

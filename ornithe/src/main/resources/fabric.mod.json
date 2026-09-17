@@ -15,7 +15,6 @@
     "minecraft": "1.8.9",
     "fabricloader": ">=0.19.3",
     "oneconfig": ">=1.2.0",
-    "osl-keybinds": ">=0.3.0",
-    "osl-lifecycle-events": ">=0.6.1"
+    "osl-entrypoints": ">=0.6.1"
   }
 }

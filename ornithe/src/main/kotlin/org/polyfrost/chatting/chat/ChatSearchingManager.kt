@@ -3,7 +3,6 @@ package org.polyfrost.chatting.chat
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
-import org.polyfrost.chatting.hook.ChatHook
 
 /** Lightweight, client-thread-safe replacement for the removed Deftu/Caffeine helpers. */
 object ChatSearchingManager {
@@ -40,13 +39,7 @@ object ChatSearchingManager {
         val currentTab = ChatTabs.currentTabs.firstOrNull()
         val messages = currentTab?.messages ?: return null
         if (messages.isEmpty()) return null
-        return messages.map {
-            ChatHook.lineVisible = true
-            try {
-                ChatLine(0, ChatComponentText(it), 0)
-            } finally {
-                ChatHook.lineVisible = false
-            }
-        }.let { filterMessages2(text, it) }
+        return messages.map { ChatLine(0, ChatComponentText(it), 0) }
+            .let { filterMessages2(text, it) }
     }
 }

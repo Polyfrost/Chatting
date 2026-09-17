@@ -2,7 +2,6 @@ package org.polyfrost.chatting.mixin;
 
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.chatting.utils.ModCompatHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
@@ -45,7 +44,7 @@ public abstract class GuiNewChatMixin_ChatTabs {
                 }
                 if (!displayOnly) {
                     this.chatLines.add(0, new ChatLine(updateCounter, chatComponent, chatLineId));
-                    while (this.chatLines.size() > (100 + ModCompatHooks.getExtendedChatLength())) {
+                    while (this.chatLines.size() > 100) {
                         this.chatLines.remove(this.chatLines.size() - 1);
                     }
                 }

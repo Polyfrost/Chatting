@@ -14,26 +14,13 @@ import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
  */
 object ChattingConfig : Config(
     "chatting.json",
-    "/assets/chatting/chatting_dark.svg",
+    "/chatting_dark.svg",
     "Chatting",
     Category.VISUALS,
 ) {
-    @Include var enabled = true
 
     @Dropdown(title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"])
     var textRenderType = 1
-
-    @Color(title = "Hover Message Background Color", category = "General")
-    var hoveredChatBackgroundColor = PolyColor.rgba(80, 80, 80, 128)
-
-    @Checkbox(title = "Message Fade", category = "General")
-    var fade = true
-
-    @Slider(title = "Time Before Fade", category = "General", min = 0f, max = 20f)
-    var fadeTime = 10f
-
-    @Switch(title = "Inform Outdated Mods", category = "General")
-    var informForAlternatives = true
 
     @Switch(title = "Chat Peek", category = "Chat Peek")
     var chatPeek = false
@@ -72,27 +59,6 @@ object ChattingConfig : Config(
     @Slider(title = "Custom Width (px)", category = "Chat Window", min = 20f, max = 2160f)
     var customWidth = 320
 
-    @Switch(title = "Smooth Chat Messages", category = "Animations", subcategory = "Messages")
-    var smoothChat = true
-
-    @Slider(title = "Message Animation Speed", category = "Animations", subcategory = "Messages", min = 0f, max = 1f)
-    var messageSpeed = 0.5f
-
-    @Switch(title = "Smooth Chat Background", category = "Animations", subcategory = "Background")
-    var smoothBG = true
-
-    @Slider(title = "Background Animation Duration", category = "Animations", subcategory = "Background", min = 50f, max = 1000f)
-    var bgDuration = 400f
-
-    @Switch(title = "Smooth Chat Scrolling", category = "Animations", subcategory = "Scrolling")
-    var smoothScrolling = true
-
-    @Slider(title = "Scrolling Animation Speed", category = "Animations", subcategory = "Scrolling", min = 0f, max = 1f)
-    var scrollingSpeed = 0.15f
-
-    @Switch(title = "Remove Scroll Bar", category = "Animations", subcategory = "Scrolling")
-    var removeScrollBar = true
-
     @Color(title = "Chat Button Color", category = "Buttons")
     var chatButtonColor = PolyColor.rgba(255, 255, 255, 255)
 
@@ -105,53 +71,14 @@ object ChattingConfig : Config(
     @Color(title = "Chat Button Hovered Background Color", category = "Buttons")
     var chatButtonHoveredBackgroundColor = PolyColor.rgba(255, 255, 255, 128)
 
-    @Switch(title = "Button Shadow", category = "Buttons")
-    var buttonShadow = true
-
-    @Switch(title = "Extend Chat Background", category = "Buttons")
-    var extendBG = true
-
-    @Switch(title = "Chat Copying Button", category = "Buttons")
-    var chatCopy = true
-
-    @Switch(title = "Right Click to Copy Chat Message", category = "Buttons")
-    var rightClickCopy = false
-
-    @Switch(title = "Only Click Copy Chat Message when Holding CTRL", category = "Buttons")
-    var rightClickCopyCtrl = true
-
-    @Switch(title = "Delete Chat Message Button", category = "Buttons")
-    var chatDelete = true
-
     @Switch(title = "Delete Chat History Button", category = "Buttons")
     var chatDeleteHistory = true
-
-    @Switch(title = "Chat Screenshot Button", category = "Buttons")
-    var chatScreenshot = true
 
     @Switch(title = "Chat Searching", category = "Buttons")
     var chatSearch = true
 
-    @Switch(title = "Show Chat Heads", category = "Chat Heads")
-    var showChatHeads = true
-
-    @Switch(title = "Offset Non-Player Messages", category = "Chat Heads")
-    var offsetNonPlayerMessages = false
-
-    @Switch(title = "Hide Chat Head on Consecutive Messages", category = "Chat Heads")
-    var hideChatHeadOnConsecutiveMessages = true
-
-    @Slider(title = "Spam Blocker Threshold", category = "Player Chats", min = 80f, max = 100f)
-    var spamThreshold = 100
-
-    @Switch(title = "Custom SkyBlock Chat Formatting (remove ranks)", category = "Player Chats")
-    var customChatFormatting = false
-
-    @Switch(title = "Completely Hide Spam", category = "Player Chats")
-    var hideSpam = false
-
-    @Dropdown(title = "Screenshot Mode", category = "Screenshotting", options = ["Save To System", "Add To Clipboard", "Both"])
-    var copyMode = 0
+    @Switch(title = "Hide Chat Scrollbar", category = "General")
+    var removeScrollBar = true
 
     @Switch(title = "Chat Tabs", category = "Tabs")
     var chatTabs = true
@@ -167,25 +94,12 @@ object ChattingConfig : Config(
     @Checkbox(title = "Enable Shortcuts Only on Hypixel", category = "Shortcuts")
     var hypixelOnlyChatShortcuts = true
 
-    @Switch(title = "Remove Tooltip Background", category = "Tooltips")
-    var removeTooltipBackground = false
-
-    @Dropdown(title = "Tooltip Text Render Type", category = "Tooltips", options = ["No Shadow", "Shadow", "Full Shadow"])
-    var tooltipTextRenderType = 1
-
     init {
-        addDependency("fadeTime", "fade")
         addDependency("peekScrolling", "chatPeek")
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
-        addDependency("rightClickCopyCtrl", "rightClickCopy")
-        addDependency("offsetNonPlayerMessages", "showChatHeads")
-        addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
         addDependency("hypixelOnlyChatTabs", "chatTabs")
         addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
-        addDependency("messageSpeed", "smoothChat")
-        addDependency("bgDuration", "smoothBG")
-        addDependency("scrollingSpeed", "smoothScrolling")
         addDependency("focusedHeight", "customChatHeight")
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")

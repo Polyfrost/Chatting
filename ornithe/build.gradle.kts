@@ -43,18 +43,6 @@ dependencies {
     modImplementation("org.polyfrost.oneconfig:1.8.9-ornithe:1.2.0")
 }
 
-sourceSets.named("main") {
-    java.exclude(
-        "org/polyfrost/chatting/mixin/ClientCommandHandlerMixin.java",
-        "org/polyfrost/chatting/mixin/EntityRendererMixin.java",
-        "org/polyfrost/chatting/mixin/GuiIngameForgeMixin.java",
-        "org/polyfrost/chatting/mixin/GuiIngameForge_DrawChatAccessor.java",
-        "org/polyfrost/chatting/mixin/GuiUtilsMixin.java",
-        "org/polyfrost/chatting/mixin/GuiNewChatMixin_Movable.java",
-        "org/polyfrost/chatting/mixin/GuiNewChatMixin_SmoothMessages.java",
-    )
-}
-
 tasks.processResources {
     inputs.property("version", project.version)
     filesMatching("fabric.mod.json") { expand("version" to project.version) }
