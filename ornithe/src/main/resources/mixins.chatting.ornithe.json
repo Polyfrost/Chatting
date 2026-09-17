@@ -6,7 +6,7 @@
   "client": [
     "ChatStyle_UnderlineLinks_Mixin", "EntityPlayerSPMixin",
     "GuiChatMixin", "GuiContainerCreativeMixin", "GuiNewChatAccessor",
-    "GuiNewChatMixin_ChatHeight", "GuiNewChatMixin_ChatPeek", "GuiNewChatMixin_ChatSearching",
+    "GuiNewChatMixin_Background", "GuiNewChatMixin_ChatHeight", "GuiNewChatMixin_ChatPeek", "GuiNewChatMixin_ChatSearching",
     "GuiNewChatMixin_ChatTabs", "GuiNewChatMixin_Scrolling", "GuiNewChatMixin_SmoothMessages",
     "GuiNewChatMixin_TextRendering",
     "InventoryPlayerMixin"

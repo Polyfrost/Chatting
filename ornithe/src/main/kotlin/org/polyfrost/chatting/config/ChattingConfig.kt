@@ -22,6 +22,20 @@ object ChattingConfig : Config(
     @Dropdown(title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"])
     var textRenderType = 1
 
+    @Color(
+        title = "Chat Background Color",
+        category = "General",
+        description = "The color of chat message backgrounds; its alpha is combined with vanilla chat opacity.",
+    )
+    var chatBackgroundColor = PolyColor.rgba(0, 0, 0, 255)
+
+    @Color(
+        title = "Hover Message Background Color",
+        category = "General",
+        description = "The background color of the chat line under the cursor while chat is open.",
+    )
+    var hoveredChatBackgroundColor = PolyColor.rgba(80, 80, 80, 128)
+
     @Switch(title = "Chat Peek", category = "Chat Peek")
     var chatPeek = false
 
