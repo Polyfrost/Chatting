@@ -7,6 +7,7 @@ import org.lwjgl.input.Keyboard;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
+import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.ClearButton;
 import org.polyfrost.chatting.gui.components.SearchButton;
@@ -54,6 +55,11 @@ public abstract class GuiChatMixin extends GuiScreen {
         return ChattingConfig.INSTANCE.getChatShortcuts() && original.startsWith("/")
             ? "/" + ChatShortcuts.INSTANCE.handleSentCommand(original.substring(1))
             : original;
+    }
+
+    @Inject(method = "handleMouseInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;scroll(I)V"))
+    private void chatting$beginSmoothScroll(CallbackInfo ci) {
+        ChatScrolling.INSTANCE.setShouldSmooth(true);
     }
 
     @Unique

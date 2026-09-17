@@ -59,6 +59,12 @@ object ChattingConfig : Config(
     @Slider(title = "Custom Width (px)", category = "Chat Window", min = 20f, max = 2160f)
     var customWidth = 320
 
+    @Switch(title = "Smooth Chat Scrolling", category = "Animations", subcategory = "Scrolling")
+    var smoothScrolling = true
+
+    @Slider(title = "Scrolling Animation Duration (ms)", category = "Animations", subcategory = "Scrolling", min = 0f, max = 1000f, step = 50f)
+    var smoothScrollingMs = 150f
+
     @Color(title = "Chat Button Color", category = "Buttons")
     var chatButtonColor = PolyColor.rgba(255, 255, 255, 255)
 
@@ -77,7 +83,7 @@ object ChattingConfig : Config(
     @Switch(title = "Chat Searching", category = "Buttons")
     var chatSearch = true
 
-    @Switch(title = "Hide Chat Scrollbar", category = "General")
+    @Switch(title = "Remove Scroll Bar", category = "Animations", subcategory = "Scrolling")
     var removeScrollBar = true
 
     @Switch(title = "Chat Tabs", category = "Tabs")
@@ -103,5 +109,6 @@ object ChattingConfig : Config(
         addDependency("focusedHeight", "customChatHeight")
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")
+        addDependency("smoothScrollingMs", "smoothScrolling")
     }
 }
