@@ -13,6 +13,7 @@ import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
@@ -68,7 +69,7 @@ public abstract class GuiNewChatMixin_Background {
 
         if (firstVisibleBackground < 0) return;
 
-        int width = (int) Math.ceil(getChatWidth() / getChatScale());
+        int width = (int) Math.ceil(getChatWidth() / getChatScale()) + chatting$buttonBackgroundWidth();
         for (int lineIndex = firstVisibleBackground; lineIndex <= lastVisibleBackground; lineIndex++) {
             ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
             int age = chatting$fadeAge(updateCounter - line.getUpdatedCounter());
@@ -104,13 +105,24 @@ public abstract class GuiNewChatMixin_Background {
 
         int left = args.get(0);
         int top = args.get(1);
-        int right = args.get(2);
+        int right = (int) args.get(2) + chatting$buttonBackgroundWidth();
         int bottom = args.get(3);
+        args.set(2, right);
         int color = ChatBackground.tint(vanillaColor);
         if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
             color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         }
         args.set(4, color);
+    }
+
+    @Unique
+    private int chatting$buttonBackgroundWidth() {
+        if (!ChattingConfig.INSTANCE.getExtendBG() || !(mc.currentScreen instanceof GuiChat)) return 0;
+
+        int buttons = 0;
+        if (ChattingConfig.INSTANCE.getChatCopy()) buttons++;
+        if (ChattingConfig.INSTANCE.getChatDelete()) buttons++;
+        return buttons * 10;
     }
 
     private int chatting$fadeAge(int age) {

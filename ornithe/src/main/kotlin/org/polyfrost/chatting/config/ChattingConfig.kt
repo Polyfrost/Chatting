@@ -174,6 +174,13 @@ object ChattingConfig : Config(
     var buttonShadow = true
 
     @Switch(
+        title = "Extend Chat Background",
+        category = "Buttons",
+        description = "Extend the hovered chat background behind the copy and delete buttons.",
+    )
+    var extendBG = true
+
+    @Switch(
         title = "Chat Copying Button",
         category = "Buttons",
         description = "Show a copy button beside the chat line under the cursor while chat is open.",

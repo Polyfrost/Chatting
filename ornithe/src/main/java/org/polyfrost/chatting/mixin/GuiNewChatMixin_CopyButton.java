@@ -50,12 +50,14 @@ public abstract class GuiNewChatMixin_CopyButton extends Gui {
 
         int top = (int) ((float) args.get(2) - 1f);
         int left = (int) Math.ceil(getChatWidth() / getChatScale()) + 5;
-        if (ChattingConfig.INSTANCE.getChatCopy() && chatting$copyHovered(left, top, left + 9, top + 9)) {
-            chatting$drawButton(CHATTING$COPY, left, top);
-            ChatCopyButton.hover((String) args.get(0));
-            return;
+        if (ChattingConfig.INSTANCE.getChatCopy()) {
+            if (chatting$copyHovered(left, top, left + 9, top + 9)) {
+                chatting$drawButton(CHATTING$COPY, left, top);
+                ChatCopyButton.hover((String) args.get(0));
+                return;
+            }
+            left += 10;
         }
-        left += 10;
         if (!ChattingConfig.INSTANCE.getChatDelete() || !chatting$copyHovered(left, top, left + 9, top + 9)) return;
         int lineIndex = -(top + 9) / 9;
         int drawnIndex = lineIndex + scrollPos;
