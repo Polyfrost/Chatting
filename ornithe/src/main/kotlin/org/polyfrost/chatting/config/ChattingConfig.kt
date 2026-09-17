@@ -27,6 +27,7 @@ object ChattingConfig : Config(
         description = "Shadow uses Minecraft's standard chat text shadow; No Shadow renders text flat.",
     )
     var textRenderType = 1
+        get() = field.coerceIn(0, 1)
 
     @Color(
         title = "Chat Background Color",
