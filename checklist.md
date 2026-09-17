@@ -29,7 +29,7 @@ Status meanings:
 - [x] Corner radius.
 - [x] Message fade and time-before-fade.
 - [x] Modern text-rendering behavior.
-- [ ] Modern custom chat dimensions: chat width, custom chat width, custom
+- [x] Modern custom chat dimensions: chat width, custom chat width, custom
   chat height, focused height, and unfocused height.
 - [x] Modern smooth chat messages, using a 1.8.9 renderer adapter.
 - [x] Modern smooth chat scrolling, using a 1.8.9 renderer adapter.

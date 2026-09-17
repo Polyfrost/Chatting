@@ -2,6 +2,7 @@ package org.polyfrost.chatting.config
 
 import org.lwjgl.input.Keyboard
 import org.polyfrost.chatting.Chatting
+import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -96,19 +97,48 @@ object ChattingConfig : Config(
     @Switch(title = "Underlined Links", category = "General")
     var underlinedLinks = false
 
-    @Switch(title = "Custom Chat Height", category = "Chat Window")
+    @Switch(
+        title = "Custom Chat Height",
+        category = "Chat Window",
+        description = "Set exact focused and unfocused chat heights instead of using Minecraft's chat-height options.",
+    )
     var customChatHeight = false
 
-    @Slider(title = "Focused Height (px)", category = "Chat Window", min = 20f, max = 2160f)
+    @Slider(
+        title = "Focused Height (px)",
+        category = "Chat Window",
+        description = "The chat height while chat is open, before Minecraft's chat scale is applied.",
+        min = 20f,
+        max = 2160f,
+        step = 1f,
+    )
     var focusedHeight = 180
 
-    @Slider(title = "Unfocused Height (px)", category = "Chat Window", min = 20f, max = 2160f)
+    @Slider(
+        title = "Unfocused Height (px)",
+        category = "Chat Window",
+        description = "The chat height while chat is closed, before Minecraft's chat scale is applied.",
+        min = 20f,
+        max = 2160f,
+        step = 1f,
+    )
     var unfocusedHeight = 90
 
-    @Switch(title = "Custom Chat Width", category = "Chat Window")
+    @Switch(
+        title = "Custom Chat Width",
+        category = "Chat Window",
+        description = "Set an exact chat width instead of using Minecraft's chat-width option.",
+    )
     var customChatWidth = false
 
-    @Slider(title = "Custom Width (px)", category = "Chat Window", min = 20f, max = 2160f)
+    @Slider(
+        title = "Chat Width (px)",
+        category = "Chat Window",
+        description = "The chat width before Minecraft's chat scale is applied.",
+        min = 40f,
+        max = 2160f,
+        step = 1f,
+    )
     var customWidth = 320
 
     @Switch(title = "Smooth Chat Messages", category = "Animations", subcategory = "Messages")
@@ -167,6 +197,11 @@ object ChattingConfig : Config(
         addDependency("focusedHeight", "customChatHeight")
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")
+        addCallback("customChatHeight") { ChatDimensions.refresh() }
+        addCallback("focusedHeight") { ChatDimensions.refresh() }
+        addCallback("unfocusedHeight") { ChatDimensions.refresh() }
+        addCallback("customChatWidth") { ChatDimensions.refresh() }
+        addCallback("customWidth") { ChatDimensions.refresh() }
         addDependency("smoothChatMs", "smoothChat")
         addDependency("smoothScrollingMs", "smoothScrolling")
         addDependency("chatCornerRadius", "roundedChatCorners")
