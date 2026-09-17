@@ -8,11 +8,11 @@ package org.polyfrost.chatting.chat
 class ChatInputBox {
     var compactInputBox = false
     var inputFieldDraft = false
-    var background = true
+    private var backgroundVisible = true
 
     fun drawBG() = Unit
 
     fun setBackground(value: Boolean) {
-        background = value
+        backgroundVisible = value
     }
 }

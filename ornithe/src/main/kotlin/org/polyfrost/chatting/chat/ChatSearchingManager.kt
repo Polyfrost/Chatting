@@ -15,6 +15,9 @@ object ChatSearchingManager {
     var lastSearch = ""
 
     @JvmStatic
+    fun clearCache() = synchronized(cache) { cache.clear() }
+
+    @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? =
         filterChatTabMessages(lastSearch) ?: filterMessages2(text, list)
 

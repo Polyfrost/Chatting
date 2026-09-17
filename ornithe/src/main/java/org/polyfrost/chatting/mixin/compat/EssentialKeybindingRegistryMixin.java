@@ -1,7 +1,7 @@
 package org.polyfrost.chatting.mixin.compat;
 
 import org.polyfrost.chatting.config.ChattingConfig;
-import org.polyfrost.oneconfig.api.ui.v1.Notifications;
+import org.polyfrost.oneconfig.api.notifications.v1.Notifications;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -22,7 +22,7 @@ public class EssentialKeybindingRegistryMixin {
     private void overrideChatPeek(CallbackInfoReturnable<Boolean> cir) {
         if (!ChattingConfig.INSTANCE.getChatPeek() && cir.getReturnValue()) {
             if (System.currentTimeMillis() - chatting$lastNotify >= 1000) {
-                Notifications.enqueue(Notifications.Type.Info, "Chatting", "Essential's chat peek has been replaced by Chatting. You can configure this via OneConfig, by clicking the right shift key on your keyboard, or by typing /chatting in your chat.");
+                Notifications.info("Chatting", "Essential's chat peek has been replaced by Chatting. Configure it through OneConfig.");
                 chatting$lastNotify = System.currentTimeMillis();
             }
         }

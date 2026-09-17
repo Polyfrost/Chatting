@@ -20,28 +20,20 @@ object Chatting : ClientModInitializer {
     const val NAME = "Chatting"
     const val VER = "2.0.6"
 
-    @JvmField
     val keybind = KeyBinding("key.chatting.screenshot", Keyboard.KEY_NONE, "category.chatting")
 
-    @JvmField
     var doTheThing = false
 
-    @JvmField
     var isPatcher = false
 
-    @JvmField
     var isBetterChat = false
 
-    @JvmField
     var isSkytils = false
 
-    @JvmField
     var isHychat = false
 
-    @JvmField
     val chatWindow = ChatWindow()
 
-    @JvmField
     val chatInput = ChatInputBox()
 
     val oldModDir = Paths.get("W-OVERFLOW", NAME)

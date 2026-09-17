@@ -23,7 +23,7 @@ public class GuiNewChatMixin_ChatSearching {
 
     @Inject(method = "setChatLine", at = @At("HEAD"))
     private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
-        ChatSearchingManager.getCache().invalidateAll();
+        ChatSearchingManager.clearCache();
     }
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))

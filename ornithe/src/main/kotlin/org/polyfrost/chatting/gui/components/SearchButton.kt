@@ -1,27 +1,18 @@
 package org.polyfrost.chatting.gui.components
 
-import dev.deftu.omnicore.client.render.OmniResolution
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiTextField
-import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.util.ResourceLocation
-import org.polyfrost.chatting.Chatting
+import net.minecraft.client.gui.ScaledResolution
 import org.polyfrost.chatting.chat.ChatSearchingManager
 import org.polyfrost.chatting.config.ChattingConfig
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.polyui.color.rgba
 
-class SearchButton() :
-    CleanButton(
-        3993935, { OmniResolution.scaledWidth - 14 }, 12, 12, "",
-        { RenderType.NONE }) {
+class SearchButton : CleanButton(
+    3993935, { ScaledResolution(Minecraft.getMinecraft()).scaledWidth - 14 }, 12, 12, "", { RenderType.NONE },
+) {
     val inputField = SearchTextField()
     private var chatBox = false
 
-    override fun isEnabled(): Boolean {
-        return chatBox
-    }
+    override fun isEnabled() = chatBox
 
     override fun onMousePress() {
         chatBox = !chatBox
@@ -32,41 +23,29 @@ class SearchButton() :
     }
 
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int) {
-
+        val resolution = ScaledResolution(mc)
+        inputField.xPosition = resolution.scaledWidth * 4 / 5 - 60
+        inputField.yPosition = resolution.scaledHeight - 26
         inputField.drawTextBox()
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
-            GlStateManager.pushMatrix()
-            GlStateManager.enableAlpha()
-            GlStateManager.enableBlend()
-            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
-            GlStateManager.blendFunc(770, 771)
-            mc.textureManager.bindTexture(ResourceLocation(Chatting.ID, "search.png"))
-            val color = if (isEnabled()) rgba(200, 200, 200, 1f) else if (hovered) ChattingConfig.chatButtonHoveredColor else ChattingConfig.chatButtonColor
-            if (ChattingConfig.buttonShadow) {
-                GlStateManager.color(0f, 0f, 0f, color.alpha)
-                Gui.drawModalRectWithCustomSizedTexture(xPosition + 2, yPosition + 2, 0f, 0f, 10, 10, 10f, 10f)
-            }
-            GlStateManager.color(color.r / 255f, color.g / 255f, color.b / 255f, color.alpha)
-            Gui.drawModalRectWithCustomSizedTexture(xPosition + 1, yPosition + 1, 0f, 0f, 10, 10, 10f, 10f)
-            GlStateManager.popMatrix()
+            val color = if (isEnabled()) 0xFFC8C8C8.toInt() else if (hovered) ChattingConfig.chatButtonHoveredColor.argb else ChattingConfig.chatButtonColor.argb
+            drawCenteredString(mc.fontRendererObj, "⌕", xPosition + width / 2, yPosition + 2, color)
         }
     }
 
     inner class SearchTextField : GuiTextField(
         69420,
-        mc.fontRendererObj,
-        OmniResolution.scaledWidth * 4 / 5 - 60,
-        OmniResolution.scaledHeight - 26,
-        OmniResolution.scaledWidth / 5,
-        12
+        Minecraft.getMinecraft().fontRendererObj,
+        0,
+        0,
+        ScaledResolution(Minecraft.getMinecraft()).scaledWidth / 5,
+        12,
     ) {
-
         init {
             maxStringLength = 100
             enableBackgroundDrawing = true
             isFocused = false
-            text = ""
             setCanLoseFocus(true)
         }
 

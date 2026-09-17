@@ -1,31 +1,24 @@
 package org.polyfrost.chatting.gui.components
 
-import dev.deftu.omnicore.client.OmniKeyboard
-import dev.deftu.omnicore.client.render.OmniResolution
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.ScaledResolution
+import org.lwjgl.input.Keyboard
 import org.polyfrost.chatting.chat.ChatTab
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.config.ChattingConfig
 
 class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val chatTab: ChatTab) :
-    CleanButton(buttonId, { x }, widthIn, heightIn, chatTab.name, { RenderType.values()[ChattingConfig.textRenderType] }, { packedFGColour: Int, enabled: Boolean, hovered: Boolean ->
-        var j = chatTab.color ?: color
-        if (packedFGColour != 0) {
-            j = packedFGColour
-        } else if (!enabled) {
-            j = chatTab.selectedColor ?: selectedColor
-        } else if (hovered) {
-            j = chatTab.hoveredColor ?: hoveredColor
+    CleanButton(buttonId, { x }, widthIn, heightIn, chatTab.name, { RenderType.values()[ChattingConfig.textRenderType] }, { packed, enabled, hovered ->
+        when {
+            packed != 0 -> packed
+            !enabled -> chatTab.selectedColor ?: selectedColor
+            hovered -> chatTab.hoveredColor ?: hoveredColor
+            else -> chatTab.color ?: color
         }
-        j
     }) {
-
     override fun onMousePress() {
-        if (OmniKeyboard.isShiftKeyPressed) {
-            if (ChatTabs.currentTabs.contains(chatTab)) {
-                ChatTabs.currentTabs.remove(chatTab)
-            } else {
-                ChatTabs.currentTabs.add(chatTab)
-            }
+        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+            if (!ChatTabs.currentTabs.remove(chatTab)) ChatTabs.currentTabs.add(chatTab)
         } else {
             ChatTabs.currentTabs.clear()
             ChatTabs.currentTabs.add(chatTab)
@@ -33,16 +26,14 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
     }
 
     override fun setPositionY() {
-        yPosition = OmniResolution.scaledHeight - 26
+        yPosition = ScaledResolution(Minecraft.getMinecraft()).scaledHeight - 26
     }
 
-    override fun isEnabled(): Boolean {
-        return ChatTabs.currentTabs.contains(chatTab)
-    }
+    override fun isEnabled() = ChatTabs.currentTabs.contains(chatTab)
 
     companion object {
-        const val color: Int = 14737632
-        const val hoveredColor: Int = 16777120
-        const val selectedColor: Int = 10526880
+        const val color = 14737632
+        const val hoveredColor = 16777120
+        const val selectedColor = 10526880
     }
 }
