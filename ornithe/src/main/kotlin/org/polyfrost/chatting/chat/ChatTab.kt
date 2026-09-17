@@ -27,8 +27,13 @@ data class ChatTab(
     @SerializedName("selected_color") val selectedColor: Int?,
     val prefix: String?
 ) {
+    @Transient
     lateinit var button: TabButton
+
+    @Transient
     lateinit var compiledRegex: ChatRegexes
+
+    @Transient
     lateinit var compiledIgnoreRegex: ChatRegexes
     @Transient
     var messages: List<String>? = ArrayList()

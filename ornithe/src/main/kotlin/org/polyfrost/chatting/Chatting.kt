@@ -1,5 +1,7 @@
 package org.polyfrost.chatting
 
+import net.minecraft.client.Minecraft
+import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents
 import org.polyfrost.chatting.chat.ChatShortcuts
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.config.ChattingConfig
@@ -16,12 +18,20 @@ object Chatting {
     var peeking = false
         get() = ChattingConfig.chatPeek && field
 
+    private var clientInitialized = false
+
     fun initClient() {
-        // Config registration is deferred by OneConfig; explicit preload makes the
-        // option tree available before tab/shortcut migration reads its folder.
+        // OneConfig can register its option tree before Minecraft exists, but tab
+        // buttons require the client font renderer. Defer those to the first tick.
         ChattingConfig.preload()
+        MinecraftClientEvents.TICK_END.register(::finishClientInitialization)
+    }
+
+    private fun finishClientInitialization(client: Minecraft) {
+        if (clientInitialized) return
         ChatTabs.initialize()
         ChatShortcuts.initialize()
+        clientInitialized = true
     }
 
     fun getChatHeight(opened: Boolean): Int =

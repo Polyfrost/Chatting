@@ -14,7 +14,7 @@ import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
  */
 object ChattingConfig : Config(
     "chatting.json",
-    "/chatting_dark.svg",
+    "/assets/chatting/chatting_dark.svg",
     "Chatting",
     Category.VISUALS,
 ) {
