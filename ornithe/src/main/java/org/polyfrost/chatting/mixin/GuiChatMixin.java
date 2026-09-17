@@ -3,7 +3,9 @@ package org.polyfrost.chatting.mixin;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.util.IChatComponent;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatSearchingManager;
@@ -65,10 +67,18 @@ public abstract class GuiChatMixin extends GuiScreen {
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$copyHoveredLine(int mouseX, int mouseY, int mouseButton, CallbackInfo ci) {
-        if (mouseButton != 0 || !ChattingConfig.INSTANCE.getChatCopy()) return;
-        String text = ChatCopyButton.consumeHoveredText();
-        if (text == null) return;
-        GuiScreen.setClipboardString(text);
+        if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatCopy()) {
+            String text = ChatCopyButton.consumeHoveredText();
+            if (text == null) return;
+            GuiScreen.setClipboardString(text);
+            ci.cancel();
+            return;
+        }
+        if (mouseButton != 1 || !ChattingConfig.INSTANCE.getRightClickCopy()) return;
+        if (ChattingConfig.INSTANCE.getRightClickCopyCtrl() && !GuiScreen.isCtrlKeyDown()) return;
+        IChatComponent component = mc.ingameGUI.getChatGUI().getChatComponent(Mouse.getX(), Mouse.getY());
+        if (component == null) return;
+        GuiScreen.setClipboardString(component.getUnformattedText());
         ci.cancel();
     }
 

@@ -173,6 +173,20 @@ object ChattingConfig : Config(
     )
     var chatCopy = true
 
+    @Switch(
+        title = "Right Click to Copy Chat Message",
+        category = "Buttons",
+        description = "Copy a chat message by right-clicking its text.",
+    )
+    var rightClickCopy = false
+
+    @Switch(
+        title = "Only Right Click Copy When Holding Ctrl",
+        category = "Buttons",
+        description = "Require Ctrl while right-clicking a message to copy it.",
+    )
+    var rightClickCopyCtrl = true
+
     @Switch(title = "Delete Chat History Button", category = "Buttons")
     var chatDeleteHistory = true
 
@@ -205,6 +219,7 @@ object ChattingConfig : Config(
         addDependency("focusedHeight", "customChatHeight")
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")
+        addDependency("rightClickCopyCtrl", "rightClickCopy")
         addCallback("customChatHeight") { ChatDimensions.refresh() }
         addCallback("focusedHeight") { ChatDimensions.refresh() }
         addCallback("unfocusedHeight") { ChatDimensions.refresh() }
