@@ -19,7 +19,12 @@ object ChattingConfig : Config(
     Category.VISUALS,
 ) {
 
-    @Dropdown(title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow", "Full Shadow"])
+    @Dropdown(
+        title = "Text Render Type",
+        category = "General",
+        options = ["No Shadow", "Shadow"],
+        description = "Shadow uses Minecraft's standard chat text shadow; No Shadow renders text flat.",
+    )
     var textRenderType = 1
 
     @Color(
