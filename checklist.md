@@ -40,7 +40,7 @@ Status meanings:
 ## Buttons and chat actions
 
 - [ ] Modern button renderer and textures.
-- [ ] Button shadow.
+- [x] Button shadow.
 - [ ] Extend chat background around buttons.
 - [ ] Per-message copy button.
 - [ ] Right-click copy and shortcut-key gating.

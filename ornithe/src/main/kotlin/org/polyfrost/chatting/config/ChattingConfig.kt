@@ -167,6 +167,13 @@ object ChattingConfig : Config(
     var chatButtonHoveredBackgroundColor = PolyColor.rgba(255, 255, 255, 128)
 
     @Switch(
+        title = "Button Shadow",
+        category = "Buttons",
+        description = "Draw a one-pixel shadow behind chat button icons.",
+    )
+    var buttonShadow = true
+
+    @Switch(
         title = "Chat Copying Button",
         category = "Buttons",
         description = "Show a copy button beside the chat line under the cursor while chat is open.",

@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
+import net.minecraft.util.ResourceLocation
 import org.polyfrost.chatting.config.ChattingConfig
 
 /** Vanilla chat-control base without Forge or OmniCore helpers. */
@@ -58,4 +59,17 @@ open class CleanButton(
 
     private fun backgroundColor(hovered: Boolean) =
         if (hovered) ChattingConfig.chatButtonHoveredBackgroundColor.argb else ChattingConfig.chatButtonBackgroundColor.argb
+
+    protected fun drawIcon(mc: Minecraft, icon: ResourceLocation, color: Int) {
+        val x = xPosition + (width - 9) / 2
+        val y = yPosition + (height - 9) / 2
+        mc.textureManager.bindTexture(icon)
+        if (ChattingConfig.buttonShadow) {
+            GlStateManager.color(0f, 0f, 0f, (color ushr 24) / 255f)
+            drawModalRectWithCustomSizedTexture(x + 1, y + 1, 0f, 0f, 9, 9, 9f, 9f)
+        }
+        GlStateManager.color(((color ushr 16) and 0xFF) / 255f, ((color ushr 8) and 0xFF) / 255f, (color and 0xFF) / 255f, (color ushr 24) / 255f)
+        drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, 9, 9, 9f, 9f)
+        GlStateManager.color(1f, 1f, 1f, 1f)
+    }
 }

@@ -3,6 +3,7 @@ package org.polyfrost.chatting.gui.components
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiTextField
 import net.minecraft.client.gui.ScaledResolution
+import net.minecraft.util.ResourceLocation
 import org.polyfrost.chatting.chat.ChatSearchingManager
 import org.polyfrost.chatting.config.ChattingConfig
 
@@ -30,7 +31,7 @@ class SearchButton : CleanButton(
         super.drawButton(mc, mouseX, mouseY)
         if (visible) {
             val color = if (isEnabled()) 0xFFC8C8C8.toInt() else if (hovered) ChattingConfig.chatButtonHoveredColor.argb else ChattingConfig.chatButtonColor.argb
-            drawCenteredString(mc.fontRendererObj, "⌕", xPosition + width / 2, yPosition + 2, color)
+            drawIcon(mc, SEARCH, color)
         }
     }
 
@@ -55,5 +56,9 @@ class SearchButton : CleanButton(
                 super.drawTextBox()
             }
         }
+    }
+
+    companion object {
+        private val SEARCH = ResourceLocation("chatting", "search.png")
     }
 }
