@@ -15,7 +15,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public abstract class GuiNewChatMixin_Background {
         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0, shift = At.Shift.BEFORE)
     )
     private void chatting$drawLineBackgrounds(int updateCounter, CallbackInfo ci) {
+        if (!ChattingConfig.INSTANCE.getRoundedChatCorners()) return;
         if (mc.gameSettings.chatVisibility == EntityPlayer.EnumChatVisibility.HIDDEN) return;
 
         int visibleLines = Math.min(getLineCount(), Math.max(0, drawnChatLines.size() - scrollPos));
@@ -89,13 +91,26 @@ public abstract class GuiNewChatMixin_Background {
         }
     }
 
-    @ModifyArg(
+    @ModifyArgs(
         method = "drawChat",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0),
-        index = 4
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0)
     )
-    private int chatting$hideVanillaLineBackground(int vanillaColor) {
-        return vanillaColor & 0x00FFFFFF;
+    private void chatting$styleVanillaLineBackground(Args args) {
+        int vanillaColor = args.get(4);
+        if (ChattingConfig.INSTANCE.getRoundedChatCorners()) {
+            args.set(4, vanillaColor & 0x00FFFFFF);
+            return;
+        }
+
+        int left = args.get(0);
+        int top = args.get(1);
+        int right = args.get(2);
+        int bottom = args.get(3);
+        int color = ChatBackground.tint(vanillaColor);
+        if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
+            color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
+        }
+        args.set(4, color);
     }
 
     private int chatting$fadeAge(int age) {
