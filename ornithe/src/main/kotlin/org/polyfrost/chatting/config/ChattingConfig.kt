@@ -53,6 +53,22 @@ object ChattingConfig : Config(
     )
     var chatCornerRadius = 6f
 
+    @Switch(
+        title = "Message Fade",
+        category = "General",
+        description = "Fade chat messages after their configured display time.",
+    )
+    var fade = true
+
+    @Slider(
+        title = "Time Before Fade",
+        category = "General",
+        description = "The number of seconds a message remains visible before it fades; 0 shows messages only while chat is open.",
+        min = 0f,
+        max = 20f,
+    )
+    var fadeTime = 10f
+
     @Switch(title = "Chat Peek", category = "Chat Peek")
     var chatPeek = false
 
@@ -149,5 +165,6 @@ object ChattingConfig : Config(
         addDependency("smoothChatMs", "smoothChat")
         addDependency("smoothScrollingMs", "smoothScrolling")
         addDependency("chatCornerRadius", "roundedChatCorners")
+        addDependency("fadeTime", "fade")
     }
 }

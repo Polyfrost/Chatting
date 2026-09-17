@@ -27,7 +27,7 @@ Status meanings:
 - [x] Hovered message background color.
 - [x] Rounded chat corners.
 - [x] Corner radius.
-- [ ] Message fade and time-before-fade.
+- [x] Message fade and time-before-fade.
 - [ ] Modern text-rendering behavior.
 - [ ] Modern custom chat dimensions: chat width, custom chat width, custom
   chat height, focused height, and unfocused height.
