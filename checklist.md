@@ -23,10 +23,10 @@ Status meanings:
 
 ## General chat rendering
 
-- [ ] Chat background color.
-- [ ] Hovered message background color.
-- [ ] Rounded chat corners.
-- [ ] Corner radius.
+- [x] Chat background color.
+- [x] Hovered message background color.
+- [x] Rounded chat corners.
+- [x] Corner radius.
 - [ ] Message fade and time-before-fade.
 - [ ] Modern text-rendering behavior.
 - [ ] Modern custom chat dimensions: chat width, custom chat width, custom

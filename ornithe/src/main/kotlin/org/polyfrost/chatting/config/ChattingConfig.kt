@@ -36,6 +36,23 @@ object ChattingConfig : Config(
     )
     var hoveredChatBackgroundColor = PolyColor.rgba(80, 80, 80, 128)
 
+    @Switch(
+        title = "Rounded Chat Corners",
+        category = "General",
+        description = "Round the outer corners of the visible chat message block.",
+    )
+    var roundedChatCorners = false
+
+    @Slider(
+        title = "Corner Radius",
+        category = "General",
+        description = "The chat-corner radius in chat pixels.",
+        min = 1f,
+        max = 16f,
+        step = 1f,
+    )
+    var chatCornerRadius = 6f
+
     @Switch(title = "Chat Peek", category = "Chat Peek")
     var chatPeek = false
 
@@ -131,5 +148,6 @@ object ChattingConfig : Config(
         addDependency("customWidth", "customChatWidth")
         addDependency("smoothChatMs", "smoothChat")
         addDependency("smoothScrollingMs", "smoothScrolling")
+        addDependency("chatCornerRadius", "roundedChatCorners")
     }
 }
