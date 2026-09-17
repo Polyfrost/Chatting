@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.ChatLine;
+import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.RoundedChat;
@@ -12,18 +13,16 @@ import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
 /**
- * Styles vanilla's per-line chat fills in place, preserving its opacity and
- * fade calculation. GuiNewChat's local coordinates are transformed from the
- * lower-left chat origin, so the hit test mirrors that transform in GUI space.
+ * Draws styled backgrounds alongside the vanilla line pass. The native call is
+ * kept intact so other chat mods can redirect it without a redirect conflict.
  */
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_Background {
@@ -32,28 +31,69 @@ public abstract class GuiNewChatMixin_Background {
     @Shadow private int scrollPos;
     @Shadow public abstract int getLineCount();
     @Shadow public abstract float getChatScale();
+    @Shadow public abstract int getChatWidth();
+    @Shadow public abstract boolean getChatOpen();
 
-    @Unique private boolean chatting$sawLineBackground;
+    @Inject(
+        method = "drawChat",
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0, shift = At.Shift.BEFORE)
+    )
+    private void chatting$drawLineBackgrounds(int updateCounter, CallbackInfo ci) {
+        if (mc.gameSettings.chatVisibility == EntityPlayer.EnumChatVisibility.HIDDEN) return;
 
-    @Inject(method = "drawChat", at = @At("HEAD"))
-    private void chatting$startBackgroundPass(int updateCounter, CallbackInfo ci) {
-        chatting$sawLineBackground = false;
+        int visibleLines = Math.min(getLineCount(), Math.max(0, drawnChatLines.size() - scrollPos));
+        int firstVisibleBackground = -1;
+        int lastVisibleBackground = -1;
+        boolean chatOpen = getChatOpen();
+        float opacity = mc.gameSettings.chatOpacity * 0.9F + 0.1F;
+
+        for (int lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
+            ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
+            int age = updateCounter - line.getUpdatedCounter();
+            if (age >= 200 && !chatOpen) continue;
+
+            double fade = 1.0D - age / 200.0D;
+            fade *= 10.0D;
+            fade = Math.max(0.0D, Math.min(1.0D, fade));
+            int alpha = chatOpen ? 255 : (int) (255.0D * fade);
+            alpha = (int) (alpha * opacity);
+            if (alpha <= 3) continue;
+
+            if (firstVisibleBackground < 0) firstVisibleBackground = lineIndex;
+            lastVisibleBackground = lineIndex;
+        }
+
+        if (firstVisibleBackground < 0) return;
+
+        int width = (int) Math.ceil(getChatWidth() / getChatScale());
+        for (int lineIndex = firstVisibleBackground; lineIndex <= lastVisibleBackground; lineIndex++) {
+            ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
+            int age = updateCounter - line.getUpdatedCounter();
+            if (age >= 200 && !chatOpen) continue;
+
+            double fade = 1.0D - age / 200.0D;
+            fade *= 10.0D;
+            fade = Math.max(0.0D, Math.min(1.0D, fade));
+            int alpha = chatOpen ? 255 : (int) (255.0D * fade);
+            alpha = (int) (alpha * opacity);
+            if (alpha <= 3) continue;
+
+            int top = -lineIndex * 9;
+            int color = ChatBackground.tint(alpha / 2 << 24);
+            if (mc.currentScreen instanceof GuiChat && chatting$hovered(0, top - 9, width, top)) {
+                color = ChatBackground.tint(alpha / 2 << 24, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
+            }
+            RoundedChat.fill(0, top - 9, width, top, color, lineIndex == lastVisibleBackground, lineIndex == firstVisibleBackground);
+        }
     }
 
-    @Redirect(
+    @ModifyArg(
         method = "drawChat",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0)
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0),
+        index = 4
     )
-    private void chatting$styleLineBackground(int left, int top, int right, int bottom, int vanillaColor) {
-        int color = ChatBackground.tint(vanillaColor);
-        if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
-            color = ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
-        }
-        int visibleLines = Math.min(getLineCount(), Math.max(0, drawnChatLines.size() - scrollPos));
-        boolean roundBottom = !chatting$sawLineBackground;
-        boolean roundTop = top == -9 * visibleLines;
-        chatting$sawLineBackground = true;
-        RoundedChat.fill(left, top, right, bottom, color, roundTop, roundBottom);
+    private int chatting$hideVanillaLineBackground(int vanillaColor) {
+        return vanillaColor & 0x00FFFFFF;
     }
 
     private boolean chatting$hovered(int left, int top, int right, int bottom) {

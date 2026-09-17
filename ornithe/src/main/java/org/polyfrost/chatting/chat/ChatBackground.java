@@ -8,7 +8,10 @@ public final class ChatBackground {
     }
 
     public static int tint(int vanillaColor) {
-        int configured = ChattingConfig.INSTANCE.getChatBackgroundColor().getArgb();
+        return tint(vanillaColor, ChattingConfig.INSTANCE.getChatBackgroundColor().getArgb());
+    }
+
+    public static int tint(int vanillaColor, int configured) {
         int alpha = (vanillaColor >>> 24) * (configured >>> 24) / 255;
         return (alpha << 24) | (configured & 0xFFFFFF);
     }
