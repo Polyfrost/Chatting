@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.config
 
 import org.lwjgl.input.Keyboard
+import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.hook.ChatLineHeadHook
@@ -89,6 +90,7 @@ object ChattingConfig : Config(
         .action { pressed ->
             if (!chatPeek) return@action false
             Chatting.peeking = if (peekMode == 0) pressed else !Chatting.peeking
+            if (!Chatting.peeking) Minecraft.getMinecraft().ingameGUI.chatGUI.resetScroll()
             false
         }
         .register()

@@ -74,7 +74,7 @@ Status meanings:
 - [ ] Modern search model integration with tabs.
 - [ ] Modern chat shortcuts persistence and command rewriting.
 - [ ] Edit chat shortcuts screen.
-- [ ] Modern chat peek behavior, keybind semantics, and scroll reset.
+- [x] Modern chat peek behavior, keybind semantics, mouse-wheel scrolling, and scroll reset.
 
 ## Optional modern integrations
 
