@@ -233,6 +233,13 @@ object ChattingConfig : Config(
     )
     var showChatHeads = true
 
+    @Switch(
+        title = "Show 3D Heads",
+        category = "Chat Heads",
+        description = "Render the player's head and hat layer as a small 3D model.",
+    )
+    var improvedHeads = true
+
     @Dropdown(
         title = "Chat Head Shadow",
         category = "Chat Heads",
@@ -322,6 +329,7 @@ object ChattingConfig : Config(
         addDependency("rightClickCopyCtrl", "rightClickCopy")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
+        addDependency("improvedHeads", "showChatHeads")
         addDependency("chatHeadShadow", "showChatHeads")
         addDependency("centerChatHeads", "showChatHeads")
         addCallback("customChatHeight") { ChatDimensions.refresh() }

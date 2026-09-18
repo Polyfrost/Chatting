@@ -52,7 +52,7 @@ Status meanings:
 ## Chat heads
 
 - [x] Show chat heads from the modern implementation.
-- [ ] Show 3D heads.
+- [x] Show 3D heads using the native 1.8.9 ModelPlayer head and hat layers.
 - [x] Chat head Normal shadow.
 - [-] Legacy chat-head shadow color (no 1.8.9 skin-pixel reader yet, so the option is hidden).
 - [x] Center chat heads.

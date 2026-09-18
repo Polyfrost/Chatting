@@ -5,6 +5,7 @@ import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -22,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class GuiNewChatMixin_TextRendering {
     @Shadow @Final private Minecraft mc;
     @Unique private ChatLine chatting$currentLine;
+    @Unique private final ModelPlayer chatting$headModel = new ModelPlayer(0.0F, false);
 
     @ModifyVariable(method = "drawChat", at = @At("STORE"), ordinal = 0)
     private ChatLine chatting$captureChatLine(ChatLine line) {
@@ -52,6 +54,11 @@ public class GuiNewChatMixin_TextRendering {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         float shade = shadow ? 0.25F : 1.0F;
         GlStateManager.color(shade, shade, shade, (color >>> 24) / 255.0F);
+        if (ChattingConfig.INSTANCE.getImprovedHeads()) {
+            chatting$draw3dHead(x, y, centeredOffset());
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            return;
+        }
         boolean centered = ChattingConfig.INSTANCE.getCenterChatHeads();
         if (centered) {
             GlStateManager.pushMatrix();
@@ -61,5 +68,27 @@ public class GuiNewChatMixin_TextRendering {
         Gui.drawScaledCustomSizeModalRect((int) x, (int) y - 1, 40.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
         if (centered) GlStateManager.popMatrix();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    @Unique
+    private float centeredOffset() {
+        return ChattingConfig.INSTANCE.getCenterChatHeads() ? 0.5F : 0.0F;
+    }
+
+    /** Renders only ModelPlayer's head cubes in the existing chat GUI projection. */
+    @Unique
+    private void chatting$draw3dHead(float x, float y, float centeredOffset) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(x + 4.0F, y + 3.0F + centeredOffset, 0.0F);
+        GlStateManager.scale(16.0F, -16.0F, 16.0F);
+        GlStateManager.rotate(18.0F, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotate(-28.0F, 0.0F, 1.0F, 0.0F);
+        GlStateManager.enableDepth();
+        GlStateManager.disableCull();
+        chatting$headModel.bipedHead.render(0.0625F);
+        chatting$headModel.bipedHeadwear.render(0.0625F);
+        GlStateManager.enableCull();
+        GlStateManager.disableDepth();
+        GlStateManager.popMatrix();
     }
 }
