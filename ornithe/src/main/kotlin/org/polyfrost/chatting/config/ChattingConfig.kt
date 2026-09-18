@@ -236,7 +236,7 @@ object ChattingConfig : Config(
     @Switch(
         title = "Show 3D Heads",
         category = "Chat Heads",
-        description = "Render the player's head and hat layer as a small 3D model.",
+        description = "Render the complete layered skin head straight-on, without a perspective angle.",
     )
     var improvedHeads = true
 

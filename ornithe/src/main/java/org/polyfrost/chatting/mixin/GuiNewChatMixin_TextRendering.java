@@ -55,7 +55,7 @@ public class GuiNewChatMixin_TextRendering {
         float shade = shadow ? 0.25F : 1.0F;
         GlStateManager.color(shade, shade, shade, (color >>> 24) / 255.0F);
         if (ChattingConfig.INSTANCE.getImprovedHeads()) {
-            chatting$draw3dHead(x, y, centeredOffset());
+            chatting$drawLayeredHead(x, y, ChattingConfig.INSTANCE.getCenterChatHeads() ? 0.5F : 0.0F);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             return;
         }
@@ -70,19 +70,12 @@ public class GuiNewChatMixin_TextRendering {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
+    /** Renders the full head and outer skin model directly toward the chat camera. */
     @Unique
-    private float centeredOffset() {
-        return ChattingConfig.INSTANCE.getCenterChatHeads() ? 0.5F : 0.0F;
-    }
-
-    /** Renders only ModelPlayer's head cubes in the existing chat GUI projection. */
-    @Unique
-    private void chatting$draw3dHead(float x, float y, float centeredOffset) {
+    private void chatting$drawLayeredHead(float x, float y, float centeredOffset) {
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 4.0F, y + 3.0F + centeredOffset, 0.0F);
         GlStateManager.scale(16.0F, -16.0F, 16.0F);
-        GlStateManager.rotate(18.0F, 1.0F, 0.0F, 0.0F);
-        GlStateManager.rotate(-28.0F, 0.0F, 1.0F, 0.0F);
         GlStateManager.enableDepth();
         GlStateManager.disableCull();
         chatting$headModel.bipedHead.render(0.0625F);
@@ -91,4 +84,5 @@ public class GuiNewChatMixin_TextRendering {
         GlStateManager.disableDepth();
         GlStateManager.popMatrix();
     }
+
 }
