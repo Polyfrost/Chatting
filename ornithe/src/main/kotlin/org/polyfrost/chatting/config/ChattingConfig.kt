@@ -3,6 +3,7 @@ package org.polyfrost.chatting.config
 import org.lwjgl.input.Keyboard
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatDimensions
+import org.polyfrost.chatting.hook.ChatLineHeadHook
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -225,6 +226,27 @@ object ChattingConfig : Config(
     @Switch(title = "Chat Searching", category = "Buttons")
     var chatSearch = true
 
+    @Switch(
+        title = "Show Chat Heads",
+        category = "Chat Heads",
+        description = "Show a player's skin head beside messages where their name can be identified.",
+    )
+    var showChatHeads = true
+
+    @Switch(
+        title = "Offset Non-Player Messages",
+        category = "Chat Heads",
+        description = "Reserve chat-head space for messages where a player cannot be identified.",
+    )
+    var offsetNonPlayerMessages = false
+
+    @Switch(
+        title = "Hide Chat Head on Consecutive Messages",
+        category = "Chat Heads",
+        description = "Hide a player's head when their previous visible message was also theirs.",
+    )
+    var hideChatHeadOnConsecutiveMessages = true
+
     @Dropdown(
         title = "Screenshot Mode",
         category = "Screenshotting",
@@ -282,6 +304,8 @@ object ChattingConfig : Config(
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")
         addDependency("rightClickCopyCtrl", "rightClickCopy")
+        addDependency("offsetNonPlayerMessages", "showChatHeads")
+        addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
         addCallback("customChatHeight") { ChatDimensions.refresh() }
         addCallback("focusedHeight") { ChatDimensions.refresh() }
         addCallback("unfocusedHeight") { ChatDimensions.refresh() }
@@ -291,5 +315,10 @@ object ChattingConfig : Config(
         addDependency("smoothScrollingMs", "smoothScrolling")
         addDependency("chatCornerRadius", "roundedChatCorners")
         addDependency("fadeTime", "fade")
+        addCallback("hideChatHeadOnConsecutiveMessages") {
+            ChatLineHeadHook.LINES
+                .mapNotNull { it.get() as? ChatLineHeadHook }
+                .forEach { it.`chatting$updatePlayerInfo`() }
+        }
     }
 }
