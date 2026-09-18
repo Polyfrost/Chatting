@@ -28,8 +28,8 @@ public final class RoundedChat {
         if (y1 + topRadius < y2 - bottomRadius) {
             Gui.drawRect(x1, y1 + topRadius, x2, y2 - bottomRadius, color);
         }
-        drawArc(x1, y1, x2, radius, true, color);
-        drawArc(x1, y2 - radius, x2, radius, false, color);
+        if (roundTop) drawArc(x1, y1, x2, radius, true, color);
+        if (roundBottom) drawArc(x1, y2 - radius, x2, radius, false, color);
     }
 
     private static void drawArc(int x1, int y, int x2, int radius, boolean top, int color) {
