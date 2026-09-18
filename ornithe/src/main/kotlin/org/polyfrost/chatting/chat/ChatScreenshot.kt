@@ -16,6 +16,7 @@ import org.lwjgl.BufferUtils
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
+import org.polyfrost.chatting.chat.ChatBackground
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.mixin.GuiNewChatAccessor
 import java.awt.Image
@@ -65,8 +66,8 @@ object ChatScreenshot {
         }
 
         val image = render(lines) ?: return
-        val save = ChattingConfig.screenshotMode != 1
-        val copy = ChattingConfig.screenshotMode != 0
+        val save = ChattingConfig.copyMode != 1
+        val copy = ChattingConfig.copyMode != 0
         val file = File(mc.mcDataDir, "screenshots/chat/${fileFormatter.format(Date())}")
         val saved = !save || runCatching {
             file.parentFile?.mkdirs()
@@ -96,8 +97,10 @@ object ChatScreenshot {
         val mc = Minecraft.getMinecraft()
         val font = mc.fontRendererObj
         val texts = lines.map { it.chatComponent.formattedText }
-        val width = texts.maxOf(font::getStringWidth).coerceAtLeast(1) + 2
-        val height = texts.size * 9 + 2
+        val style = ScreenshotStyle.current()
+        val margin = if (style.border) 1 else 0
+        val width = texts.maxOf(font::getStringWidth).coerceAtLeast(1) + margin * 2
+        val height = texts.size * 9 + margin * 2
         val framebuffer = Framebuffer(width * 2, height * 2, false)
         return try {
             framebuffer.framebufferColor[0] = 0f
@@ -113,8 +116,21 @@ object ChatScreenshot {
             GlStateManager.translate(0f, 0f, -2000f)
             framebuffer.bindFramebuffer(true)
             GlStateManager.scale(2f, 2f, 1f)
+            if (style.background) {
+                val opacity = mc.gameSettings.chatOpacity * 0.9f + 0.1f
+                net.minecraft.client.gui.Gui.drawRect(0, 0, width, height, ChatBackground.tint((opacity * 127.5f).toInt() shl 24))
+            }
             texts.forEachIndexed { index, text ->
-                font.drawStringWithShadow(text, 1f, (texts.size - 1 - index) * 9f + 1f, 0xFFFFFFFF.toInt())
+                val x = margin
+                val y = (texts.size - 1 - index) * 9 + margin
+                if (style.border) {
+                    val outline = blackOut(text)
+                    for (offsetY in -1..1) for (offsetX in -1..1) {
+                        if (offsetX != 0 || offsetY != 0) font.drawString(outline, x + offsetX, y + offsetY, 0xFF000000.toInt())
+                    }
+                }
+                if (style.shadow) font.drawStringWithShadow(text, x.toFloat(), y.toFloat(), 0xFFFFFFFF.toInt())
+                else font.drawString(text, x, y, 0xFFFFFFFF.toInt())
             }
             read(framebuffer)
         } catch (_: Throwable) {
@@ -150,6 +166,20 @@ object ChatScreenshot {
 
     private fun message(message: String) {
         Minecraft.getMinecraft().ingameGUI.chatGUI.printChatMessage(ChatComponentText("§7[§bChatting§7] $message"))
+    }
+
+    private fun blackOut(text: String) = text
+        .replace(Regex("§[0-9a-fA-F]"), "§0")
+        .replace("§r", "§0")
+
+    private data class ScreenshotStyle(val shadow: Boolean, val background: Boolean, val border: Boolean) {
+        companion object {
+            fun current(): ScreenshotStyle {
+                val shadow = ChattingConfig.textRenderType == 1 || ChattingConfig.screenshotForceShadow
+                val background = ChattingConfig.screenshotBackground
+                return ScreenshotStyle(shadow, background, ChattingConfig.screenshotBorder && !shadow && !background)
+            }
+        }
     }
 
     private class ImageTransferable(private val image: Image) : Transferable {

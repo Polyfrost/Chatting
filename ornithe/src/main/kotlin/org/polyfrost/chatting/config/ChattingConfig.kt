@@ -229,10 +229,31 @@ object ChattingConfig : Config(
         title = "Screenshot Mode",
         category = "Screenshotting",
         options = ["Save To System", "Add To Clipboard", "Both"],
-        description = "Choose whether chat screenshots are saved, copied, or both.",
+        description = "What to do when taking a screenshot.",
     )
-    var screenshotMode = 0
+    var copyMode = 2
         get() = field.coerceIn(0, 2)
+
+    @Switch(
+        title = "Add Border",
+        category = "Screenshotting",
+        description = "Adds a 1px black border around the text when neither a shadow nor a background is included.",
+    )
+    var screenshotBorder = true
+
+    @Switch(
+        title = "Force Shadow",
+        category = "Screenshotting",
+        description = "Adds the vanilla text shadow to screenshots even if it is disabled in General.",
+    )
+    var screenshotForceShadow = false
+
+    @Switch(
+        title = "Include Background",
+        category = "Screenshotting",
+        description = "Includes the chat background in the screenshot.",
+    )
+    var screenshotBackground = false
 
     @Switch(title = "Remove Scroll Bar", category = "Animations", subcategory = "Scrolling")
     var removeScrollBar = true
