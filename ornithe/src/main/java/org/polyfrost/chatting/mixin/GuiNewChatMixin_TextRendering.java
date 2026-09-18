@@ -74,8 +74,11 @@ public class GuiNewChatMixin_TextRendering {
     @Unique
     private void chatting$drawLayeredHead(float x, float y, float centeredOffset, boolean writeDepth) {
         GlStateManager.pushMatrix();
-        GlStateManager.translate(x + 4.0F, y + 3.0F + centeredOffset, 0.0F);
+        // ModelPlayer's head spans Y -8..0; after the inverted GUI scale this
+        // exactly matches the legacy face bounds from y - 1 through y + 7.
+        GlStateManager.translate(x + 4.0F, y - 1.0F + centeredOffset, 0.0F);
         GlStateManager.scale(16.0F, -16.0F, 16.0F);
+        GlStateManager.disableLighting();
         GlStateManager.enableDepth();
         GlStateManager.depthMask(writeDepth);
         GlStateManager.disableCull();
