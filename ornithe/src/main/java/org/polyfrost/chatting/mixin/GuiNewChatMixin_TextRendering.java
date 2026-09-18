@@ -50,6 +50,8 @@ public class GuiNewChatMixin_TextRendering {
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
+        // Chat is a GUI element: skins must not inherit the world's light level.
+        GlStateManager.disableLighting();
         mc.getTextureManager().bindTexture(player.getLocationSkin());
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         float shade = shadow ? 0.25F : 1.0F;
@@ -78,7 +80,6 @@ public class GuiNewChatMixin_TextRendering {
         // exactly matches the legacy face bounds from y - 1 through y + 7.
         GlStateManager.translate(x + 4.0F, y - 1.0F + centeredOffset, 0.0F);
         GlStateManager.scale(16.0F, -16.0F, 16.0F);
-        GlStateManager.disableLighting();
         GlStateManager.enableDepth();
         GlStateManager.depthMask(writeDepth);
         GlStateManager.disableCull();
