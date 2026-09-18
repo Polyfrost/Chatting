@@ -36,69 +36,25 @@ public abstract class GuiNewChatMixin_Background {
     @Shadow public abstract int getChatWidth();
     @Shadow public abstract boolean getChatOpen();
 
-    @Inject(
-        method = "drawChat",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0, shift = At.Shift.BEFORE)
-    )
-    private void chatting$drawLineBackgrounds(int updateCounter, CallbackInfo ci) {
-        if (!ChattingConfig.INSTANCE.getRoundedChatCorners()) return;
-        if (mc.gameSettings.chatVisibility == EntityPlayer.EnumChatVisibility.HIDDEN) return;
-
-        int visibleLines = Math.min(getLineCount(), Math.max(0, drawnChatLines.size() - scrollPos));
-        int firstVisibleBackground = -1;
-        int lastVisibleBackground = -1;
-        boolean keepMessagesVisible = !ChattingConfig.INSTANCE.getFade() || getChatOpen();
-        float opacity = mc.gameSettings.chatOpacity * 0.9F + 0.1F;
-
-        for (int lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
-            ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
-            int age = chatting$fadeAge(updateCounter - line.getUpdatedCounter());
-            if (age >= 200 && !keepMessagesVisible) continue;
-
-            double fade = 1.0D - age / 200.0D;
-            fade *= 10.0D;
-            fade = Math.max(0.0D, Math.min(1.0D, fade));
-            fade *= fade;
-            int alpha = keepMessagesVisible ? 255 : (int) (255.0D * fade);
-            alpha = (int) (alpha * opacity);
-            if (alpha <= 3) continue;
-
-            if (firstVisibleBackground < 0) firstVisibleBackground = lineIndex;
-            lastVisibleBackground = lineIndex;
-        }
-
-        if (firstVisibleBackground < 0) return;
-
-        int width = (int) Math.ceil(getChatWidth() / getChatScale()) + chatting$buttonBackgroundWidth();
-        for (int lineIndex = firstVisibleBackground; lineIndex <= lastVisibleBackground; lineIndex++) {
-            ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
-            int age = chatting$fadeAge(updateCounter - line.getUpdatedCounter());
-            if (age >= 200 && !keepMessagesVisible) continue;
-
-            double fade = 1.0D - age / 200.0D;
-            fade *= 10.0D;
-            fade = Math.max(0.0D, Math.min(1.0D, fade));
-            fade *= fade;
-            int alpha = keepMessagesVisible ? 255 : (int) (255.0D * fade);
-            alpha = (int) (alpha * opacity);
-            if (alpha <= 3) continue;
-
-            int top = -lineIndex * 9;
-            int color = ChatBackground.tint(alpha / 2 << 24);
-            if (mc.currentScreen instanceof GuiChat && chatting$hovered(0, top - 9, width, top)) {
-                color = ChatBackground.tint(alpha / 2 << 24, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
-            }
-            RoundedChat.fill(0, top - 9, width, top, color, lineIndex == lastVisibleBackground, lineIndex == firstVisibleBackground);
-        }
-    }
-
     @ModifyArgs(
         method = "drawChat",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V", ordinal = 0)
     )
-    private void chatting$styleVanillaLineBackground(Args args) {
+    private void chatting$styleVanillaLineBackground(Args args, int updateCounter) {
         int vanillaColor = args.get(4);
         if (ChattingConfig.INSTANCE.getRoundedChatCorners()) {
+            int left = args.get(0);
+            int top = args.get(1);
+            int right = (int) args.get(2) + chatting$buttonBackgroundWidth();
+            int bottom = args.get(3);
+            int color = ChatBackground.tint(vanillaColor);
+            if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
+                color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
+            }
+            int lineIndex = -bottom / 9;
+            int[] bounds = chatting$roundedBounds(updateCounter);
+            RoundedChat.fill(left, top, right, bottom, color, lineIndex == bounds[1], lineIndex == bounds[0]);
+            args.set(2, right);
             args.set(4, vanillaColor & 0x00FFFFFF);
             return;
         }
@@ -113,6 +69,29 @@ public abstract class GuiNewChatMixin_Background {
             color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         }
         args.set(4, color);
+    }
+
+    @Unique
+    private int[] chatting$roundedBounds(int updateCounter) {
+        int visibleLines = Math.min(getLineCount(), Math.max(0, drawnChatLines.size() - scrollPos));
+        int first = -1;
+        int last = -1;
+        boolean keepMessagesVisible = !ChattingConfig.INSTANCE.getFade() || getChatOpen();
+        float opacity = mc.gameSettings.chatOpacity * 0.9F + 0.1F;
+
+        for (int lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
+            ChatLine line = drawnChatLines.get(lineIndex + scrollPos);
+            int age = chatting$fadeAge(updateCounter - line.getUpdatedCounter());
+            if (age >= 200 && !keepMessagesVisible) continue;
+
+            double fade = 1.0D - age / 200.0D;
+            fade = Math.max(0.0D, Math.min(1.0D, fade * 10.0D));
+            int alpha = keepMessagesVisible ? 255 : (int) (255.0D * fade * fade);
+            if ((int) (alpha * opacity) <= 3) continue;
+            if (first < 0) first = lineIndex;
+            last = lineIndex;
+        }
+        return new int[]{first, last};
     }
 
     @Unique
