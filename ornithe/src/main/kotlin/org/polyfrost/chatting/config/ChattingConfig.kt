@@ -233,6 +233,22 @@ object ChattingConfig : Config(
     )
     var showChatHeads = true
 
+    @Dropdown(
+        title = "Chat Head Shadow",
+        category = "Chat Heads",
+        options = ["Off", "Normal"],
+        description = "Draw a darkened copy of the head one pixel down and right.",
+    )
+    var chatHeadShadow = 0
+        get() = field.coerceIn(0, 1)
+
+    @Switch(
+        title = "Center Chat Heads",
+        category = "Chat Heads",
+        description = "Vertically center the head with its chat line instead of aligning it one pixel above.",
+    )
+    var centerChatHeads = false
+
     @Switch(
         title = "Offset Non-Player Messages",
         category = "Chat Heads",
@@ -306,6 +322,8 @@ object ChattingConfig : Config(
         addDependency("rightClickCopyCtrl", "rightClickCopy")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
+        addDependency("chatHeadShadow", "showChatHeads")
+        addDependency("centerChatHeads", "showChatHeads")
         addCallback("customChatHeight") { ChatDimensions.refresh() }
         addCallback("focusedHeight") { ChatDimensions.refresh() }
         addCallback("unfocusedHeight") { ChatDimensions.refresh() }

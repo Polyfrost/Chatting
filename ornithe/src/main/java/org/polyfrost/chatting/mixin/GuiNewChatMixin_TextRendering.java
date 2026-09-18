@@ -35,22 +35,31 @@ public class GuiNewChatMixin_TextRendering {
         if (ChattingConfig.INSTANCE.getShowChatHeads() && chatting$currentLine instanceof ChatLineHeadHook) {
             ChatLineHeadHook line = (ChatLineHeadHook) chatting$currentLine;
             if (line.chatting$hasDetectedPlayer() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages()) textX += 10.0F;
-            chatting$drawHead(line.chatting$getPlayerInfo(), x, y, color);
+            NetworkPlayerInfo player = line.chatting$getPlayerInfo();
+            if (ChattingConfig.INSTANCE.getChatHeadShadow() != 0) chatting$drawHead(player, x + 1.0F, y + 1.0F, color, true);
+            chatting$drawHead(player, x, y, color, false);
         }
         return renderer.drawString(text, textX, y, color, ChattingConfig.INSTANCE.getTextRenderType() != 0);
     }
 
     @Unique
-    private void chatting$drawHead(NetworkPlayerInfo player, float x, float y, int color) {
+    private void chatting$drawHead(NetworkPlayerInfo player, float x, float y, int color, boolean shadow) {
         if (player == null) return;
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
         mc.getTextureManager().bindTexture(player.getLocationSkin());
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, (color >>> 24) / 255.0F);
+        float shade = shadow ? 0.25F : 1.0F;
+        GlStateManager.color(shade, shade, shade, (color >>> 24) / 255.0F);
+        boolean centered = ChattingConfig.INSTANCE.getCenterChatHeads();
+        if (centered) {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(0.0F, 0.5F, 0.0F);
+        }
         Gui.drawScaledCustomSizeModalRect((int) x, (int) y - 1, 8.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
         Gui.drawScaledCustomSizeModalRect((int) x, (int) y - 1, 40.0F, 8.0F, 8, 8, 8, 8, 64.0F, 64.0F);
+        if (centered) GlStateManager.popMatrix();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

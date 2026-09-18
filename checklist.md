@@ -51,12 +51,13 @@ Status meanings:
 
 ## Chat heads
 
-- [ ] Show chat heads from the modern implementation.
+- [x] Show chat heads from the modern implementation.
 - [ ] Show 3D heads.
-- [ ] Chat head shadow modes.
-- [ ] Center chat heads.
-- [ ] Offset non-player messages.
-- [ ] Hide chat heads on consecutive messages.
+- [x] Chat head Normal shadow.
+- [-] Legacy chat-head shadow color (no 1.8.9 skin-pixel reader yet, so the option is hidden).
+- [x] Center chat heads.
+- [x] Offset non-player messages.
+- [x] Hide chat heads on consecutive messages.
 - [ ] Texture/render compatibility needed by the 1.8.9 player renderer.
 
 ## Screenshots
