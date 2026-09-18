@@ -9,6 +9,7 @@ import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.EnumChatFormatting;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hook.ChatHeadState;
 import org.polyfrost.chatting.hook.ChatLineHeadHook;
@@ -38,9 +39,9 @@ public class ChatLineMixin_ChatHeads implements ChatLineHeadHook {
         if (connection == null) return;
 
         IChatComponent source = ChatHeadState.currentComponent != null ? ChatHeadState.currentComponent : component;
-        String unformatted = source.getUnformattedTextForChat();
-        int colon = unformatted.indexOf(':');
-        String prefix = colon >= 0 ? unformatted.substring(0, colon) : unformatted;
+        String formatted = source.getFormattedText();
+        int colon = formatted.indexOf(':');
+        String prefix = EnumChatFormatting.getTextWithoutFormattingCodes(colon >= 0 ? formatted.substring(0, colon) : formatted);
         Map<String, NetworkPlayerInfo> nicknames = new HashMap<>();
 
         for (String word : chatting$separator.split(prefix)) {
@@ -74,7 +75,7 @@ public class ChatLineMixin_ChatHeads implements ChatLineHeadHook {
             for (NetworkPlayerInfo info : connection.getPlayerInfoMap()) {
                 IChatComponent displayName = info.getDisplayName();
                 if (displayName == null) continue;
-                String nickname = displayName.getUnformattedTextForChat();
+                String nickname = EnumChatFormatting.getTextWithoutFormattingCodes(displayName.getFormattedText());
                 if (word.equals(nickname)) return info;
                 nicknames.put(nickname, info);
             }
