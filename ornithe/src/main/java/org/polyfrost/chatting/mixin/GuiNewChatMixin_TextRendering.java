@@ -61,6 +61,10 @@ public class GuiNewChatMixin_TextRendering {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             return;
         }
+        // Flat GUI quads must not compete with the world's depth buffer (or a
+        // preceding shadow pass); the un-tinted face is drawn immediately after
+        // the offset shadow and must always cover their shared pixels.
+        GlStateManager.disableDepth();
         boolean centered = ChattingConfig.INSTANCE.getCenterChatHeads();
         if (centered) {
             GlStateManager.pushMatrix();
