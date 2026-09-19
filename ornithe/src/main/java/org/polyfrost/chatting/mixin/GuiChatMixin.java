@@ -5,6 +5,7 @@ import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.IChatComponent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -25,6 +26,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 /** Vanilla GuiChat wiring for Chatting's controls, search and shortcuts. */
 @Mixin(GuiChat.class)
@@ -82,18 +85,40 @@ public abstract class GuiChatMixin extends GuiScreen {
         if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatCopy()) {
             ChatLine line = ChatCopyButton.consume();
             if (line == null) return;
-            // Copy the complete rendered line, including its formatting, rather
-            // than the particular text fragment whose draw call found the icon.
-            GuiScreen.setClipboardString(line.getChatComponent().getFormattedText());
+            // Copy the complete rendered line rather than the particular text
+            // fragment whose draw call found the icon.
+            GuiScreen.setClipboardString(line.getChatComponent().getUnformattedText());
             ci.cancel();
             return;
         }
         if (mouseButton != 1 || !ChattingConfig.INSTANCE.getRightClickCopy()) return;
         if (ChattingConfig.INSTANCE.getRightClickCopyCtrl() && !GuiScreen.isCtrlKeyDown()) return;
-        IChatComponent component = mc.ingameGUI.getChatGUI().getChatComponent(Mouse.getX(), Mouse.getY());
+        GuiNewChat chat = mc.ingameGUI.getChatGUI();
+        // Keep vanilla's component hit test: right-clicking empty space in a
+        // line must not copy it.  Its result is only a sibling component,
+        // however, so use the matching ChatLine for the complete message.
+        IChatComponent component = chat.getChatComponent(Mouse.getX(), Mouse.getY());
         if (component == null) return;
-        GuiScreen.setClipboardString(component.getUnformattedText());
+        ChatLine line = chatting$lineAtMouse(chat);
+        GuiScreen.setClipboardString(line == null
+            ? component.getUnformattedText()
+            : line.getChatComponent().getUnformattedText());
         ci.cancel();
+    }
+
+    @Unique
+    private ChatLine chatting$lineAtMouse(GuiNewChat chat) {
+        float scale = chat.getChatScale();
+        if (scale <= 0f) return null;
+        ScaledResolution resolution = new ScaledResolution(mc);
+        // This mirrors GuiNewChat#getChatComponent's bottom-origin mouse
+        // conversion; the 27px term is vanilla's chat input margin.
+        int localY = (int) Math.floor((Mouse.getY() / (float) resolution.getScaleFactor() - 27f) / scale);
+        if (localY < 0) return null;
+        GuiNewChatAccessor accessor = (GuiNewChatAccessor) chat;
+        int index = localY / 9 + accessor.getScrollPos();
+        List<ChatLine> lines = accessor.getDrawnChatLines();
+        return index >= 0 && index < lines.size() ? lines.get(index) : null;
     }
 
     @Unique

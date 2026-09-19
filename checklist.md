@@ -43,7 +43,7 @@ Status meanings:
 - [x] Button shadow.
 - [x] Extend chat background around buttons.
 - [x] Per-message copy button.
-- [ ] Right-click copy and shortcut-key gating.
+- [x] Right-click copy and shortcut-key gating.
 - [x] Per-message delete button.
 - [x] Modern clear-history button behavior.
 - [x] Chat screenshot button and screenshot keybind.
