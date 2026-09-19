@@ -2,6 +2,7 @@
   "compatibilityLevel": "JAVA_13",
   "minVersion": "0.7",
   "package": "org.polyfrost.chatting.mixin",
+  "plugin": "org.polyfrost.chatting.mixin.ChattingMixinPlugin",
   "client": [
     "ChatStyle_UnderlineLinks_Mixin", "ChatLineMixin_ChatHeads", "EntityPlayerSPMixin",
     "GuiChatMixin", "GuiContainerCreativeMixin", "GuiNewChatAccessor",

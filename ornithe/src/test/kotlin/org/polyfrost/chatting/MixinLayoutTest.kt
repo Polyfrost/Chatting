@@ -25,7 +25,7 @@ class MixinLayoutTest {
         val configured = Regex("\\\"([^\\\"]+)\\\"")
             .findAll(clientSection).map { it.groupValues[1] }.toSet()
         val sources = Files.walk(mixinDirectory).use { paths ->
-            paths.filter { Files.isRegularFile(it) && it.extension == "java" }
+            paths.filter { Files.isRegularFile(it) && it.extension == "java" && !it.fileName.toString().endsWith("Plugin.java") }
                 .map { mixinDirectory.relativize(it).toString().removeSuffix(".java").replace('/', '.') }
                 .toList().toSet()
         }
