@@ -4,6 +4,7 @@ import org.lwjgl.input.Keyboard
 import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatDimensions
+import org.polyfrost.chatting.chat.ChatSearchingManager
 import org.polyfrost.chatting.hook.ChatHeadState
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
@@ -339,6 +340,7 @@ object ChattingConfig : Config(
         addCallback("unfocusedHeight") { ChatDimensions.refresh() }
         addCallback("customChatWidth") { ChatDimensions.refresh() }
         addCallback("customWidth") { ChatDimensions.refresh() }
+        addCallback("chatSearch") { ChatSearchingManager.setQuery("") }
         addDependency("smoothChatMs", "smoothChat")
         addDependency("smoothScrollingMs", "smoothScrolling")
         addDependency("chatCornerRadius", "roundedChatCorners")

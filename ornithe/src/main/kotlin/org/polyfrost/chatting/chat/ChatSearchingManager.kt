@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat
 
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
@@ -16,9 +17,22 @@ object ChatSearchingManager {
     @JvmStatic
     fun clearCache() = synchronized(cache) { cache.clear() }
 
+    /**
+     * Changes the active query as one renderer operation: filtering is cached,
+     * so a new query must discard stale entries and return the chat to its
+     * newest line rather than leaving its old scroll offset out of range.
+     */
+    @JvmStatic
+    fun setQuery(query: String) {
+        if (lastSearch == query) return
+        lastSearch = query
+        clearCache()
+        Minecraft.getMinecraft().ingameGUI.chatGUI.resetScroll()
+    }
+
     @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? =
-        filterChatTabMessages(lastSearch) ?: filterMessages2(text, list)
+        filterChatTabMessages(text) ?: filterMessages2(text, list)
 
     @JvmStatic
     fun filterMessages2(text: String, list: List<ChatLine>): List<ChatLine> {

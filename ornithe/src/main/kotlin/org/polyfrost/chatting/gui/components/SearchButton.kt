@@ -19,7 +19,7 @@ class SearchButton : CleanButton(
         chatBox = !chatBox
         inputField.setEnabled(chatBox)
         inputField.isFocused = chatBox
-        ChatSearchingManager.lastSearch = ""
+        ChatSearchingManager.setQuery("")
         inputField.text = ""
     }
 

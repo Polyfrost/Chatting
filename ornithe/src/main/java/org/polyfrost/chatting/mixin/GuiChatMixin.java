@@ -50,7 +50,7 @@ public abstract class GuiChatMixin extends GuiScreen {
                 chatting$searchButton.onMousePress();
             } else {
                 chatting$searchButton.getInputField().textboxKeyTyped(typedChar, keyCode);
-                ChatSearchingManager.INSTANCE.setLastSearch(chatting$searchButton.getInputField().getText());
+                ChatSearchingManager.setQuery(chatting$searchButton.getInputField().getText());
             }
         } else if (GuiScreen.isCtrlKeyDown() && keyCode == Keyboard.KEY_TAB) {
             chatting$switchTab();

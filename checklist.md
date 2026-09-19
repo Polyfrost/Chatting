@@ -47,7 +47,7 @@ Status meanings:
 - [x] Per-message delete button.
 - [x] Modern clear-history button behavior.
 - [x] Chat screenshot button and screenshot keybind.
-- [ ] Chat search UI and filtered-render refresh behavior.
+- [x] Chat search UI and filtered-render refresh behavior.
 
 ## Chat heads
 
