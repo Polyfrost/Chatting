@@ -87,8 +87,8 @@ done
 APP_BASE_NAME=${0##*/}
 # Discard cd standard output in case $CDPATH is set (https://github.com/gradle/gradle/issues/25036)
 APP_HOME=$( cd -P "${APP_HOME:-./}" > /dev/null && printf '%s\n' "$PWD" ) || exit
-# The Ornithe target is a standalone Gradle build nested in this repository.
-# Run it from its own build root regardless of the caller's working directory.
+# Run the standalone Ornithe build from its repository root regardless of the
+# caller's working directory.
 cd "$APP_HOME" || exit
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
