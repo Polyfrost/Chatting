@@ -15,7 +15,7 @@ Status meanings:
 
 - [x] Establish modern-style client lifecycle ownership (ChattingClient),
   shared constants, and a feature-specific dimensions module.
-- [ ] Port modern configuration descriptions, callbacks, migrations, and
+- [x] Port modern configuration descriptions, callbacks, migrations, and
   runtime refresh behavior without exposing options before their feature works.
 - [ ] Port modern compatibility reevaluation only where the target mod and API
   actually exist on Fabric (Ornithe).
@@ -89,5 +89,5 @@ Status meanings:
 - [x] Java 21 Fabric (Ornithe) build.
 - [x] Retained Forge build.
 - [ ] In-game client smoke test for every checked feature.
-- [ ] Confirm no unported modern option is visible in OneConfig.
-- [ ] Re-audit against newer upstream main before release.
+- [x] Confirm no unported modern option is visible in OneConfig.
+- [x] Re-audit against newer upstream main before release.
