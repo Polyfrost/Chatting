@@ -8,6 +8,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
+import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatCopyButton;
 import org.polyfrost.chatting.chat.ChatDeleteButton;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -22,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
+
+import net.minecraft.client.renderer.GlStateManager;
 
 /** Renders the focused-chat copy affordance beside the line currently under the cursor. */
 @Mixin(GuiNewChat.class)
@@ -49,28 +52,47 @@ public abstract class GuiNewChatMixin_CopyButton extends Gui {
         if (!(mc.currentScreen instanceof GuiChat)) return;
 
         int top = (int) ((float) args.get(2) - 1f);
-        int left = (int) Math.ceil(getChatWidth() / getChatScale()) + 5;
-        if (ChattingConfig.INSTANCE.getChatCopy()) {
-            if (chatting$copyHovered(left, top, left + 9, top + 9)) {
-                chatting$drawButton(CHATTING$COPY, left, top);
-                ChatCopyButton.hover((String) args.get(0));
-                return;
-            }
-            left += 10;
-        }
-        if (!ChattingConfig.INSTANCE.getChatDelete() || !chatting$copyHovered(left, top, left + 9, top + 9)) return;
         int lineIndex = -(top + 9) / 9;
         int drawnIndex = lineIndex + scrollPos;
         if (drawnIndex < 0 || drawnIndex >= drawnChatLines.size()) return;
-        chatting$drawButton(CHATTING$DELETE, left, top);
-        ChatDeleteButton.hover(drawnChatLines.get(drawnIndex));
+
+        int left = (int) Math.ceil(getChatWidth() / getChatScale()) + 5;
+        int stripWidth = ChatButtons.perLineButtonCount() * ChatButtons.BUTTON_SIZE
+            + Math.max(0, ChatButtons.perLineButtonCount() - 1) * ChatButtons.BUTTON_GAP;
+        // Keep the controls available while moving from the message to the strip;
+        // testing only icon bounds made them effectively invisible to the player.
+        if (!chatting$copyHovered(-4, top, left + stripWidth, top + ChatButtons.BUTTON_SIZE)) return;
+
+        ChatLine line = drawnChatLines.get(drawnIndex);
+        if (ChattingConfig.INSTANCE.getChatCopy()) {
+            if (chatting$drawButton(CHATTING$COPY, left, top)) ChatCopyButton.hover(line);
+            left += ChatButtons.BUTTON_SIZE + ChatButtons.BUTTON_GAP;
+        }
+        if (ChattingConfig.INSTANCE.getChatDelete() && chatting$drawButton(CHATTING$DELETE, left, top)) {
+            ChatDeleteButton.hover(line);
+        }
     }
 
     @Unique
-    private void chatting$drawButton(ResourceLocation icon, int left, int top) {
-        drawRect(left, top, left + 9, top + 9, ChattingConfig.INSTANCE.getChatButtonHoveredBackgroundColor().getArgb());
+    private boolean chatting$drawButton(ResourceLocation icon, int left, int top) {
+        boolean hovered = chatting$copyHovered(left, top, left + ChatButtons.BUTTON_SIZE, top + ChatButtons.BUTTON_SIZE);
+        int background = (hovered ? ChattingConfig.INSTANCE.getChatButtonHoveredBackgroundColor()
+            : ChattingConfig.INSTANCE.getChatButtonBackgroundColor()).getArgb();
+        int color = (hovered ? ChattingConfig.INSTANCE.getChatButtonHoveredColor()
+            : ChattingConfig.INSTANCE.getChatButtonColor()).getArgb();
+        drawRect(left, top, left + ChatButtons.BUTTON_SIZE, top + ChatButtons.BUTTON_SIZE, background);
         mc.getTextureManager().bindTexture(icon);
-        drawModalRectWithCustomSizedTexture(left, top, 0f, 0f, 9, 9, 9f, 9f);
+        if (ChattingConfig.INSTANCE.getButtonShadow()) {
+            GlStateManager.color(0f, 0f, 0f, (color >>> 24) / 255f);
+            drawModalRectWithCustomSizedTexture(left + 1, top + 1, 0f, 0f,
+                ChatButtons.BUTTON_SIZE, ChatButtons.BUTTON_SIZE, ChatButtons.BUTTON_SIZE, ChatButtons.BUTTON_SIZE);
+        }
+        GlStateManager.color(((color >>> 16) & 0xFF) / 255f, ((color >>> 8) & 0xFF) / 255f,
+            (color & 0xFF) / 255f, (color >>> 24) / 255f);
+        drawModalRectWithCustomSizedTexture(left, top, 0f, 0f,
+            ChatButtons.BUTTON_SIZE, ChatButtons.BUTTON_SIZE, ChatButtons.BUTTON_SIZE, ChatButtons.BUTTON_SIZE);
+        GlStateManager.color(1f, 1f, 1f, 1f);
+        return hovered;
     }
 
     @Unique

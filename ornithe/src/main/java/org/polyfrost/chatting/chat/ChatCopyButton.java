@@ -1,23 +1,25 @@
 package org.polyfrost.chatting.chat;
 
-/** Frame-local state shared by the chat renderer and GuiChat click handler. */
+import net.minecraft.client.gui.ChatLine;
+
+/** Frame-local target selected by the copy affordance. */
 public final class ChatCopyButton {
-    private static String hoveredText;
+    private static ChatLine hoveredLine;
 
     private ChatCopyButton() {
     }
 
     public static void reset() {
-        hoveredText = null;
+        hoveredLine = null;
     }
 
-    public static void hover(String text) {
-        hoveredText = text;
+    public static void hover(ChatLine line) {
+        hoveredLine = line;
     }
 
-    public static String consumeHoveredText() {
-        String text = hoveredText;
-        hoveredText = null;
-        return text;
+    public static ChatLine consume() {
+        ChatLine line = hoveredLine;
+        hoveredLine = null;
+        return line;
     }
 }

@@ -8,6 +8,7 @@ import net.minecraft.client.gui.ChatLine;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatBackground;
+import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Final;
@@ -98,10 +99,7 @@ public abstract class GuiNewChatMixin_Background {
     private int chatting$buttonBackgroundWidth() {
         if (!ChattingConfig.INSTANCE.getExtendBG() || !(mc.currentScreen instanceof GuiChat)) return 0;
 
-        int buttons = 0;
-        if (ChattingConfig.INSTANCE.getChatCopy()) buttons++;
-        if (ChattingConfig.INSTANCE.getChatDelete()) buttons++;
-        return buttons * 10;
+        return ChatButtons.extraBackgroundWidth();
     }
 
     private int chatting$fadeAge(int age) {

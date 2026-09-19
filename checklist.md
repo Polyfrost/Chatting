@@ -39,12 +39,12 @@ Status meanings:
 
 ## Buttons and chat actions
 
-- [ ] Modern button renderer and textures.
+- [x] Modern button renderer and textures.
 - [x] Button shadow.
-- [ ] Extend chat background around buttons.
-- [ ] Per-message copy button.
+- [x] Extend chat background around buttons.
+- [x] Per-message copy button.
 - [ ] Right-click copy and shortcut-key gating.
-- [ ] Per-message delete button.
+- [x] Per-message delete button.
 - [x] Modern clear-history button behavior.
 - [ ] Chat screenshot button and screenshot keybind.
 - [ ] Chat search UI and filtered-render refresh behavior.
@@ -58,7 +58,7 @@ Status meanings:
 - [x] Center chat heads.
 - [x] Offset non-player messages.
 - [x] Hide chat heads on consecutive messages.
-- [ ] Texture/render compatibility needed by the 1.8.9 player renderer.
+- [x] Texture/render compatibility needed by the 1.8.9 player renderer.
 
 ## Screenshots
 
@@ -86,7 +86,7 @@ Status meanings:
 
 ## Verification gate
 
-- [ ] Java 21 Fabric (Ornithe) build.
+- [x] Java 21 Fabric (Ornithe) build.
 - [ ] Retained Forge build.
 - [ ] In-game client smoke test for every checked feature.
 - [ ] Confirm no unported modern option is visible in OneConfig.

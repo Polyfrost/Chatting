@@ -80,9 +80,11 @@ public abstract class GuiChatMixin extends GuiScreen {
             }
         }
         if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatCopy()) {
-            String text = ChatCopyButton.consumeHoveredText();
-            if (text == null) return;
-            GuiScreen.setClipboardString(text);
+            ChatLine line = ChatCopyButton.consume();
+            if (line == null) return;
+            // Copy the complete rendered line, including its formatting, rather
+            // than the particular text fragment whose draw call found the icon.
+            GuiScreen.setClipboardString(line.getChatComponent().getFormattedText());
             ci.cancel();
             return;
         }
