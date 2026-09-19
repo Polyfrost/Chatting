@@ -8,6 +8,7 @@ import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -21,13 +22,14 @@ public class GuiNewChatMixin_ChatSearching {
     @Final
     private List<ChatLine> drawnChatLines;
 
+    @Unique
     @Inject(method = "setChatLine", at = @At("HEAD"))
-    private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+    private void chatting$clearSearchCache(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         ChatSearchingManager.clearCache();
     }
 
     @Redirect(method = "drawChat", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiNewChat;drawnChatLines:Ljava/util/List;", opcode = Opcodes.GETFIELD))
-    private List<ChatLine> injected(GuiNewChat instance) {
+    private List<ChatLine> chatting$filterDrawnChatLines(GuiNewChat instance) {
         return ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), this.drawnChatLines);
     }
 }

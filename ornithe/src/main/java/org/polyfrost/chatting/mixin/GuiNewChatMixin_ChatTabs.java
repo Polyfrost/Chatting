@@ -1,7 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
 import org.polyfrost.chatting.chat.ChatTabs;
-import org.polyfrost.chatting.config.ChattingConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
@@ -29,16 +28,18 @@ public abstract class GuiNewChatMixin_ChatTabs {
         chatting$handleChatTabMessage(chatComponent, chatLineId, this.mc.ingameGUI.getUpdateCounter(), false, ci);
     }
 
+    @Unique
     @Inject(method = "setChatLine", at = @At("HEAD"), cancellable = true)
-    private void handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+    private void chatting$handleSetChatLine(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         chatting$handleChatTabMessage(chatComponent, chatLineId, updateCounter, displayOnly, ci);
     }
 
     @Unique
     private void chatting$handleChatTabMessage(IChatComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
-        if (ChattingConfig.INSTANCE.getChatTabs()) {
-            ChatTabs.INSTANCE.setHasCancelledAnimation(!ChatTabs.INSTANCE.shouldRender(chatComponent));
-            if (!ChatTabs.INSTANCE.shouldRender(chatComponent)) {
+        boolean filter = ChatTabs.INSTANCE.shouldFilter();
+        boolean render = !filter || ChatTabs.INSTANCE.shouldRender(chatComponent);
+        ChatTabs.INSTANCE.setHasCancelledAnimation(!render);
+        if (!render) {
                 if (chatLineId != 0) {
                     deleteChatLine(chatLineId);
                 }
@@ -49,7 +50,6 @@ public abstract class GuiNewChatMixin_ChatTabs {
                     }
                 }
                 ci.cancel();
-            }
         }
     }
 }

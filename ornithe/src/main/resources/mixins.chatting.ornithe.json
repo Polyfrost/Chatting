@@ -1,8 +1,7 @@
 {
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_13",
   "minVersion": "0.7",
   "package": "org.polyfrost.chatting.mixin",
-  "refmap": "mixins.chatting.refmap.json",
   "client": [
     "ChatStyle_UnderlineLinks_Mixin", "ChatLineMixin_ChatHeads", "EntityPlayerSPMixin",
     "GuiChatMixin", "GuiContainerCreativeMixin", "GuiNewChatAccessor",

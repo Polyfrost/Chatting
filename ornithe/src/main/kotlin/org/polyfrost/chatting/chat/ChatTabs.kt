@@ -3,6 +3,7 @@ package org.polyfrost.chatting.chat
 import com.google.gson.*
 import net.minecraft.util.IChatComponent
 import org.polyfrost.chatting.Chatting
+import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.chatting.gui.components.TabButton
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -204,8 +205,12 @@ object ChatTabs {
         }
     }
 
+    /** Avoid matching every incoming line while tabs are disabled or unavailable. */
+    @JvmStatic
+    fun shouldFilter(): Boolean = ChattingConfig.chatTabs && currentTabs.isNotEmpty()
+
     fun shouldRender(message: IChatComponent): Boolean {
-        if (currentTabs.isEmpty()) return true
+        if (!shouldFilter()) return true
         for (tab in currentTabs) {
             if (tab.shouldRender(message)) {
                 return true
