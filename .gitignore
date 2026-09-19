@@ -29,9 +29,4 @@ run
 Thumbs.db
 .vscode
 
-# local handoff and deployment workspace files
-.commandcode/
-cleanup.md
-deploy.sh
-handoff.md
-versions/1.8.9-forge/
+# local IDE and build outputs only
