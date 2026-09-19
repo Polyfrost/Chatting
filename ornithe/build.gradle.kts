@@ -43,6 +43,12 @@ dependencies {
     // produced metadata agree on the required runtime library.
     modImplementation("org.polyfrost.oneconfig:1.8.9-ornithe:1.2.0")
     modImplementation("com.terraformersmc:modmenu:0.5.0+mc1.8.9")
+
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.processResources {
