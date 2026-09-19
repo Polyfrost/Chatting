@@ -10,6 +10,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_ChatHeadsLifecycle {
+    @Inject(method = "refreshChat", at = @At("HEAD"))
+    private void chatting$resetChatHeadSequence(CallbackInfo ci) {
+        // refreshChat recreates the drawn lines from history.  Keeping the
+        // previous live message here makes the recreated lines look like one
+        // long consecutive run and can leave every cached head null.
+        ChatHeadState.resetConsecutiveTracking();
+    }
+
     @Inject(method = "setChatLine", at = @At("HEAD"))
     private void chatting$beginChatHeadDetection(IChatComponent component, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
         ChatHeadState.currentComponent = component;

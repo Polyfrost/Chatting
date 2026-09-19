@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -34,7 +33,6 @@ public class ChatLineMixin_ChatHeads implements ChatLineHeadHook {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void chatting$detectPlayer(int updateCounter, IChatComponent component, int chatLineId, CallbackInfo ci) {
-        ChatLineHeadHook.LINES.add(new WeakReference<>((ChatLine) (Object) this));
         NetHandlerPlayClient connection = Minecraft.getMinecraft().getNetHandler();
         if (connection == null) return;
 
@@ -56,7 +54,7 @@ public class ChatLineMixin_ChatHeads implements ChatLineHeadHook {
             if (ChatHeadState.lineVisible) {
                 if (chatting$samePlayer(info, ChatHeadState.lastPlayerInfo)) {
                     chatting$first = false;
-                    chatting$updatePlayerInfo();
+                    chatting$applyConsecutivePolicy();
                 }
                 ChatHeadState.lastPlayerInfo = info;
             }
@@ -93,8 +91,8 @@ public class ChatLineMixin_ChatHeads implements ChatLineHeadHook {
         return chatting$playerInfo;
     }
 
-    @Override
-    public void chatting$updatePlayerInfo() {
+    @Unique
+    private void chatting$applyConsecutivePolicy() {
         chatting$playerInfo = ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages() && !chatting$first
             ? null
             : chatting$detectedPlayerInfo;

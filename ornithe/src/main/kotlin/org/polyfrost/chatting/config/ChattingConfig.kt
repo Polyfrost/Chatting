@@ -4,7 +4,7 @@ import org.lwjgl.input.Keyboard
 import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatDimensions
-import org.polyfrost.chatting.hook.ChatLineHeadHook
+import org.polyfrost.chatting.hook.ChatHeadState
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -254,7 +254,7 @@ object ChattingConfig : Config(
     @Switch(
         title = "Center Chat Heads",
         category = "Chat Heads",
-        description = "Vertically center the head with its chat line instead of aligning it one pixel above.",
+        description = "Vertically center the head with the text glyphs instead of aligning it to the chat background's top edge.",
     )
     var centerChatHeads = false
 
@@ -344,9 +344,12 @@ object ChattingConfig : Config(
         addDependency("chatCornerRadius", "roundedChatCorners")
         addDependency("fadeTime", "fade")
         addCallback("hideChatHeadOnConsecutiveMessages") {
-            ChatLineHeadHook.LINES
-                .mapNotNull { it.get() as? ChatLineHeadHook }
-                .forEach { it.`chatting$updatePlayerInfo`() }
+            // Existing ChatLine instances cache whether they are the first
+            // visible line for a player. Rebuild them from history when this
+            // policy changes; editing their cached player reference can leave
+            // the entire current chat with no drawable heads.
+            ChatHeadState.resetConsecutiveTracking()
+            Minecraft.getMinecraft().ingameGUI.chatGUI.refreshChat()
         }
     }
 }
