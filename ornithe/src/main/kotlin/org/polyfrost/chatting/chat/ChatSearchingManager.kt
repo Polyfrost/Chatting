@@ -30,6 +30,12 @@ object ChatSearchingManager {
         Minecraft.getMinecraft().ingameGUI.chatGUI.resetScroll()
     }
 
+    /** Shared predicate for both vanilla chat lines and tab-owned message strings. */
+    @JvmStatic
+    fun matches(query: String, message: String): Boolean =
+        EnumChatFormatting.getTextWithoutFormattingCodes(message)
+            .lowercase().contains(query.lowercase())
+
     @JvmStatic
     fun filterMessages(text: String, list: List<ChatLine>): List<ChatLine>? =
         filterChatTabMessages(text) ?: filterMessages2(text, list)
@@ -40,20 +46,18 @@ object ChatSearchingManager {
         val key = "$text\u0000${list.size}\u0000${list.firstOrNull()?.updatedCounter ?: -1}"
         return synchronized(cache) {
             cache.getOrPut(key) {
-                list.filter {
-                    EnumChatFormatting.getTextWithoutFormattingCodes(it.chatComponent.unformattedText)
-                        .lowercase().contains(text.lowercase())
-                }
+                list.filter { matches(text, it.chatComponent.unformattedText) }
             }
         }
     }
 
     @JvmStatic
     fun filterChatTabMessages(text: String): List<ChatLine>? {
-        val currentTab = ChatTabs.currentTabs.firstOrNull()
-        val messages = currentTab?.messages ?: return null
+        val messages = ChatTabs.currentTabs.firstOrNull()?.messages ?: return null
         if (messages.isEmpty()) return null
-        return messages.map { ChatLine(0, ChatComponentText(it), 0) }
-            .let { filterMessages2(text, it) }
+        return messages.asSequence()
+            .filter { text.isBlank() || matches(text, it) }
+            .map { ChatLine(0, ChatComponentText(it), 0) }
+            .toList()
     }
 }
