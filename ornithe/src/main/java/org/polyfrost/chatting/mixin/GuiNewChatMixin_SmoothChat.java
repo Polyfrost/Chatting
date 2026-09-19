@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 1.8.9 render adapter for Chatting's modern smooth-message state machine.
  */
 @Mixin(GuiNewChat.class)
-public abstract class GuiNewChatMixin_SmoothMessages {
+public abstract class GuiNewChatMixin_SmoothChat {
     @Shadow private boolean isScrolled;
     @Shadow public abstract float getChatScale();
 
