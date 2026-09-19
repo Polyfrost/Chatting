@@ -102,10 +102,12 @@ public abstract class GuiNewChatMixin_Background {
         return ChatButtons.extraBackgroundWidth();
     }
 
+    @Unique
     private int chatting$fadeAge(int age) {
         return age + 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20f);
     }
 
+    @Unique
     private boolean chatting$hovered(int left, int top, int right, int bottom) {
         ScaledResolution resolution = new ScaledResolution(mc);
         float chatScale = getChatScale();

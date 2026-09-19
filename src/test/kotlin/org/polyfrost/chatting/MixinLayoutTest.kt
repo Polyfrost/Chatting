@@ -34,7 +34,7 @@ class MixinLayoutTest {
 
     @Test
     fun `private non-injection mixin helpers are unique and namespaced`() {
-        val privateMethod = Regex("^\\s*private\\s+(?:static\\s+)?[\\w<>, ?\\[\\].]+\\s+(\\w+)\\s*\\(")
+        val privateMethod = Regex("^\\s*private\\s+(?:static\\s+)?[\\w\\$<>, ?\\[\\].]+\\s+([\\w\\$]+)\\s*\\(")
         val injectionAnnotation = Regex("@(Inject|Redirect|ModifyArgs|ModifyArg|ModifyVariable|ModifyConstant|WrapOperation|Overwrite)")
         val uniqueAnnotation = Regex("@Unique")
 
@@ -43,7 +43,7 @@ class MixinLayoutTest {
                 val lines = Files.readAllLines(source)
                 lines.forEachIndexed { index, line ->
                     val name = privateMethod.find(line)?.groupValues?.get(1) ?: return@forEachIndexed
-                    val annotations = lines.subList(maxOf(0, index - 4), index).joinToString("\n")
+                    val annotations = lines.subList(maxOf(0, index - 16), index).joinToString("\n")
                     if (!injectionAnnotation.containsMatchIn(annotations)) {
                         assertTrue(name.startsWith("chatting$"), "$source:$name must use the chatting$ namespace")
                         assertTrue(uniqueAnnotation.containsMatchIn(annotations), "$source:$name must be @Unique")
