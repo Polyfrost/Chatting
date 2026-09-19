@@ -11,6 +11,7 @@ import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatCopyButton;
 import org.polyfrost.chatting.chat.ChatDeleteButton;
+import org.polyfrost.chatting.chat.Textures;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,9 +30,6 @@ import net.minecraft.client.renderer.GlStateManager;
 /** Renders the focused-chat copy affordance beside the line currently under the cursor. */
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_CopyButton extends Gui {
-    private static final ResourceLocation CHATTING$COPY = new ResourceLocation("chatting", "copy.png");
-    private static final ResourceLocation CHATTING$DELETE = new ResourceLocation("chatting", "delete.png");
-
     @Shadow @Final private Minecraft mc;
     @Shadow @Final private List<ChatLine> drawnChatLines;
     @Shadow private int scrollPos;
@@ -65,10 +63,10 @@ public abstract class GuiNewChatMixin_CopyButton extends Gui {
 
         ChatLine line = drawnChatLines.get(drawnIndex);
         if (ChattingConfig.INSTANCE.getChatCopy()) {
-            if (chatting$drawButton(CHATTING$COPY, left, top)) ChatCopyButton.hover(line);
+            if (chatting$drawButton(Textures.COPY, left, top)) ChatCopyButton.hover(line);
             left += ChatButtons.BUTTON_SIZE + ChatButtons.BUTTON_GAP;
         }
-        if (ChattingConfig.INSTANCE.getChatDelete() && chatting$drawButton(CHATTING$DELETE, left, top)) {
+        if (ChattingConfig.INSTANCE.getChatDelete() && chatting$drawButton(Textures.DELETE, left, top)) {
             ChatDeleteButton.hover(line);
         }
     }
