@@ -8,7 +8,8 @@
   "license": "GPL-3.0-only",
   "environment": "client",
   "entrypoints": {
-    "client-init": ["org.polyfrost.chatting.ChattingEntrypoint"]
+    "client-init": ["org.polyfrost.chatting.ChattingEntrypoint"],
+    "modmenu": ["org.polyfrost.chatting.integration.ChattingModMenuIntegration"]
   },
   "mixins": ["mixins.chatting.ornithe.json"],
   "depends": {

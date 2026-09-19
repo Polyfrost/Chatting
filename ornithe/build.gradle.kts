@@ -16,6 +16,7 @@ repositories {
         content { includeGroup("pl.tomgirl") }
     }
     maven("https://maven.legacyfabric.net/")
+    maven("https://maven.terraformersmc.com/releases/")
     maven("https://repo.polyfrost.org/releases")
 }
 
@@ -41,6 +42,7 @@ dependencies {
     // nested inside. Keeping this as a mod dependency makes development and the
     // produced metadata agree on the required runtime library.
     modImplementation("org.polyfrost.oneconfig:1.8.9-ornithe:1.2.0")
+    modImplementation("com.terraformersmc:modmenu:0.5.0+mc1.8.9")
 }
 
 tasks.processResources {
