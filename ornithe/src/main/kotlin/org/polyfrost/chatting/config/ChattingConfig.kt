@@ -7,6 +7,7 @@ import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.chat.ChatSearchingManager
 import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.hook.ChatHeadState
+import org.polyfrost.chatting.gui.ChatShortcutManagerScreen
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -321,12 +322,23 @@ object ChattingConfig : Config(
     @Checkbox(title = "Enable Shortcuts Only on Hypixel", category = "Shortcuts")
     var hypixelOnlyChatShortcuts = true
 
+    @Button(
+        title = "Edit Chat Shortcuts",
+        category = "Shortcuts",
+        description = "Create, edit, and delete chat shortcut aliases.",
+        text = "Edit",
+    )
+    fun openChatShortcutsScreen() {
+        Minecraft.getMinecraft().displayGuiScreen(ChatShortcutManagerScreen())
+    }
+
     init {
         addDependency("peekScrolling", "chatPeek")
         addDependency("chatPeekBind", "chatPeek")
         addDependency("peekMode", "chatPeek")
         addDependency("hypixelOnlyChatTabs", "chatTabs")
         addDependency("hypixelOnlyChatShortcuts", "chatShortcuts")
+        hideIf("openChatShortcutsScreen", "chatShortcuts")
         addDependency("focusedHeight", "customChatHeight")
         addDependency("unfocusedHeight", "customChatHeight")
         addDependency("customWidth", "customChatWidth")
