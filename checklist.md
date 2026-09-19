@@ -46,7 +46,7 @@ Status meanings:
 - [ ] Right-click copy and shortcut-key gating.
 - [x] Per-message delete button.
 - [x] Modern clear-history button behavior.
-- [ ] Chat screenshot button and screenshot keybind.
+- [x] Chat screenshot button and screenshot keybind.
 - [ ] Chat search UI and filtered-render refresh behavior.
 
 ## Chat heads
@@ -62,11 +62,11 @@ Status meanings:
 
 ## Screenshots
 
-- [ ] Screenshot mode: save, clipboard, or both.
-- [ ] Add border.
-- [ ] Force shadow.
-- [ ] Include background.
-- [ ] Native 1.8.9 capture/clipboard implementation and safe AWT handling.
+- [x] Screenshot mode: save, clipboard, or both.
+- [x] Add border.
+- [x] Force shadow.
+- [x] Include background.
+- [x] Native 1.8.9 capture/clipboard implementation and safe AWT handling.
 
 ## Tabs, shortcuts, and peek
 
