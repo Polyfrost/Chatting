@@ -87,7 +87,7 @@ Status meanings:
 ## Verification gate
 
 - [x] Java 21 Fabric (Ornithe) build.
-- [ ] Retained Forge build.
+- [x] Retained Forge build.
 - [ ] In-game client smoke test for every checked feature.
 - [ ] Confirm no unported modern option is visible in OneConfig.
 - [ ] Re-audit against newer upstream main before release.
