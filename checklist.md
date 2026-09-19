@@ -70,9 +70,9 @@ Status meanings:
 
 ## Tabs, shortcuts, and peek
 
-- [ ] Modern tab model, renderer, refresh behavior, and persistent migration.
-- [ ] Modern search model integration with tabs.
-- [ ] Modern chat shortcuts persistence and command rewriting.
+- [x] Modern tab model, renderer, refresh behavior, and persistent migration.
+- [x] Modern search model integration with tabs.
+- [x] Modern chat shortcuts persistence and command rewriting.
 - [ ] Edit chat shortcuts screen.
 - [x] Modern chat peek behavior, keybind semantics, mouse-wheel scrolling, and scroll reset.
 

@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.chat.ChatSearchingManager
+import org.polyfrost.chatting.chat.ChatTabs
 import org.polyfrost.chatting.hook.ChatHeadState
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
@@ -341,6 +342,8 @@ object ChattingConfig : Config(
         addCallback("customChatWidth") { ChatDimensions.refresh() }
         addCallback("customWidth") { ChatDimensions.refresh() }
         addCallback("chatSearch") { ChatSearchingManager.setQuery("") }
+        addCallback("chatTabs") { ChatTabs.refresh() }
+        addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh() }
         addDependency("smoothChatMs", "smoothChat")
         addDependency("smoothScrollingMs", "smoothScrolling")
         addDependency("chatCornerRadius", "roundedChatCorners")

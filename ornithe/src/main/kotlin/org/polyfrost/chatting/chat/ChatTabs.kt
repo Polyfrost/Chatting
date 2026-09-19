@@ -13,12 +13,18 @@ object ChatTabs {
     private val PARSER = JsonParser()
     val tabs = arrayListOf<ChatTab>()
     var currentTabs: ArrayList<ChatTab> = object : ArrayList<ChatTab>() {
-        override fun add(element: ChatTab): Boolean {
-            val returnValue = super.add(element)
-            if (mc.theWorld != null && returnValue) {
-                mc.ingameGUI.chatGUI.refreshChat()
-            }
-            return returnValue
+        private fun refreshIfWorldLoaded(changed: Boolean) {
+            if (changed && mc.theWorld != null) mc.ingameGUI.chatGUI.refreshChat()
+        }
+
+        override fun add(element: ChatTab): Boolean = super.add(element).also(::refreshIfWorldLoaded)
+
+        override fun remove(element: ChatTab): Boolean = super.remove(element).also(::refreshIfWorldLoaded)
+
+        override fun clear() {
+            val changed = isNotEmpty()
+            super.clear()
+            refreshIfWorldLoaded(changed)
         }
     }
     var hasCancelledAnimation = false
@@ -26,6 +32,12 @@ object ChatTabs {
 
     private val tabFile = ConfigManager.active().folder.resolve("chattabs.json")
     private val oldTabFile = Chatting.oldModDir.resolve("chattabs.json")
+
+    /** Rebuild the visible chat lines after a tab-related runtime option changes. */
+    @JvmStatic
+    fun refresh() {
+        if (mc.theWorld != null) mc.ingameGUI.chatGUI.refreshChat()
+    }
 
     fun initialize() {
         if (initialized) {

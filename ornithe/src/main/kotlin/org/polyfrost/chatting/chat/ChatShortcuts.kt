@@ -31,23 +31,23 @@ object ChatShortcuts {
         } else {
             initialized = true
         }
-        if (shortcutsFile.exists()) {
-            try {
-                val jsonObj = PARSER.parse(shortcutsFile.readText()).asJsonObject
-                for (shortcut in jsonObj.entrySet()) {
-                    shortcuts.add(shortcut.key to shortcut.value.asString)
-                }
-                return
-            } catch (_: Throwable) {
-                shortcutsFile.moveTo(shortcutsFile.parent.resolve("chatshortcuts.json.bak"))
+        if (!shortcutsFile.exists()) {
+            if (oldShortcutsFile.exists()) {
+                // Migrate before parsing so the aliases are usable in the same
+                // client session, not only after the next restart.
+                oldShortcutsFile.moveTo(shortcutsFile)
+            } else {
+                shortcutsFile.createFile()
+                shortcutsFile.writeText(JsonObject().toString())
             }
         }
-        shortcutsFile.createFile()
-        if (oldShortcutsFile.exists()) {
-            shortcutsFile.writeText(
-                oldShortcutsFile.readText()
-            )
-        } else {
+        try {
+            val jsonObj = PARSER.parse(shortcutsFile.readText()).asJsonObject
+            for (shortcut in jsonObj.entrySet()) {
+                shortcuts.add(shortcut.key to shortcut.value.asString)
+            }
+        } catch (_: Throwable) {
+            shortcutsFile.moveTo(shortcutsFile.parent.resolve("chatshortcuts.json.bak"))
             shortcutsFile.writeText(JsonObject().toString())
         }
     }
@@ -60,6 +60,9 @@ object ChatShortcuts {
     }
 
     fun writeShortcut(key: String, value: String) {
+        // Updating an alias must replace its in-memory entry too; otherwise a
+        // stale value can win when the list is searched by command length.
+        shortcuts.removeIf { it.first == key }
         shortcuts.add(key to value)
         val jsonObj = PARSER.parse(shortcutsFile.readText()).asJsonObject
         jsonObj.addProperty(key, value)
