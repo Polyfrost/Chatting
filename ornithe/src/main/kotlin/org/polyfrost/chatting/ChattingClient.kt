@@ -18,6 +18,7 @@ object ChattingClient {
     fun initialize() {
         if (initialized) return
         initialized = true
+        ChatScreenshot.allowAwtClipboard()
         ChattingConfig.preload()
         ChatScreenshot.initialize()
         MinecraftClientEvents.TICK_END.register(::initializeDeferredFeatures)

@@ -36,14 +36,30 @@ import kotlin.math.min
 object ChatScreenshot {
     private val keybind = KeyBinding("key.chatting.screenshot", Keyboard.KEY_NONE, "category.chatting")
     private val fileFormatter = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS'.png'", Locale.ROOT)
+    private val formatting = Regex("§[0-9a-fA-F]")
     private var initialized = false
+    private var screenshotKeyWasDown = false
 
     @JvmStatic
     fun initialize() {
         if (initialized) return
         initialized = true
         KeybindEvents.REGISTER_KEYBINDS.register { KeybindRegistry.register(keybind) }
-        MinecraftClientEvents.TICK_END.register { while (keybind.isPressed) capture() }
+        MinecraftClientEvents.TICK_END.register {
+            val isDown = keybind.isKeyDown
+            if (isDown && !screenshotKeyWasDown) capture()
+            screenshotKeyWasDown = isDown
+        }
+    }
+
+    /** Enables the AWT clipboard where the platform can safely provide it. */
+    @JvmStatic
+    fun allowAwtClipboard() {
+        // Creating AWT's toolkit crashes the macOS game client.
+        if (System.getProperty("os.name", "").lowercase(Locale.ROOT).contains("mac")) return
+        if (System.getProperty("java.awt.headless").equals("true", ignoreCase = true)) {
+            System.clearProperty("java.awt.headless")
+        }
     }
 
     @JvmStatic
@@ -169,7 +185,7 @@ object ChatScreenshot {
     }
 
     private fun blackOut(text: String) = text
-        .replace(Regex("§[0-9a-fA-F]"), "§0")
+        .replace(formatting, "§0")
         .replace("§r", "§0")
 
     private data class ScreenshotStyle(val shadow: Boolean, val background: Boolean, val border: Boolean) {
