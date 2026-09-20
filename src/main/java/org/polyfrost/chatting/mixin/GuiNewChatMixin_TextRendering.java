@@ -44,13 +44,13 @@ public abstract class GuiNewChatMixin_TextRendering {
             ChatLineHeadHook line = (ChatLineHeadHook) chatting$currentLine;
             if (line.chatting$hasDetectedPlayer() || ChattingConfig.INSTANCE.getOffsetNonPlayerMessages()) textX += 10.0F;
             NetworkPlayerInfo player = line.chatting$getPlayerInfo();
-            chatting$drawHead(player, x, y);
+            chatting$drawHead(player, x, y, (color >>> 24) / 255.0F);
         }
         return renderer.drawString(text, textX, y, color, ChattingConfig.INSTANCE.getTextRenderType() != 0);
     }
 
     @Unique
-    private void chatting$drawHead(NetworkPlayerInfo player, float x, float y) {
+    private void chatting$drawHead(NetworkPlayerInfo player, float x, float y, float alpha) {
         if (player == null) return;
 
         GlStateManager.enableBlend();
@@ -73,18 +73,19 @@ public abstract class GuiNewChatMixin_TextRendering {
         if (ChattingConfig.INSTANCE.getChatHeadShadow() != 0 && getChatScale() == 1.0F) {
             GlStateManager.depthMask(false);
             GlStateManager.resetColor();
-            GlStateManager.color(0.0F, 0.0F, 0.0F, chatting$shadowAlpha);
+            GlStateManager.color(0.0F, 0.0F, 0.0F, chatting$shadowAlpha * alpha);
             chatting$drawHeadGeometry(player, x + 1.0F, y + 1.0F);
         }
 
         GlStateManager.depthMask(true);
-        // Chat heads intentionally do not receive the line's fade alpha.
+        // Use the exact alpha passed to the matching glyph draw so the head
+        // fades with its chat background and text instead of disappearing.
         // resetColor is required here: GUI draws and other HUD mods can change
         // the real OpenGL color without updating GlStateManager's cache.  With
         // no shadow pass, a cached-white color would otherwise leave a stale
         // (often transparent) color active for the only head draw.
         GlStateManager.resetColor();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, alpha);
         chatting$drawHeadGeometry(player, x, y);
 
         // Restore drawChat's pre-font-renderer state rather than leaking model
