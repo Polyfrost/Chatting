@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.ChatLine;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatBackground;
@@ -70,7 +71,29 @@ public abstract class GuiNewChatMixin_Background {
         if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
             color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         }
-        args.set(4, color);
+        // Match the rounded path: render our configured background explicitly,
+        // then keep vanilla's rectangle as a transparent compatibility call.
+        // Letting vanilla paint the visible square directly is the one path
+        // that makes 3D chat heads appear dark.
+        RoundedChat.fill(left, top, right, bottom, color, false, false);
+        args.set(4, vanillaColor & 0x00FFFFFF);
+    }
+
+    // Gui.drawRect leaves its RGBA colour active.  Chat heads are rendered
+    // immediately after this call, so restore the normal GUI colour at the
+    // background boundary instead of relying on each later renderer to do it.
+    @Inject(
+        method = "drawChat",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V",
+            ordinal = 0,
+            shift = At.Shift.AFTER
+        )
+    )
+    private void chatting$restoreColorAfterLineBackground(int updateCounter, CallbackInfo ci) {
+        GlStateManager.resetColor();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Unique
