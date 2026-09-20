@@ -18,7 +18,7 @@ publish.modrinth = "8pJYUDNi"
 mod.mc_compat = "1.8.9"
 mod.mc_releases = ["1.8.9"]
 deps.oneconfig = "1.2.0"
-deps.osl = "0.20.3"
+deps.osl = "0.21.0"
 deps.modmenu = "0.5.0+mc1.8.9"
 
 ["1.21.1"]
