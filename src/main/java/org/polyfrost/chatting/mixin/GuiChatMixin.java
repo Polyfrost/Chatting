@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.GuiChat;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.GuiScreen;
@@ -29,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-/** Vanilla GuiChat wiring for Chatting's controls, search and shortcuts. */
+/^* Vanilla GuiChat wiring for Chatting's controls, search and shortcuts. ^/
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin extends GuiScreen {
     @Shadow protected GuiTextField inputField;
@@ -153,3 +154,4 @@ public abstract class GuiChatMixin extends GuiScreen {
         ChatTabs.INSTANCE.getCurrentTabs().add(ChatTabs.INSTANCE.getTabs().get(next));
     }
 }
+*///?}

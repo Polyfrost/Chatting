@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.Minecraft;
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Applies Chatting's text-shadow setting through the vanilla chat renderer. */
+/^* Applies Chatting's text-shadow setting through the vanilla chat renderer. ^/
 @Mixin(value = GuiNewChat.class, priority = 990)
 public abstract class GuiNewChatMixin_TextRendering {
     @Unique private static final float chatting$shadowAlpha = 0.15F;
@@ -109,7 +110,7 @@ public abstract class GuiNewChatMixin_TextRendering {
         GlStateManager.popMatrix();
     }
 
-    /** The normal face follows GuiPlayerTabOverlay's tested 1.8.9 quad recipe. */
+    /^* The normal face follows GuiPlayerTabOverlay's tested 1.8.9 quad recipe. ^/
     @Unique
     private void chatting$drawTabHead(NetworkPlayerInfo player, float x, float y) {
         EntityPlayer entity = mc.theWorld == null ? null : mc.theWorld.getPlayerEntityByUUID(player.getGameProfile().getId());
@@ -127,7 +128,7 @@ public abstract class GuiNewChatMixin_TextRendering {
         }
     }
 
-    /** Renders the full head and outer skin model directly toward the chat camera. */
+    /^* Renders the full head and outer skin model directly toward the chat camera. ^/
     @Unique
     private void chatting$drawLayeredHead(float x, float y) {
         // The scale and X-axis half-turn leave model Y -8..0 increasing downward.
@@ -147,3 +148,4 @@ public abstract class GuiNewChatMixin_TextRendering {
     }
 
 }
+*///?}

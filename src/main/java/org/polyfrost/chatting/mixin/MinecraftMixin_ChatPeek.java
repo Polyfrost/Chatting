@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.Minecraft;
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
 import org.lwjgl.input.Mouse;
@@ -12,7 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Routes the normal in-game mouse-wheel event to chat while Chat Peek is held. */
+/^* Routes the normal in-game mouse-wheel event to chat while Chat Peek is held. ^/
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin_ChatPeek {
     @Shadow public GuiIngame ingameGUI;
@@ -32,3 +33,4 @@ public abstract class MinecraftMixin_ChatPeek {
         return 0;
     }
 }
+*///?}

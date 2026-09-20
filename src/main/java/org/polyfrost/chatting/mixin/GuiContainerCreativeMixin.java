@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.inventory.GuiContainerCreative;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import org.polyfrost.chatting.Chatting;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,3 +19,4 @@ public class GuiContainerCreativeMixin {
         }
     }
 }
+*///?}

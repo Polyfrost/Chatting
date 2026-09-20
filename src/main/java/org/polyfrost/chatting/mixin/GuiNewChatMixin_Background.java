@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.Minecraft;
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
@@ -23,10 +24,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-/**
+/^*
  * Draws styled backgrounds alongside the vanilla line pass. The native call is
  * kept intact so other chat mods can redirect it without a redirect conflict.
- */
+ ^/
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_Background {
     @Shadow @Final private Minecraft mc;
@@ -123,3 +124,4 @@ public abstract class GuiNewChatMixin_Background {
         return mouseX >= x1 && mouseX < x2 && mouseY >= y1 && mouseY < y2;
     }
 }
+*///?}

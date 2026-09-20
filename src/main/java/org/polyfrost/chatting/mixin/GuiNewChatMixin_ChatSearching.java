@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.ChatLine;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.util.IChatComponent;
 import org.objectweb.asm.Opcodes;
@@ -33,3 +34,4 @@ public class GuiNewChatMixin_ChatSearching {
         return ChatSearchingManager.filterMessages(ChatSearchingManager.INSTANCE.getLastSearch(), this.drawnChatLines);
     }
 }
+*///?}

@@ -1,8 +1,9 @@
 package org.polyfrost.chatting.chat;
 
-import net.minecraft.client.gui.ChatLine;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.ChatLine;
 
-/** Frame-local target selected by the delete affordance. */
+/^* Frame-local target selected by the delete affordance. ^/
 public final class ChatDeleteButton {
     private static ChatLine hoveredLine;
 
@@ -23,3 +24,4 @@ public final class ChatDeleteButton {
         return line;
     }
 }
+*///?}

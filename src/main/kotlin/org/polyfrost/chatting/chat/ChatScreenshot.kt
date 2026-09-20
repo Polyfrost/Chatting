@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.chat
 
-import net.minecraft.client.Minecraft
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.renderer.GlStateManager
@@ -207,3 +208,4 @@ object ChatScreenshot {
         }
     }
 }
+*///?}

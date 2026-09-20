@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import org.polyfrost.chatting.chat.ChatTabs;
+//? if = 1.8.9 {
+/*import org.polyfrost.chatting.chat.ChatTabs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
@@ -53,3 +54,4 @@ public abstract class GuiNewChatMixin_ChatTabs {
         }
     }
 }
+*///?}

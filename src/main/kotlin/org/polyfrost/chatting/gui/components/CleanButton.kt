@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.gui.components
 
-import net.minecraft.client.Minecraft
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
@@ -73,3 +74,4 @@ open class CleanButton(
         GlStateManager.color(1f, 1f, 1f, 1f)
     }
 }
+*///?}

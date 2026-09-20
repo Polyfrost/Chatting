@@ -1,0 +1,699 @@
+package org.polyfrost.chatting.mixin;
+
+//? if > 1.8.9 {
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
+import org.polyfrost.chatting.Chatting;
+import org.polyfrost.chatting.hook.HeadHook;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+//? if >=26 {
+import net.minecraft.client.multiplayer.chat.GuiMessage;
+//?} else {
+/*import net.minecraft.client.GuiMessage;
+*///?}
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.Component;
+import org.objectweb.asm.Opcodes;
+import net.minecraft.util.Mth;
+import org.polyfrost.chatting.chat.ChatBackground;
+import org.polyfrost.chatting.chat.ChatButtons;
+import org.polyfrost.chatting.chat.ChatDimensions;
+import org.polyfrost.chatting.chat.ChatHeads;
+import org.polyfrost.chatting.chat.ChatScrolling;
+import org.polyfrost.chatting.chat.ChatSearch;
+import org.polyfrost.chatting.chat.ChatTabs;
+import org.polyfrost.chatting.chat.RoundedChat;
+import org.polyfrost.chatting.chat.SmoothChat;
+import org.polyfrost.chatting.config.ChattingConfig;
+import org.spongepowered.asm.mixin.Shadow;
+import org.polyfrost.chatting.hook.ChatComponentHook;
+import org.polyfrost.chatting.hook.ChatLineHook;
+import org.polyfrost.chatting.hud.ChatPreview;
+import org.polyfrost.chatting.hud.ChatWindowHud;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.client.gui.Font;
+//? if <= 1.21.11
+//import net.minecraft.client.gui.components.PlayerFaceRenderer;
+//? if <=1.21.10 {
+/*import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.util.FormattedCharSequence;
+*///?}
+//? if <=1.21.5 {
+/*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+*///?}
+//? if <26 {
+/*import net.minecraft.client.gui.GuiGraphics;
+*///?}
+//? if >=26 {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+//?}
+
+@Mixin(ChatComponent.class)
+public class ChatComponentMixin implements ChatComponentHook {
+    //? if <= 1.21.11 {
+    /*@SuppressWarnings("InstantiationOfUtilityClass")
+    @Unique PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
+    *///?}
+
+    @Shadow
+    private void refreshTrimmedMessages() {
+        throw new AssertionError();
+    }
+
+    @Override
+    public void chatting$refresh() {
+        refreshTrimmedMessages();
+    }
+
+    //? if <=1.21.10 {
+    /*@ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private boolean chatting$peek(boolean focused) {
+        return focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing();
+    }
+    *///?} elif <26 {
+    /*@ModifyVariable(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private boolean chatting$peek(boolean focused) {
+        return focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing();
+    }
+    *///?} else {
+    @ModifyVariable(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private ChatComponent.DisplayMode chatting$peek(ChatComponent.DisplayMode mode) {
+        return (mode == ChatComponent.DisplayMode.BACKGROUND && (Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing()))
+            ? ChatComponent.DisplayMode.FOREGROUND
+            : mode;
+    }
+    //?}
+
+    @Inject(method = "getWidth()I", at = @At("HEAD"), cancellable = true)
+    private void chatting$width(CallbackInfoReturnable<Integer> cir) {
+        if (ChattingConfig.INSTANCE.getCustomChatWidth()) {
+            cir.setReturnValue(ChatDimensions.width());
+        }
+    }
+
+    @Inject(method = "getHeight()I", at = @At("HEAD"), cancellable = true)
+    private void chatting$height(CallbackInfoReturnable<Integer> cir) {
+        boolean focused = ((ChatComponent) (Object) this).isChatFocused();
+        boolean peeking = Chatting.INSTANCE.getPeeking() && !focused;
+        if (!peeking && !ChattingConfig.INSTANCE.getCustomChatHeight()) return;
+        cir.setReturnValue(ChatDimensions.height(focused || peeking));
+    }
+
+    //? if >=1.21.11 <26 {
+    /*@Unique private boolean chatting$posed;
+
+    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"), cancellable = true)
+    private void chatting$beginChatWindow(GuiGraphics graphics, Font font, int ticks, int mouseX, int mouseY, boolean focused, boolean changeCursor, CallbackInfo ci) {
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
+        chatting$installPreview();
+        ChatScrolling.INSTANCE.step(chatScrollbarPos);
+        boolean hud = ChatWindowHud.isActive();
+        float smoothDy = chatting$previewing ? 0f : SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
+        chatting$posed = hud || smoothDy != 0f;
+        if (!chatting$posed) return;
+        graphics.pose().pushMatrix();
+        if (smoothDy != 0f) graphics.pose().translate(0.0F, smoothDy);
+        if (hud) {
+            float scale = ChatWindowHud.chatScale();
+            graphics.pose().translate(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY());
+            if (scale != 1f) graphics.pose().scale(scale, scale);
+            graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop());
+        }
+    }
+
+    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("RETURN"))
+    private void chatting$endChatWindow(GuiGraphics graphics, Font font, int ticks, int mouseX, int mouseY, boolean focused, boolean changeCursor, CallbackInfo ci) {
+        chatting$restorePreview();
+        if (!chatting$posed) return;
+        chatting$posed = false;
+        graphics.pose().popMatrix();
+    }
+    *///?} elif >=26 {
+    @Unique private boolean chatting$posed;
+
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"), cancellable = true)
+    private void chatting$beginChatWindow(GuiGraphicsExtractor graphics, Font font, int ticks, int mouseX, int mouseY, ChatComponent.DisplayMode mode, boolean changeCursor, CallbackInfo ci) {
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
+        chatting$installPreview();
+        ChatScrolling.INSTANCE.step(chatScrollbarPos);
+        boolean hud = ChatWindowHud.isActive();
+        float smoothDy = chatting$previewing ? 0f : SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
+        chatting$posed = hud || smoothDy != 0f;
+        if (!chatting$posed) return;
+        graphics.pose().pushMatrix();
+        if (smoothDy != 0f) graphics.pose().translate(0.0F, smoothDy);
+        if (hud) {
+            float scale = ChatWindowHud.chatScale();
+            graphics.pose().translate(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY());
+            if (scale != 1f) graphics.pose().scale(scale, scale);
+            graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop());
+        }
+    }
+
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("RETURN"))
+    private void chatting$endChatWindow(GuiGraphicsExtractor graphics, Font font, int ticks, int mouseX, int mouseY, ChatComponent.DisplayMode mode, boolean changeCursor, CallbackInfo ci) {
+        chatting$restorePreview();
+        if (!chatting$posed) return;
+        chatting$posed = false;
+        graphics.pose().popMatrix();
+    }
+    //?}
+
+    @Unique
+    private PlayerInfo chatting$pendingHead;
+    @Unique
+    private boolean chatting$pendingHideHead;
+    @Unique
+    private boolean chatting$headConsumed;
+    @Unique
+    private PlayerInfo chatting$lastHeadOwner;
+
+    @Unique
+    private boolean chatting$addingMessage;
+    @Unique
+    private int chatting$scrollPosBefore;
+
+    @Unique
+    private GuiMessage chatting$currentMessage;
+
+    @Inject(method = "addMessageToDisplayQueue", at = @At("HEAD"), cancellable = true)
+    private void chatting$detectHead(GuiMessage guiMessage, CallbackInfo ci) {
+        if (ChatTabs.INSTANCE.shouldFilter() && !ChatTabs.INSTANCE.shouldRender((Component) guiMessage.content())) {
+            ci.cancel();
+            return;
+        }
+        if (ChatSearch.INSTANCE.shouldFilter() && !ChatSearch.INSTANCE.matches((Component) guiMessage.content())) {
+            ci.cancel();
+            return;
+        }
+        chatting$currentMessage = guiMessage;
+        chatting$headConsumed = false;
+        chatting$pendingHead = ChattingConfig.INSTANCE.getShowChatHeads()
+            ? ChatHeads.INSTANCE.detect((Component) guiMessage.content())
+            : null;
+        chatting$pendingHideHead = ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()
+            && ChatHeads.INSTANCE.sameOwner(chatting$pendingHead, chatting$lastHeadOwner);
+        chatting$lastHeadOwner = chatting$pendingHead;
+        if (!chatting$refreshing) SmoothChat.INSTANCE.start();
+        chatting$addingMessage = true;
+        chatting$scrollPosBefore = chatScrollbarPos;
+    }
+
+    @Inject(method = "addMessageToDisplayQueue", at = @At("RETURN"))
+    private void chatting$endDisplayQueue(GuiMessage guiMessage, CallbackInfo ci) {
+        if (!chatting$addingMessage) return;
+        chatting$addingMessage = false;
+        int delta = chatScrollbarPos - chatting$scrollPosBefore;
+        if (delta != 0) ChatScrolling.INSTANCE.shift(delta);
+    }
+
+    @Unique
+    private void chatting$applyHead(Object element) {
+        if (!chatting$refreshing) SmoothChat.INSTANCE.addLine(((GuiMessage.Line) element).content());
+        ((ChatLineHook) element).chatting$setParent(chatting$currentMessage);
+        if (chatting$headConsumed) return;
+        chatting$headConsumed = true;
+        ((ChatLineHook) element).chatting$setPlayerInfo(chatting$pendingHead);
+        ((ChatLineHook) element).chatting$setHeadHidden(chatting$pendingHideHead);
+        ChatHeads.INSTANCE.tag(((GuiMessage.Line) element).content(), chatting$pendingHead, chatting$pendingHideHead);
+    }
+
+    @Unique
+    private boolean chatting$refreshing;
+
+    @Shadow
+    @Final
+    private List<GuiMessage.Line> trimmedMessages;
+
+    @Unique
+    private boolean chatting$previewing;
+
+    @Unique
+    private final List<GuiMessage.Line> chatting$previewBackup = new ArrayList<>();
+
+    @Unique
+    private void chatting$installPreview() {
+        if (!HudManager.INSTANCE.isEditing()) return;
+        chatting$previewing = true;
+        chatting$previewBackup.clear();
+        chatting$previewBackup.addAll(trimmedMessages);
+        trimmedMessages.clear();
+        trimmedMessages.addAll(ChatPreview.lines());
+    }
+
+    @Unique
+    private void chatting$restorePreview() {
+        if (!chatting$previewing) return;
+        chatting$previewing = false;
+        trimmedMessages.clear();
+        trimmedMessages.addAll(chatting$previewBackup);
+        chatting$previewBackup.clear();
+    }
+
+    @Shadow
+    private int chatScrollbarPos;
+
+    @Inject(method = "scrollChat", at = @At("HEAD"))
+    private void chatting$armSmoothScroll(int amount, CallbackInfo ci) {
+        if (chatting$addingMessage) return;
+        ChatScrolling.INSTANCE.setShouldSmooth(true);
+    }
+
+    @Inject(method = "refreshTrimmedMessages", at = @At("HEAD"))
+    private void chatting$beginRefresh(CallbackInfo ci) {
+        chatting$refreshing = true;
+        chatting$lastHeadOwner = null;
+    }
+
+    @Inject(method = "refreshTrimmedMessages", at = @At("RETURN"))
+    private void chatting$endRefresh(CallbackInfo ci) {
+        chatting$refreshing = false;
+    }
+
+    //? if <=1.21.10 {
+    /*@Redirect(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
+    private void chatting$tagHead(List<Object> list, int index, Object element) {
+        chatting$applyHead(element);
+        list.add(index, element);
+    }
+    *///?} else {
+    @Redirect(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;addFirst(Ljava/lang/Object;)V"))
+    private void chatting$tagHead(List<Object> list, Object element) {
+        chatting$applyHead(element);
+        list.addFirst(element);
+    }
+    //?}
+
+    //? if <=1.21.10 {
+    /*@Unique
+    private boolean chatting$posed;
+
+    @Unique
+    private boolean chatting$sawLineFill;
+
+    //? if <=1.21.5 {
+    /^@Unique
+    private int chatting$visibleLines;
+    ^///?}
+
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    private void chatting$beginChatWindow(GuiGraphics graphics, int tick, int mouseX, int mouseY, boolean focused, CallbackInfo ci) {
+        chatting$sawLineFill = false;
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
+        chatting$installPreview();
+        ChatScrolling.INSTANCE.step(chatScrollbarPos);
+        //? if <=1.21.5 {
+        /^// peek ModifyVariable also targets HEAD and may run after this inject so focused is recomputed here and the OR is idempotent
+        chatting$visibleLines = chatting$countVisibleLines(tick,
+            focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing());
+        ^///?}
+        boolean hud = ChatWindowHud.isActive();
+        float smoothDy = chatting$previewing ? 0f : SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
+        chatting$posed = hud || smoothDy != 0f;
+        if (!chatting$posed) return;
+        float scale = ChatWindowHud.chatScale();
+        //? if <1.21.6 {
+        /^graphics.pose().pushPose();
+        if (smoothDy != 0f) graphics.pose().translate(0.0F, smoothDy, 0.0F);
+        if (hud) {
+            graphics.pose().translate(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY(), 0.0F);
+            if (scale != 1f) graphics.pose().scale(scale, scale, 1.0F);
+            graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop(), 0.0F);
+        }
+        ^///?} else {
+        graphics.pose().pushMatrix();
+        if (smoothDy != 0f) graphics.pose().translate(0.0F, smoothDy);
+        if (hud) {
+            graphics.pose().translate(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY());
+            if (scale != 1f) graphics.pose().scale(scale, scale);
+            graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop());
+        }
+        //?}
+    }
+
+    @Inject(method = "render", at = @At("RETURN"))
+    private void chatting$endChatWindow(GuiGraphics graphics, int tick, int mouseX, int mouseY, boolean focused, CallbackInfo ci) {
+        chatting$restorePreview();
+        if (!chatting$posed) return;
+        chatting$posed = false;
+        //? if <1.21.6 {
+        /^graphics.pose().popPose();
+        ^///?} else {
+        graphics.pose().popMatrix();
+        //?}
+    }
+
+    @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private int chatting$renderMouseX(int mouseX) {
+        chatting$mouseX = (int) ChatWindowHud.mapMouseX(mouseX);
+        return chatting$mouseX;
+    }
+
+    @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 2)
+    private int chatting$renderMouseY(int mouseY) {
+        chatting$mouseY = (int) ChatWindowHud.mapMouseY(mouseY);
+        return chatting$mouseY;
+    }
+
+    @ModifyVariable(method = "getClickedComponentStyleAt", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private double chatting$styleX(double x) {
+        return ChatWindowHud.mapMouseX(x);
+    }
+
+    @ModifyVariable(method = "getClickedComponentStyleAt", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private double chatting$styleY(double y) {
+        return ChatWindowHud.mapMouseY(y);
+    }
+
+    @ModifyVariable(method = "getMessageTagAt", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private double chatting$tagX(double x) {
+        return ChatWindowHud.mapMouseX(x);
+    }
+
+    @ModifyVariable(method = "getMessageTagAt", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private double chatting$tagY(double y) {
+        return ChatWindowHud.mapMouseY(y);
+    }
+
+    @ModifyVariable(method = "handleChatQueueClicked", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private double chatting$queueX(double x) {
+        return ChatWindowHud.mapMouseX(x);
+    }
+
+    @ModifyVariable(method = "handleChatQueueClicked", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private double chatting$queueY(double y) {
+        return ChatWindowHud.mapMouseY(y);
+    }
+    *///?}
+
+    //? if <=1.21.10 {
+    /*@Unique
+    private int chatting$mouseX;
+
+    @Unique
+    private int chatting$mouseY;
+
+    @Unique
+    private int chatting$drawHead(GuiGraphics graphics, GuiMessage.Line line, int x, int y, int alpha) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads()) return x;
+        PlayerInfo info = ((ChatLineHook) (Object) line).chatting$getPlayerInfo();
+        boolean hidden = ((ChatLineHook) (Object) line).chatting$isHeadHidden();
+        if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
+            int shadow = ChatHeads.SHADOW_OFFSET;
+            int headY = ChatHeads.INSTANCE.headY(y);
+            boolean drawShadow = ChatHeads.INSTANCE.shouldDrawShadow();
+            float dy = ChatHeads.INSTANCE.headYFraction();
+            if (dy != 0f) graphics.pose().translate(0f, dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
+            //? if 1.21.1 {
+            /^RenderSystem.enableBlend();
+            if (drawShadow) {
+                if (ChatHeads.INSTANCE.isLegacyShadow()) {
+                    graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, ChatHeads.INSTANCE.shadowColor(info, alpha));
+                } else {
+                    float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
+                    graphics.setColor(s, s, s, alpha / 255f);
+                    if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x + shadow, headY + shadow, 8, -1, true, false);
+                    else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8);
+                }
+            }
+            graphics.setColor(1f, 1f, 1f, alpha / 255f);
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, headY, 8, -1, true, false);
+            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8);
+            RenderSystem.disableBlend();
+            graphics.setColor(1f, 1f, 1f, 1f);
+            ^///?} else {
+            if (drawShadow) {
+                int shadowColor = ChatHeads.INSTANCE.shadowColor(info, alpha);
+                if (ChatHeads.INSTANCE.isLegacyShadow()) graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, shadowColor);
+                else if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x + shadow, headY + shadow, 8, shadowColor, true, false);
+                else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8, shadowColor);
+            }
+            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x, headY, 8, 0xFFFFFF | (alpha << 24), true, false);
+            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8, 0xFFFFFF | (alpha << 24));
+            //?}
+            if (dy != 0f) graphics.pose().translate(0f, -dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
+        }
+        return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10 : x;
+    }
+
+    @Unique
+    private void chatting$drawHoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, GuiMessage.Line line) {
+        boolean focused = ((ChatComponent) (Object) this).isChatFocused();
+        if (focused) {
+            x2 += ChatButtons.extraBackgroundWidth();
+        }
+        if (focused && line == chatting$hoveredLine()) {
+            color = ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+        } else {
+            color = ChatBackground.tint(color);
+        }
+        int chatBottom = RoundedChat.chatBottom(graphics.guiHeight());
+        //? if <=1.21.5 {
+        /^// render loop iterates bottom to top so the top line comes from the precomputed visible line count
+        int index = (chatBottom - y2) / ((ChatComponentAccessor) (Object) this).chatting$getLineHeight();
+        boolean top = index == chatting$visibleLines - 1;
+        ^///?} else {
+        // forEachLine iterates top to bottom with faded lines skipped so the first fill per render pass is the topmost visible line
+        boolean top = !chatting$sawLineFill;
+        //?}
+        boolean bottom = y2 == chatBottom;
+        chatting$sawLineFill = true;
+        //? if <1.21.6 {
+        /^RoundedChat.fill(graphics::fill, (factor, body) -> {
+            graphics.pose().pushPose();
+            graphics.pose().scale(factor, factor, 1f);
+            body.run();
+            graphics.pose().popPose();
+        }, x1, y1, x2, y2, color, top, bottom);
+        ^///?} else {
+        RoundedChat.fill(graphics::fill, (factor, body) -> {
+            graphics.pose().pushMatrix();
+            graphics.pose().scale(factor, factor);
+            body.run();
+            graphics.pose().popMatrix();
+        }, x1, y1, x2, y2, color, top, bottom);
+        //?}
+    }
+
+    // resolve the hovered line by position because trimmedMessages.indexOf collapses duplicate messages and getMessageEndIndexAt returns -1 past the text
+    // the hit test spans the per line button strip so hovering copy or delete keeps the line highlighted
+    @Unique
+    private GuiMessage.Line chatting$hoveredLine() {
+        ChatComponent self = (ChatComponent) (Object) this;
+        if (!self.isChatFocused()) return null;
+        ChatComponentAccessor acc = (ChatComponentAccessor) (Object) this;
+        double scale = acc.chatting$getScale();
+        if (scale <= 0.0) return null;
+        double hovered = acc.chatting$screenToChatY(chatting$mouseY);
+        if (hovered < 0.0) return null;
+        int display = (int) hovered;
+        if (display >= Math.min(self.getLinesPerPage(), trimmedMessages.size())) return null;
+        double localX = chatting$mouseX / scale - 4.0;
+        double rightEdge = Math.ceil(acc.chatting$getWidth() / scale)
+                + ChatButtons.BACKGROUND_RIGHT_EDGE + ChatButtons.perLineButtonsWidth();
+        if (localX < -4.0 || localX >= rightEdge) return null;
+        int index = display + chatScrollbarPos;
+        if (index < 0 || index >= trimmedMessages.size()) return null;
+        return trimmedMessages.get(index);
+    }
+
+    //? if <=1.21.5 {
+    /^// replicates the render loop per line visibility gate to find the topmost line whose background fill will run
+    @Unique
+    private int chatting$countVisibleLines(int tickCount, boolean focused) {
+        int perPage = ((ChatComponent) (Object) this).getLinesPerPage();
+        int scroll = chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+        double opacity = Minecraft.getInstance().options.chatOpacity().get() * 0.8999999761581421 + 0.10000000149011612;
+        int top = 0;
+        for (int i = 0; i + scroll < trimmedMessages.size() && i < perPage; i++) {
+            GuiMessage.Line line = trimmedMessages.get(i + scroll);
+            if (line == null) continue;
+            int added = ChattingConfig.INSTANCE.getFade() ? line.addedTime() - chatting$fadeOffset() : Integer.MAX_VALUE;
+            int age = tickCount - added;
+            if (!(age < 200 || focused)) continue;
+            double factor = focused ? 1.0 : chatting$timeFactor(age);
+            if ((int) (255.0 * factor * opacity) > 3) top = i + 1;
+        }
+        return top;
+    }
+
+    // copy of the vanilla render loop getTimeFactor
+    @Unique
+    private static double chatting$timeFactor(int age) {
+        double t = age / 200.0;
+        t = 1.0 - t;
+        t *= 10.0;
+        t = Mth.clamp(t, 0.0, 1.0);
+        return t * t;
+    }
+    ^///?}
+
+    //? if <=1.21.5 {
+    /^@Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
+    private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, @Local GuiMessage.Line line) {
+        chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line);
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I", ordinal = 0))
+    private int chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, @Local GuiMessage.Line line) {
+        color = SmoothChat.INSTANCE.fadeColor(line.content(), color);
+        int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
+        switch (ChattingConfig.INSTANCE.getTextRenderType()) {
+            case 0:
+                return graphics.drawString(font, text, dx, y, color, false);
+            default:
+                return graphics.drawString(font, text, dx, y, color);
+        }
+    }
+    ^///?} else {
+    
+    // method_71991 = line text drawString and method_71992 = line background fill
+    @Redirect(method = "method_71992", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
+    private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, @Local(argsOnly = true) GuiMessage.Line line) {
+        chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line);
+    }
+
+    @Redirect(method = "method_71991", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)V", ordinal = 0))
+    private void chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, @Local(argsOnly = true) GuiMessage.Line line) {
+        color = SmoothChat.INSTANCE.fadeColor(line.content(), color);
+        int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
+        switch (ChattingConfig.INSTANCE.getTextRenderType()) {
+            case 0:
+                graphics.drawString(font, text, dx, y, color, false);
+                break;
+            default:
+                graphics.drawString(font, text, dx, y, color);
+        }
+    }
+    //?}
+    *///?}
+
+    @Unique
+    private int chatting$fadeOffset() {
+        return 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20);
+    }
+
+    //? if <=1.21.5 {
+    /*@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage$Line;addedTime()I"))
+    private int chatting$fadeAge(int addedTime) {
+        if (!ChattingConfig.INSTANCE.getFade()) return Integer.MAX_VALUE;
+        return addedTime - chatting$fadeOffset();
+    }
+    *///?}
+
+    //? if >=1.21.8 <=1.21.10 {
+    /*@ModifyVariable(method = "forEachLine", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private int chatting$fadeTicks(int tickCount) {
+        return ChattingConfig.INSTANCE.getFade() ? tickCount + chatting$fadeOffset() : tickCount;
+    }
+
+    @ModifyVariable(method = "forEachLine", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private boolean chatting$fadeFocused(boolean focused) {
+        return focused || !ChattingConfig.INSTANCE.getFade();
+    }
+    *///?}
+
+    //? if >=1.21.11 <26 {
+    /*@ModifyArg(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;timeBased(I)Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;"), index = 0)
+    private int chatting$fade(int tickCount) {
+        if (!ChattingConfig.INSTANCE.getFade()) return tickCount - 1_000_000_000;
+        return tickCount + chatting$fadeOffset();
+    }
+    *///?}
+
+    //? if >=26 {
+    @ModifyArg(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;timeBased(I)Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;"), index = 0)
+    private int chatting$fade(int tickCount) {
+        if (!ChattingConfig.INSTANCE.getFade()) return tickCount - 1_000_000_000;
+        return tickCount + chatting$fadeOffset();
+    }
+    //?}
+
+    //? if <=1.21.5 {
+    /*@Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(ChatComponent instance) {
+        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIIII)V"))
+    private void chatting$scrollBar(GuiGraphics graphics, int x1, int y1, int x2, int y2, int z, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, z, color);
+    }
+    *///?}
+
+    //? if >=1.21.8 <=1.21.10 {
+    /*@Redirect(method = {"render", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(ChatComponent instance) {
+        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 1))
+    private void chatting$scrollBar1(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, color);
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 2))
+    private void chatting$scrollBar2(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, color);
+    }
+    *///?}
+
+    //? if >=1.21.11 <26 {
+    /*@Redirect(method = {"render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(ChatComponent instance) {
+        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    }
+
+    @Redirect(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 1))
+    private void chatting$scrollBar1(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    }
+
+    @Redirect(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
+    private void chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    }
+    *///?}
+
+    //? if >=26 {
+    @Redirect(method = {"extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(ChatComponent instance) {
+        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    }
+
+    @Redirect(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
+    private void chatting$scrollBar1(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    }
+
+    @Redirect(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 3))
+    private void chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    }
+    //?}
+}
+//?}

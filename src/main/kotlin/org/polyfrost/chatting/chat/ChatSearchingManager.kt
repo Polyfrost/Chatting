@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.chat
 
-import net.minecraft.client.Minecraft
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ChatLine
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
@@ -61,3 +62,4 @@ object ChatSearchingManager {
             .toList()
     }
 }
+*///?}

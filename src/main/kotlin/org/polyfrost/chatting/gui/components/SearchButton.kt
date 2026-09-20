@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.gui.components
 
-import net.minecraft.client.Minecraft
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiTextField
 import net.minecraft.client.gui.ScaledResolution
 import org.polyfrost.chatting.chat.ChatSearchingManager
@@ -59,3 +60,4 @@ class SearchButton : CleanButton(
     }
 
 }
+*///?}

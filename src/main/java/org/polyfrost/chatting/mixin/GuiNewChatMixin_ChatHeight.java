@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.GuiNewChat;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.GuiNewChat;
 import org.polyfrost.chatting.chat.ChatDimensions;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,3 +26,4 @@ public abstract class GuiNewChatMixin_ChatHeight {
             cir.setReturnValue(ChatDimensions.width());
     }
 }
+*///?}

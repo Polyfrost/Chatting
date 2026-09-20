@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.Minecraft;
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiNewChat;
@@ -27,7 +28,7 @@ import java.util.List;
 
 import net.minecraft.client.renderer.GlStateManager;
 
-/** Renders the focused-chat copy affordance beside the line currently under the cursor. */
+/^* Renders the focused-chat copy affordance beside the line currently under the cursor. ^/
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_CopyButton extends Gui {
     @Shadow @Final private Minecraft mc;
@@ -106,3 +107,4 @@ public abstract class GuiNewChatMixin_CopyButton extends Gui {
             && mouseY >= chatBottom + top * scale && mouseY < chatBottom + bottom * scale;
     }
 }
+*///?}

@@ -1,13 +1,14 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.GuiNewChat;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.GuiNewChat;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Adapts the vanilla 200-tick fade clock to Chatting's configured duration. */
+/^* Adapts the vanilla 200-tick fade clock to Chatting's configured duration. ^/
 @Mixin(GuiNewChat.class)
 public class GuiNewChatMixin_Fade {
     @ModifyVariable(method = "drawChat", at = @At(value = "STORE", ordinal = 0), ordinal = 6)
@@ -20,3 +21,4 @@ public class GuiNewChatMixin_Fade {
         return !ChattingConfig.INSTANCE.getFade() || chat.getChatOpen();
     }
 }
+*///?}

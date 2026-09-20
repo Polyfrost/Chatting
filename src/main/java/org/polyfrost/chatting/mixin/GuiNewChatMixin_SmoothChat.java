@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.GuiNewChat;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.IChatComponent;
 import org.polyfrost.chatting.chat.SmoothChat;
@@ -11,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
+/^*
  * 1.8.9 render adapter for Chatting's modern smooth-message state machine.
- */
+ ^/
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_SmoothChat {
     @Shadow private boolean isScrolled;
@@ -49,3 +50,4 @@ public abstract class GuiNewChatMixin_SmoothChat {
         return SmoothChat.INSTANCE.fadeColor(color);
     }
 }
+*///?}

@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.event.ClickEvent;
+//? if = 1.8.9 {
+/*import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -29,3 +30,4 @@ public abstract class ChatStyle_UnderlineLinks_Mixin {
         }
     }
 }
+*///?}

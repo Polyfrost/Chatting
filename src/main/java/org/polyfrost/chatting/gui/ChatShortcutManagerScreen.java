@@ -1,16 +1,17 @@
 package org.polyfrost.chatting.gui;
 
-import kotlin.Pair;
+//? if = 1.8.9 {
+/*import kotlin.Pair;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import java.util.List;
 
-/**
+/^*
  * Native 1.8.9 editor for command aliases.  It deliberately uses vanilla GUI
  * widgets so it remains available when OneConfig's compose UI is unavailable.
- */
+ ^/
 public final class ChatShortcutManagerScreen extends GuiScreen {
     private static final int LIST_LEFT = 20;
     private static final int LIST_TOP = 48;
@@ -146,3 +147,4 @@ public final class ChatShortcutManagerScreen extends GuiScreen {
     }
 
 }
+*///?}

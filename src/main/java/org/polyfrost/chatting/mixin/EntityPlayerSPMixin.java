@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.entity.EntityPlayerSP;
+//? if = 1.8.9 {
+/*import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.C01PacketChatMessage;
@@ -39,3 +40,4 @@ public class EntityPlayerSPMixin {
         }
     }
 }
+*///?}

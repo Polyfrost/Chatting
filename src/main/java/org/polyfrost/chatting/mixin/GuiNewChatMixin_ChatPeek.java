@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.GuiNewChat;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.GuiNewChat;
 import org.polyfrost.chatting.Chatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,3 +17,4 @@ public class GuiNewChatMixin_ChatPeek {
     }
 
 }
+*///?}

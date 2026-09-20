@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
-import net.minecraft.client.gui.Gui;
+//? if = 1.8.9 {
+/*import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiNewChat;
 import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -11,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Retains the scrollbar toggle while vanilla owns scroll interpolation. */
+/^* Retains the scrollbar toggle while vanilla owns scroll interpolation. ^/
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin_Scrolling extends Gui {
     @Shadow private int scrollPos;
@@ -36,3 +37,4 @@ public abstract class GuiNewChatMixin_Scrolling extends Gui {
         if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) drawRect(left, top, right, bottom, color);
     }
 }
+*///?}

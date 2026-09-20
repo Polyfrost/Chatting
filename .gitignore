@@ -1,32 +1,14 @@
-# eclipse
-eclipse
-bin
-*.launch
-.settings
-.metadata
-.classpath
-.project
-
-# idea
-out
-classes
-*.ipr
-*.iws
-*.iml
-.idea
-
-# gradle
-build
-.gradle
-
-#Netbeans
-.nb-gradle
-.nb-gradle-properties
-
-# other
-run
+build/
+.gradle/
+run/
+versions/*/build/
+versions/*/.gradle/
+versions/*/.fabric/
+versions/*/logs/
+versions/*/mods/
+versions/*/oneconfig/
+*.log
 .DS_Store
-Thumbs.db
-.vscode
-
-# local IDE and build outputs only
+**/.DS_Store
+.idea/
+.kotlin

@@ -1,6 +1,7 @@
 package org.polyfrost.chatting.gui.components
 
-import net.minecraft.client.Minecraft
+//? if = 1.8.9 {
+/*import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import org.lwjgl.input.Keyboard
 import org.polyfrost.chatting.chat.ChatTab
@@ -37,3 +38,4 @@ class TabButton(buttonId: Int, x: Int, widthIn: Int, heightIn: Int, private val 
         const val selectedColor = 10526880
     }
 }
+*///?}

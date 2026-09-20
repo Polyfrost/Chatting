@@ -1,7 +1,9 @@
 package org.polyfrost.chatting.gui.components
 
-enum class RenderType {
+//? if = 1.8.9 {
+/*enum class RenderType {
     NONE,
     SHADOW,
     FULL
 }
+*///?}
