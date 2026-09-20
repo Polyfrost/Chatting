@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import org.lwjgl.glfw.GLFW;
@@ -37,3 +38,4 @@ public class MouseHandlerMixin {
         ci.cancel();
     }
 }
+//?}

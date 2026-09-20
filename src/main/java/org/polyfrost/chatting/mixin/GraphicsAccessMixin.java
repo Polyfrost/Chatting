@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 //? if >=1.21.11 {
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -161,3 +162,4 @@ public class GraphicsAccessMixin {
     }
     //?}
 }
+//?}

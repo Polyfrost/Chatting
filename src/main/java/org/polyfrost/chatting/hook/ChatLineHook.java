@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.hook;
 
+//? if > 1.8.9 {
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
@@ -25,3 +26,4 @@ public interface ChatLineHook {
 
     void chatting$setParent(@Nullable GuiMessage parent);
 }
+//?}

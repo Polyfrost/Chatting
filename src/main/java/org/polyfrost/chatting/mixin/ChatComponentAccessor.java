@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
@@ -44,3 +45,4 @@ public interface ChatComponentAccessor {
     double chatting$screenToChatY(double y);
     *///?}
 }
+//?}

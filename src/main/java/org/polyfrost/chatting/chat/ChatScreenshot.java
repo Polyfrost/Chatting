@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat;
 
+//? if > 1.8.9 {
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -466,3 +467,4 @@ public final class ChatScreenshot {
         Notifications.send("Chatting", message, NotificationType.ERROR);
     }
 }
+//?}

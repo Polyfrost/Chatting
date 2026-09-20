@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 //? if >= 26.1 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
@@ -42,3 +43,4 @@ public class PlayerFaceRendererMixin implements HeadHook {
         }
     }
 }
+//?}

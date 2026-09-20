@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 //? if >=1.21.11 {
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -59,3 +60,4 @@ public class BackgroundAccessMixin {
 /*public class BackgroundAccessMixin {
 }
 *///?}
+//?}

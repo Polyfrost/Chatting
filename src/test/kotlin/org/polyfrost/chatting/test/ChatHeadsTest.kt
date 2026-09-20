@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.test
 
+//? if > 1.8.9 {
 import com.mojang.authlib.GameProfile
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
@@ -49,3 +50,4 @@ class ChatHeadsTest {
     }
     //?}
 }
+//?}

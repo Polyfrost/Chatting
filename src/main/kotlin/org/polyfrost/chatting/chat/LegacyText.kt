@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat
 
+//? if > 1.8.9 {
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
@@ -54,3 +55,4 @@ object LegacyText {
         return sb.toString()
     }
 }
+//?}

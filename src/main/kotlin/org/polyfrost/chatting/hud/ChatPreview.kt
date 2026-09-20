@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.hud
 
+//? if > 1.8.9 {
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ComponentRenderUtils
 import net.minecraft.network.chat.Component
@@ -60,3 +61,4 @@ object ChatPreview {
         return lines
     }
 }
+//?}

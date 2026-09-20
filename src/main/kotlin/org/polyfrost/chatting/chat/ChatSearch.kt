@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat
 
+//? if > 1.8.9 {
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
@@ -52,3 +53,4 @@ object ChatSearch {
         (chat as? ChatComponentHook)?.`chatting$refresh`()
     }
 }
+//?}

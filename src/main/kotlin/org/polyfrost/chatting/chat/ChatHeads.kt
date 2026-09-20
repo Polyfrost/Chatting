@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat
 
+//? if > 1.8.9 {
 import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.client.renderer.texture.DynamicTexture
@@ -165,3 +166,4 @@ object ChatHeads {
         return null
     }
 }
+//?}

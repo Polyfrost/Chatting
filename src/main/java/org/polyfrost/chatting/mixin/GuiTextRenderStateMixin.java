@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 //? if >=1.21.11 {
 import org.polyfrost.chatting.Chatting;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,3 +25,4 @@ public class GuiTextRenderStateMixin {
 /*public class GuiTextRenderStateMixin {
 }
 *///?}
+//?}

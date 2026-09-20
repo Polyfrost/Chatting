@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.hud
 
+//? if > 1.8.9 {
 //? if >=26 {
 import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 //?} else {
@@ -191,3 +192,4 @@ class ChatWindowHud : LegacyHud(
         }
     }
 }
+//?}

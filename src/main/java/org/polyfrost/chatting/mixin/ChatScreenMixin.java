@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -677,3 +678,4 @@ public abstract class ChatScreenMixin extends Screen {
     }
     *///?}
 }
+//?}

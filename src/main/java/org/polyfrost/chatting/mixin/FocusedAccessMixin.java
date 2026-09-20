@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 //? if >=1.21.11 {
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
@@ -117,3 +118,4 @@ public class FocusedAccessMixin {
 /*public class FocusedAccessMixin {
 }
 *///?}
+//?}

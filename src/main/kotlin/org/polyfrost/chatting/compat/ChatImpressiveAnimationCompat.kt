@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.compat
 
+//? if > 1.8.9 {
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.oneconfig.api.notifications.v1.NotificationType
@@ -61,3 +62,4 @@ object ChatImpressiveAnimationCompat {
         }
     }
 }
+//?}

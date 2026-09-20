@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import net.ornithemc.ploceus.api.PloceusGradleExtensionApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -6,8 +7,26 @@ plugins {
     id("dev.kikugie.loom-back-compat")
     id("org.jetbrains.kotlin.jvm") version "2.4.10"
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
+    id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT" apply false
+    id("ploceus") version "1.17.4" apply false
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
+}
+
+val isOrnithe = stonecutter.current.version == "1.8.9"
+val ploceus = if (isOrnithe) {
+    pluginManager.apply("net.fabricmc.fabric-loom-remap")
+    pluginManager.apply("ploceus")
+
+    configurations.configureEach {
+        exclude(group = "org.lwjgl.lwjgl")
+    }
+
+    extensions.getByType<PloceusGradleExtensionApi>().apply {
+        setIntermediaryGeneration(2)
+    }
+} else {
+    null
 }
 
 val modid: String = sc.properties["mod.id"]
@@ -20,6 +39,7 @@ val loaderversion: String = sc.properties["deps.fabric_loader"]
 val oneconfigversion: String = sc.properties["deps.oneconfig"]
 val modmenuversion: String = sc.properties["deps.modmenu"]
 val fabricLanguageKotlinVersion: String = sc.properties["deps.fabric_language_kotlin"]
+val loader = if (isOrnithe) "ornithe" else "fabric"
 
 version = "$modversion+$mcversion"
 base.archivesName = modid
@@ -29,7 +49,7 @@ val requiredJava: JavaVersion = when {
     sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
     sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
     sc.current.parsed >= "1.17" -> JavaVersion.VERSION_16
-    else -> JavaVersion.VERSION_1_8
+    else -> JavaVersion.VERSION_25
 }
 
 val compatibleVersions: List<String> = sc.properties.rawOrNull("mod", "mc_releases")
@@ -49,8 +69,15 @@ repositories {
         name = "Sonatype Snapshots"
         content { includeGroup("net.kyori") }
     }
+    maven("https://maven.cloverclient.com/releases") {
+        content { includeGroup("pl.tomgirl") }
+    }
     strictMaven("https://maven.deftu.dev/releases", "Deftu", "dev.deftu")
-    strictMaven("https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
+    if (isOrnithe) {
+        strictMaven("https://maven.ornithemc.net/releases", "Ornithe", "com.terraformersmc")
+    } else {
+        strictMaven("https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
+    }
     strictMaven("https://maven.fabricmc.net/", "FabricMC", "net.fabricmc")
     strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
     strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
@@ -59,10 +86,15 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$mcversion")
-    loomx.applyMojangMappings()
+    if (isOrnithe) {
+        mappings(ploceus!!.mcpMappings("stable", mcversion, "22"))
+        ploceus.dependOsl(sc.properties["deps.osl"] as String)
+    } else {
+        loomx.applyMojangMappings()
+    }
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion") {
+    modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion") {
         // Loom strips the nested Kotlin jars from a remapped copy, so the plain copy below must stay the only candidate
         exclude(group = "net.fabricmc", module = "fabric-language-kotlin")
     }
@@ -154,6 +186,13 @@ tasks {
         inputs.properties(props)
 
         filesMatching("fabric.mod.json") { expand(props) }
+
+        if (isOrnithe) {
+            exclude("mixins.$modid.json")
+            filesMatching("mixins.$modid.ornithe.json") { name = "mixins.$modid.json" }
+        } else {
+            exclude("mixins.$modid.ornithe.json")
+        }
     }
 
     jar {
@@ -203,7 +242,7 @@ publishMods {
     changelog = changelogs
     type = STABLE
 
-    modLoaders.add("fabric")
+    modLoaders.add(loader)
 
     dryRun = modrinthId == null || modrinthToken == null
 

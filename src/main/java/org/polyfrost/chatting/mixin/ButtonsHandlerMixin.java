@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.mixin;
 
+//? if > 1.8.9 {
 import org.polyfrost.chatting.compat.TextTunnelsCompat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,3 +20,4 @@ public class ButtonsHandlerMixin {
         if (TextTunnelsCompat.getSuppressing()) ci.cancel();
     }
 }
+//?}

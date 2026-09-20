@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat
 
+//? if > 1.8.9 {
 import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.config.ChattingConfig
 //? if >=26 {
@@ -105,3 +106,4 @@ object ChatTabsRenderer {
         return if (rgb and -0x1000000 == 0) rgb or -0x1000000 else rgb
     }
 }
+//?}

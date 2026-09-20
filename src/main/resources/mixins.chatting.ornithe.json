@@ -1,0 +1,14 @@
+{
+  "compatibilityLevel": "JAVA_13",
+  "minVersion": "0.7",
+  "package": "org.polyfrost.chatting.mixin",
+  "plugin": "org.polyfrost.chatting.mixin.ChattingMixinPlugin",
+  "client": [
+    "ChatStyle_UnderlineLinks_Mixin", "ChatLineMixin_ChatHeads", "EntityPlayerSPMixin",
+    "GuiChatMixin", "GuiContainerCreativeMixin", "GuiNewChatAccessor",
+    "GuiNewChatMixin_Background", "GuiNewChatMixin_ChatHeight", "GuiNewChatMixin_ChatPeek", "GuiNewChatMixin_ChatSearching", "GuiNewChatMixin_CopyButton", "GuiNewChatMixin_Fade",
+    "GuiNewChatMixin_ChatTabs", "GuiNewChatMixin_Scrolling", "GuiNewChatMixin_SmoothChat",
+    "GuiNewChatMixin_ChatHeadsLifecycle", "GuiNewChatMixin_TextRendering", "MinecraftMixin_ChatPeek",
+    "InventoryPlayerMixin"
+  ]
+}

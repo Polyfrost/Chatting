@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.config.shortcut
 
+//? if > 1.8.9 {
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -604,3 +605,4 @@ private fun EllipsizedText(
         ),
     )
 }
+//?}
