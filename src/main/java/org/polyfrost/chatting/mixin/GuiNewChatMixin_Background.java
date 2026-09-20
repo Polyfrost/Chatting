@@ -18,8 +18,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -131,20 +133,29 @@ public abstract class GuiNewChatMixin_Background {
         return age + 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20f);
     }
 
+    // GuiIngame translates chat by scaledHeight - 48, then GuiNewChat adds 20.
+    // Match Forge Chatting's approach of making component selection use the
+    // actual rendered origin rather than vanilla's one-pixel-shifted 27.
+    @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 27))
+    private int chatting$alignComponentHitTest(int original) {
+        return 28;
+    }
+
     @Unique
     private boolean chatting$hovered(int left, int top, int right, int bottom) {
         ScaledResolution resolution = new ScaledResolution(mc);
         float chatScale = getChatScale();
         if (chatScale <= 0f) return false;
 
-        float mouseX = (float) Mouse.getX() / resolution.getScaleFactor();
-        float mouseY = resolution.getScaledHeight() - (float) Mouse.getY() / resolution.getScaleFactor();
-        float x1 = 2f + left * chatScale;
-        float x2 = 2f + right * chatScale;
-        float chatBottom = resolution.getScaledHeight() - 40f;
-        float y1 = chatBottom + top * chatScale;
-        float y2 = chatBottom + bottom * chatScale;
-        return mouseX >= x1 && mouseX < x2 && mouseY >= y1 && mouseY < y2;
+        int factor = resolution.getScaleFactor();
+        int mouseX = Mouse.getX();
+        int mouseY = mc.displayHeight - Mouse.getY();
+        int actualX = (int) ((2f + left * chatScale) * factor);
+        int actualY = (int) ((resolution.getScaledHeight() - 28f + top * chatScale) * factor);
+        int width = (int) ((right - left) * chatScale * factor);
+        int height = (int) ((bottom - top) * chatScale * factor);
+        return mouseX > actualX && mouseX < actualX + width
+            && mouseY > actualY && mouseY < actualY + height;
     }
 }
 *///?}
