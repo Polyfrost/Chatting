@@ -100,11 +100,15 @@ public abstract class GuiNewChatMixin_CopyButton extends Gui {
         float scale = getChatScale();
         if (scale <= 0f) return false;
 
-        float mouseX = (float) Mouse.getX() / resolution.getScaleFactor();
-        float mouseY = resolution.getScaledHeight() - (float) Mouse.getY() / resolution.getScaleFactor();
-        float chatBottom = resolution.getScaledHeight() - 40f;
-        return mouseX >= 2f + left * scale && mouseX < 2f + right * scale
-            && mouseY >= chatBottom + top * scale && mouseY < chatBottom + bottom * scale;
+        int factor = resolution.getScaleFactor();
+        int mouseX = Mouse.getX();
+        int mouseY = mc.displayHeight - Mouse.getY();
+        int actualX = (int) ((2f + left * scale) * factor);
+        int actualY = (int) ((resolution.getScaledHeight() - 28f + top * scale) * factor);
+        int width = (int) ((right - left) * scale * factor);
+        int height = (int) ((bottom - top) * scale * factor);
+        return mouseX > actualX && mouseX < actualX + width
+            && mouseY > actualY && mouseY < actualY + height;
     }
 }
 *///?}

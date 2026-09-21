@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.ChatLine;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatBackground;
@@ -17,8 +18,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -70,7 +73,29 @@ public abstract class GuiNewChatMixin_Background {
         if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
             color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         }
-        args.set(4, color);
+        // Match the rounded path: render our configured background explicitly,
+        // then keep vanilla's rectangle as a transparent compatibility call.
+        // Letting vanilla paint the visible square directly is the one path
+        // that makes 3D chat heads appear dark.
+        RoundedChat.fill(left, top, right, bottom, color, false, false);
+        args.set(4, vanillaColor & 0x00FFFFFF);
+    }
+
+    // Gui.drawRect leaves its RGBA colour active.  Chat heads are rendered
+    // immediately after this call, so restore the normal GUI colour at the
+    // background boundary instead of relying on each later renderer to do it.
+    @Inject(
+        method = "drawChat",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiNewChat;drawRect(IIIII)V",
+            ordinal = 0,
+            shift = At.Shift.AFTER
+        )
+    )
+    private void chatting$restoreColorAfterLineBackground(int updateCounter, CallbackInfo ci) {
+        GlStateManager.resetColor();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Unique
@@ -108,20 +133,29 @@ public abstract class GuiNewChatMixin_Background {
         return age + 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20f);
     }
 
+    // GuiIngame translates chat by scaledHeight - 48, then GuiNewChat adds 20.
+    // Match Forge Chatting's approach of making component selection use the
+    // actual rendered origin rather than vanilla's one-pixel-shifted 27.
+    @ModifyConstant(method = "getChatComponent", constant = @Constant(intValue = 27))
+    private int chatting$alignComponentHitTest(int original) {
+        return 28;
+    }
+
     @Unique
     private boolean chatting$hovered(int left, int top, int right, int bottom) {
         ScaledResolution resolution = new ScaledResolution(mc);
         float chatScale = getChatScale();
         if (chatScale <= 0f) return false;
 
-        float mouseX = (float) Mouse.getX() / resolution.getScaleFactor();
-        float mouseY = resolution.getScaledHeight() - (float) Mouse.getY() / resolution.getScaleFactor();
-        float x1 = 2f + left * chatScale;
-        float x2 = 2f + right * chatScale;
-        float chatBottom = resolution.getScaledHeight() - 40f;
-        float y1 = chatBottom + top * chatScale;
-        float y2 = chatBottom + bottom * chatScale;
-        return mouseX >= x1 && mouseX < x2 && mouseY >= y1 && mouseY < y2;
+        int factor = resolution.getScaleFactor();
+        int mouseX = Mouse.getX();
+        int mouseY = mc.displayHeight - Mouse.getY();
+        int actualX = (int) ((2f + left * chatScale) * factor);
+        int actualY = (int) ((resolution.getScaledHeight() - 28f + top * chatScale) * factor);
+        int width = (int) ((right - left) * chatScale * factor);
+        int height = (int) ((bottom - top) * chatScale * factor);
+        return mouseX > actualX && mouseX < actualX + width
+            && mouseY > actualY && mouseY < actualY + height;
     }
 }
 *///?}

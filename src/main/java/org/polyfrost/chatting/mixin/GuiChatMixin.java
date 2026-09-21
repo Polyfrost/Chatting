@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatShortcuts;
@@ -112,9 +113,10 @@ public abstract class GuiChatMixin extends GuiScreen {
         float scale = chat.getChatScale();
         if (scale <= 0f) return null;
         ScaledResolution resolution = new ScaledResolution(mc);
-        // This mirrors GuiNewChat#getChatComponent's bottom-origin mouse
-        // conversion; the 27px term is vanilla's chat input margin.
-        int localY = (int) Math.floor((Mouse.getY() / (float) resolution.getScaleFactor() - 27f) / scale);
+        // Match the Forge implementation's rendered-origin calculation. The
+        // outer HUD translation (-48) plus GuiNewChat's inner translation
+        // (+20) places the chat baseline 28 px above the bottom edge.
+        int localY = MathHelper.floor_float((Mouse.getY() / resolution.getScaleFactor() - 28) / scale);
         if (localY < 0) return null;
         GuiNewChatAccessor accessor = (GuiNewChatAccessor) chat;
         int index = localY / 9 + accessor.getScrollPos();
