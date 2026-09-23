@@ -407,8 +407,7 @@ object ChattingConfig : Config(
     }
 }
 //?} else {
-/*import org.lwjgl.input.Keyboard
-import net.minecraft.client.Minecraft
+/*import net.minecraft.client.Minecraft
 import org.polyfrost.chatting.Chatting
 import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.chat.ChatSearchingManager
@@ -420,6 +419,7 @@ import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
+import org.polyfrost.oneconfig.internal.legacy.InputConstants
 
 /**
  * v2's public option names are intentionally retained so existing Chatting
@@ -496,7 +496,7 @@ object ChattingConfig : Config(
 
     @Keybind(title = "Peek KeyBind", category = "Chat Peek")
     var chatPeekBind = KeybindHelper.builder()
-        .key(Keyboard.KEY_Z)
+        .key(InputConstants.KEY_Z)
         .action { pressed ->
             if (!chatPeek) return@action false
             Chatting.peeking = if (peekMode == 0) pressed else !Chatting.peeking
