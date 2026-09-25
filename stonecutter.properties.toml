@@ -5,7 +5,7 @@ mod.version = "3.2.0"
 mod.description = "Bringing a fresh look to the Minecraft chat, with various improvements and features."
 
 deps.fabric_loader = "0.19.3"
-deps.oneconfig = "1.2.0"
+deps.oneconfig = "1.2.7"
 deps.polyui = "2.1.7"
 deps.junit = "6.1.3"
 
