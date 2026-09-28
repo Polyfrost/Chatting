@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.polyfrost.chatting.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,9 +49,6 @@ import net.minecraft.client.gui.Font;
 //? if <=1.21.10 {
 /*import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.util.FormattedCharSequence;
-*///?}
-//? if <=1.21.5 {
-/*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 *///?}
 //? if <26 {
 /*import net.minecraft.client.gui.GuiGraphics;
@@ -216,6 +214,12 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (!chatting$refreshing) SmoothChat.INSTANCE.start();
         chatting$addingMessage = true;
         chatting$scrollPosBefore = chatScrollbarPos;
+    }
+
+    @ModifyExpressionValue(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;floor(D)I"))
+    private int chatting$headWrapWidth(int width) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads() || !ChatHeads.INSTANCE.shouldOffset(chatting$pendingHead)) return width;
+        return width - 10;
     }
 
     @Inject(method = "addMessageToDisplayQueue", at = @At("RETURN"))

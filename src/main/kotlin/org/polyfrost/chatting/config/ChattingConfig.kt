@@ -399,7 +399,8 @@ object ChattingConfig : Config(
             addCallback(option) { ChatDimensions.refresh() }
         }
         addCallback("peekMode") { Chatting.peeking = false }
-        addCallback("showChatHeads") { ChatHeadsCompat.reevaluate() }
+        addCallback("showChatHeads") { ChatHeadsCompat.reevaluate(); ChatDimensions.refresh() }
+        addCallback("offsetNonPlayerMessages") { ChatDimensions.refresh() }
         addCallback("smoothChat") { ChatImpressiveAnimationCompat.reevaluate() }
         addCallback("chatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
         addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
