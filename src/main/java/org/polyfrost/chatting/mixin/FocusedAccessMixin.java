@@ -4,6 +4,7 @@ package org.polyfrost.chatting.mixin;
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
 import org.polyfrost.chatting.chat.ChatBackground;
+import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,51 +28,16 @@ public class FocusedAccessMixin {
     // a fresh DrawingFocusedGraphicsAccess is constructed per render pass so no reset is needed
     @Unique private boolean chatting$sawLineFill;
 
-    //? if <26 {
-    /*@Inject(method = "<init>", at = @At("TAIL"))
-    private void chatting$captureMouse(GuiGraphics graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
-        this.chatting$mouseX = mouseX;
-        this.chatting$mouseY = mouseY;
-    }
-
-    @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
-    private void chatting$hoverFill(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
-        // line backgrounds are the only fills through this method with x1 == -4
-        boolean chatting$lineFill = x1 == -4;
-        int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
-        boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
-        boolean chatting$bottom = chatting$lineFill
-            && y2 == org.polyfrost.chatting.chat.RoundedChat.chatBottom(graphics.guiHeight());
-        if (chatting$lineFill) chatting$sawLineFill = true;
-        org.polyfrost.chatting.chat.RoundedChat.fill(graphics::fill, (chatting$factor, chatting$body) -> {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(chatting$factor, chatting$factor);
-            chatting$body.run();
-            graphics.pose().popMatrix();
-        }, x1, y1, chatting$ex2, y2, chatting$c, chatting$top, chatting$bottom);
-    }
-
-    @Unique
-    private int chatting$lineColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
-        if (chatting$chatFocused()) {
-            Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-            // per line buttons sit just past the background right edge so the hovered line hit test extends across them
-            int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
-            if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
-                return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
-            }
-        }
-        return ChatBackground.tint(color);
-    }
-    *///?} else {
     @Inject(method = "<init>", at = @At("TAIL"))
+    //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
     private void chatting$captureMouse(GuiGraphicsExtractor graphics, Font font, int mouseX, int mouseY, boolean changeCursor, CallbackInfo ci) {
         this.chatting$mouseX = mouseX;
         this.chatting$mouseY = mouseY;
     }
 
+    //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+    //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
     private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color) {
         int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
         // line backgrounds are the only fills through this method with x1 == -4
@@ -79,14 +45,10 @@ public class FocusedAccessMixin {
         int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill
-            && y2 == org.polyfrost.chatting.chat.RoundedChat.chatBottom(graphics.guiHeight());
+            && y2 == RoundedChat.chatBottom(graphics.guiHeight());
         if (chatting$lineFill) chatting$sawLineFill = true;
-        org.polyfrost.chatting.chat.RoundedChat.fill(graphics::fill, (chatting$factor, chatting$body) -> {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(chatting$factor, chatting$factor);
-            chatting$body.run();
-            graphics.pose().popMatrix();
-        }, x1, y1, chatting$ex2, y2, chatting$c, chatting$top, chatting$bottom);
+        RoundedChat.fill(graphics::fill, RoundedChat.scaler(graphics.pose()),
+            x1, y1, chatting$ex2, y2, chatting$c, chatting$top, chatting$bottom);
     }
 
     @Unique
@@ -101,7 +63,6 @@ public class FocusedAccessMixin {
         }
         return ChatBackground.tint(color);
     }
-    //?}
 
     @Unique
     private boolean chatting$chatFocused() {

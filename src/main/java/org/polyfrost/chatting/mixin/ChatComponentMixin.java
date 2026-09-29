@@ -485,21 +485,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         //?}
         boolean bottom = y2 == chatBottom;
         chatting$sawLineFill = true;
-        //? if <1.21.6 {
-        /^RoundedChat.fill(graphics::fill, (factor, body) -> {
-            graphics.pose().pushPose();
-            graphics.pose().scale(factor, factor, 1f);
-            body.run();
-            graphics.pose().popPose();
-        }, x1, y1, x2, y2, color, top, bottom);
-        ^///?} else {
-        RoundedChat.fill(graphics::fill, (factor, body) -> {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(factor, factor);
-            body.run();
-            graphics.pose().popMatrix();
-        }, x1, y1, x2, y2, color, top, bottom);
-        //?}
+        RoundedChat.fill(graphics::fill, RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
     }
 
     // resolve the hovered line by position because trimmedMessages.indexOf collapses duplicate messages and getMessageEndIndexAt returns -1 past the text
