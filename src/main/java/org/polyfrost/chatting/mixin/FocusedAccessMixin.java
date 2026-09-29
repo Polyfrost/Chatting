@@ -1,11 +1,11 @@
 package org.polyfrost.chatting.mixin;
 
 //? if >=1.21.11 {
-import org.joml.Matrix3x2f;
-import org.joml.Vector2f;
 import org.polyfrost.chatting.chat.ChatBackground;
+import org.polyfrost.chatting.chat.ChatHover;
 import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.ChatComponent;
 //? if <26 {
 /*import net.minecraft.client.gui.GuiGraphics;
 *///?} else {
@@ -42,24 +43,27 @@ public class FocusedAccessMixin {
         int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
         // line backgrounds are the only fills through this method with x1 == -4
         boolean chatting$lineFill = x1 == -4;
-        int chatting$c = chatting$lineFill ? chatting$lineColor(graphics.pose(), x1, y1, x2, y2, color) : color;
+        int chatting$chatBottom = RoundedChat.chatBottom(graphics.guiHeight());
+        int chatting$c = chatting$lineFill ? chatting$lineColor(y2, color, chatting$chatBottom) : color;
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
-        boolean chatting$bottom = chatting$lineFill
-            && y2 == RoundedChat.chatBottom(graphics.guiHeight());
+        boolean chatting$bottom = chatting$lineFill && y2 == chatting$chatBottom;
         if (chatting$lineFill) chatting$sawLineFill = true;
         RoundedChat.fill(graphics::fill, RoundedChat.scaler(graphics.pose()),
             x1, y1, chatting$ex2, y2, chatting$c, chatting$top, chatting$bottom);
     }
 
     @Unique
-    private int chatting$lineColor(org.joml.Matrix3x2fStack pose, int x1, int y1, int x2, int y2, int color) {
-        if (chatting$chatFocused()) {
-            Vector2f m = pose.invert(new Matrix3x2f()).transformPosition(chatting$mouseX, chatting$mouseY, new Vector2f());
-            // per line buttons sit just past the background right edge so the hovered line hit test extends across them
-            int chatting$hitX2 = x2 + org.polyfrost.chatting.chat.ChatButtons.perLineButtonsWidth();
-            if (m.x >= x1 && m.x < chatting$hitX2 && m.y >= y1 && m.y < y2) {
-                return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
-            }
+    private int chatting$lineColor(int y2, int color, int chatBottom) {
+        //? if >=26.2 {
+        ChatComponent chat = Minecraft.getInstance().gui.hud.getChat();
+        //?} else
+        //ChatComponent chat = Minecraft.getInstance().gui.getChat();
+        int line = (chatBottom - y2) / ((ChatComponentAccessor) chat).chatting$getLineHeight() + ChatHover.scrollPos();
+        // truncated to match the buttons
+        int mouseX = (int) ChatWindowHud.mapMouseX(chatting$mouseX);
+        int mouseY = (int) ChatWindowHud.mapMouseY(chatting$mouseY);
+        if (ChatHover.highlighted(chat, mouseX, mouseY, line)) {
+            return ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         }
         return ChatBackground.tint(color);
     }
