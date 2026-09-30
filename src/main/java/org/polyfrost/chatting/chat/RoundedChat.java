@@ -2,6 +2,10 @@ package org.polyfrost.chatting.chat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+//? if >=1.21.6 {
+import org.joml.Matrix3x2fStack;
+//?} else
+//import com.mojang.blaze3d.vertex.PoseStack;
 import org.polyfrost.chatting.config.ChattingConfig;
 
 // rounded corners are approximated as horizontal strips under a downscaled pose so the arc rasterizes at screen resolution
@@ -33,6 +37,26 @@ public final class RoundedChat {
         float scale = (float) (double) Minecraft.getInstance().options.chatScale().get();
         return Mth.floor((guiHeight - 40) / scale);
     }
+
+    //? if >=1.21.6 {
+    public static PoseScaler scaler(Matrix3x2fStack pose) {
+        return (factor, body) -> {
+            pose.pushMatrix();
+            pose.scale(factor, factor);
+            body.run();
+            pose.popMatrix();
+        };
+    }
+    //?} else {
+    /*public static PoseScaler scaler(PoseStack pose) {
+        return (factor, body) -> {
+            pose.pushPose();
+            pose.scale(factor, factor, 1f);
+            body.run();
+            pose.popPose();
+        };
+    }
+    *///?}
 
     // emitted strips are disjoint so translucent colors blend exactly once per pixel
     public static void fill(FillSink sink, PoseScaler poser, int x1, int y1, int x2, int y2, int color,
