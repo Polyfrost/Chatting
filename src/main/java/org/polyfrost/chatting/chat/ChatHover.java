@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.util.Mth;
+import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.polyfrost.chatting.mixin.ChatComponentAccessor;
 import org.polyfrost.oneconfig.api.platform.v1.DesktopHelper;
 import org.polyfrost.oneconfig.api.platform.v1.Keys;
@@ -55,7 +56,7 @@ public final class ChatHover {
         if (!chat.isChatFocused()) return -1;
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
         if (acc.chatting$getScale() <= 0.0) return -1;
-        int row = row(acc, mouseY);
+        int row = row(acc, mouseY - slideY(chat));
         if (row < 0 || row >= visibleRows(chat)) return -1;
         return row + scrollPos();
     }
@@ -75,6 +76,11 @@ public final class ChatHover {
     // the drawn scroll position, which lags chatScrollbarPos while smooth scrolling animates
     public static int scrollPos() {
         return ChatScrolling.INSTANCE.pos();
+    }
+
+    public static float slideY(ChatComponent chat) {
+        float dy = SmoothChat.INSTANCE.translateY(((ChatComponentAccessor) chat).chatting$getScrollbarPos() > 0);
+        return ChatWindowHud.isActive() ? dy / ChatWindowHud.chatScale() : dy;
     }
 
     public static int visibleRows(ChatComponent chat) {

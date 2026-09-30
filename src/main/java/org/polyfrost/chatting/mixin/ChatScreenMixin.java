@@ -249,6 +249,8 @@ public abstract class ChatScreenMixin extends Screen {
 
         boolean hud = ChatWindowHud.isActive();
         float hudScale = ChatWindowHud.chatScale();
+        float slide = ChatHover.slideY(chat);
+        int by = (int) (my - slide);
         //? if <1.21.6 {
         /*graphics.pose().pushPose();
         if (hud) {
@@ -256,6 +258,7 @@ public abstract class ChatScreenMixin extends Screen {
             if (hudScale != 1f) graphics.pose().scale(hudScale, hudScale, 1f);
             graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop(), 0f);
         }
+        graphics.pose().translate(0f, slide, 0f);
         graphics.pose().scale(chatScale, chatScale, 1f);
         *///?} else {
         graphics.pose().pushMatrix();
@@ -264,18 +267,19 @@ public abstract class ChatScreenMixin extends Screen {
             if (hudScale != 1f) graphics.pose().scale(hudScale, hudScale);
             graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop());
         }
+        graphics.pose().translate(0f, slide);
         graphics.pose().scale(chatScale, chatScale);
         //?}
 
         int slot = 0;
         if (cfg.getChatCopy()) {
             chatting$button(graphics, Textures.COPY, stripStart + slot * (ChatButtons.BUTTON_WIDTH + ChatButtons.BUTTON_GAP), top,
-                    chatScale, mx, my, CHATTING$COPY_TOOLTIP, () -> chatting$copyAction(acc, messageIndex, lineIndex));
+                    chatScale, mx, by, CHATTING$COPY_TOOLTIP, () -> chatting$copyAction(acc, messageIndex, lineIndex));
             slot++;
         }
         if (cfg.getChatDelete()) {
             chatting$button(graphics, Textures.DELETE, stripStart + slot * (ChatButtons.BUTTON_WIDTH + ChatButtons.BUTTON_GAP), top,
-                    chatScale, mx, my, CHATTING$DELETE_TOOLTIP, () -> chatting$deleteAction(acc, lineIndex));
+                    chatScale, mx, by, CHATTING$DELETE_TOOLTIP, () -> chatting$deleteAction(acc, lineIndex));
         }
 
         //? if <1.21.6 {
