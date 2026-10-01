@@ -1,11 +1,9 @@
 package org.polyfrost.chatting.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import org.polyfrost.chatting.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -45,8 +43,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
-//? if <= 1.21.11
-//import net.minecraft.client.gui.components.PlayerFaceRenderer;
 //? if <=1.21.10 {
 /*import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.util.FormattedCharSequence;
@@ -60,11 +56,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 @Mixin(ChatComponent.class)
 public class ChatComponentMixin implements ChatComponentHook {
-    //? if <= 1.21.11 {
-    /*@SuppressWarnings("InstantiationOfUtilityClass")
-    @Unique PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
-    *///?}
-
     @Shadow
     private void refreshTrimmedMessages() {
         throw new AssertionError();
@@ -427,39 +418,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         PlayerInfo info = ((ChatLineHook) (Object) line).chatting$getPlayerInfo();
         boolean hidden = ((ChatLineHook) (Object) line).chatting$isHeadHidden();
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
-            int shadow = ChatHeads.SHADOW_OFFSET;
-            int headY = ChatHeads.INSTANCE.headY(y);
-            boolean drawShadow = ChatHeads.INSTANCE.shouldDrawShadow();
-            float dy = ChatHeads.INSTANCE.headYFraction();
-            if (dy != 0f) graphics.pose().translate(0f, dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
-            //? if 1.21.1 {
-            /^RenderSystem.enableBlend();
-            if (drawShadow) {
-                if (ChatHeads.INSTANCE.isLegacyShadow()) {
-                    graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, ChatHeads.INSTANCE.shadowColor(info, alpha));
-                } else {
-                    float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
-                    graphics.setColor(s, s, s, alpha / 255f);
-                    if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x + shadow, headY + shadow, 8, -1, true, false);
-                    else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8);
-                }
-            }
-            graphics.setColor(1f, 1f, 1f, alpha / 255f);
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, headY, 8, -1, true, false);
-            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8);
-            RenderSystem.disableBlend();
-            graphics.setColor(1f, 1f, 1f, 1f);
-            ^///?} else {
-            if (drawShadow) {
-                int shadowColor = ChatHeads.INSTANCE.shadowColor(info, alpha);
-                if (ChatHeads.INSTANCE.isLegacyShadow()) graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, shadowColor);
-                else if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x + shadow, headY + shadow, 8, shadowColor, true, false);
-                else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8, shadowColor);
-            }
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x, headY, 8, 0xFFFFFF | (alpha << 24), true, false);
-            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8, 0xFFFFFF | (alpha << 24));
-            //?}
-            if (dy != 0f) graphics.pose().translate(0f, -dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
+            ChatHeads.INSTANCE.draw(graphics, info, x, y, alpha);
         }
         return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10 : x;
     }

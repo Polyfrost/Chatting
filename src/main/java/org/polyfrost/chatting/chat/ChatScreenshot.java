@@ -184,21 +184,7 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                int hy = ChatHeads.INSTANCE.headY(y);
-                float dy = ChatHeads.INSTANCE.headYFraction();
-                if (dy != 0f) graphics.pose().translate(0f, dy, 0f);
-                if (ChatHeads.INSTANCE.shouldDrawShadow()) {
-                    if (ChatHeads.INSTANCE.isLegacyShadow()) {
-                        graphics.fill(m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, m + ChatHeads.SHADOW_OFFSET + 8, hy + ChatHeads.SHADOW_OFFSET + 8, ChatHeads.INSTANCE.shadowColor(info, 255));
-                    } else {
-                        float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
-                        graphics.setColor(s, s, s, 1f);
-                        net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, 8);
-                        graphics.setColor(1f, 1f, 1f, 1f);
-                    }
-                }
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m, hy, 8);
-                if (dy != 0f) graphics.pose().translate(0f, -dy, 0f);
+                ChatHeads.INSTANCE.draw(graphics, info, m, y, 255);
             }
             int hx = headOffset(line.content()) + m;
             if (style.border()) {
@@ -343,19 +329,14 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                int hy = ChatHeads.INSTANCE.headY(y);
-                float dy = ChatHeads.INSTANCE.headYFraction();
-                if (dy != 0f) context.pose().translate(0f, dy, 0f);
-                boolean legacy = ChatHeads.INSTANCE.isLegacyShadow();
-                if (ChatHeads.INSTANCE.shouldDrawShadow() && legacy) {
+                if (ChatHeads.INSTANCE.isLegacyShadow()) {
                     consumer.beginSolid();
-                    context.fill(m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, m + ChatHeads.SHADOW_OFFSET + 8, hy + ChatHeads.SHADOW_OFFSET + 8, ChatHeads.INSTANCE.shadowColor(info, 255));
+                    ChatHeads.INSTANCE.drawLegacyShadow(context, info, m, y, 255);
                     consumer.endSolid();
                 }
-                consumer.beginHead(info.getSkin().texture());
-                if (ChatHeads.INSTANCE.shouldDrawShadow() && !legacy) net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, 8, ChatHeads.INSTANCE.shadowColor(255));
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, hy, 8);
-                if (dy != 0f) context.pose().translate(0f, -dy, 0f);
+                HeadTextures.Head head = HeadTextures.INSTANCE.get(info);
+                consumer.beginHead(HeadTextures.INSTANCE.texture(info, head));
+                ChatHeads.INSTANCE.drawHead(context, info, head, m, y, 255);
                 consumer.endHead();
             }
             int hx = headOffset(line.content()) + m;
