@@ -1,19 +1,17 @@
 package org.polyfrost.chatting.mixin;
 
-//? if > 1.8.9 {
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import org.polyfrost.chatting.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
-/*import net.minecraft.client.GuiMessage;
+/*//~ if =1.8.9 'net.minecraft.client.GuiMessage' -> 'net.minecraft.client.gui.ChatMessage'
+import net.minecraft.client.GuiMessage;
 *///?}
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
@@ -46,9 +44,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
-//? if <= 1.21.11
-//import net.minecraft.client.gui.components.PlayerFaceRenderer;
-//? if <=1.21.10 {
+//? if > 1.8.9 <=1.21.10 {
 /*import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.util.FormattedCharSequence;
 *///?}
@@ -58,25 +54,47 @@ import net.minecraft.util.FormattedCharSequence;
 //? if >=26 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //?}
+//? if = 1.8.9 {
+/*import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.gui.GuiElement;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.render.platform.GlStateManager;
+import org.lwjgl.input.Mouse;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+*///?}
 
 @Mixin(ChatComponent.class)
 public class ChatComponentMixin implements ChatComponentHook {
-    //? if <= 1.21.11 {
-    /*@SuppressWarnings("InstantiationOfUtilityClass")
-    @Unique PlayerFaceRenderer chatting$playerFaceRenderer = new PlayerFaceRenderer();
-    *///?}
-
     @Shadow
+    //~ if =1.8.9 'refreshTrimmedMessages' -> 'rescaleChat'
     private void refreshTrimmedMessages() {
         throw new AssertionError();
     }
 
     @Override
     public void chatting$refresh() {
+        //~ if =1.8.9 'refreshTrimmedMessages' -> 'rescaleChat'
         refreshTrimmedMessages();
     }
 
-    //? if <=1.21.10 {
+    //? if = 1.8.9 {
+    /*@Shadow @Final private Minecraft minecraft;
+    @Shadow @Final private List<ChatMessage> allMessages;
+    @Shadow private boolean hasNewMessagesSinceScroll;
+    *///?}
+
+    //? if = 1.8.9 {
+    /*// 1.8.9 render has no focused parameter
+    @Inject(method = "isChatFocused", at = @At("HEAD"), cancellable = true)
+    private void chatting$peek(CallbackInfoReturnable<Boolean> cir) {
+        if (Chatting.INSTANCE.getPeeking()) cir.setReturnValue(true);
+    }
+    *///?} elif <=1.21.10 {
     /*@ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private boolean chatting$peek(boolean focused) {
         return focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing();
@@ -192,6 +210,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Unique
     private int chatting$scrollPosBefore;
 
+    //? if > 1.8.9 {
     @Unique
     private GuiMessage chatting$currentMessage;
 
@@ -242,18 +261,94 @@ public class ChatComponentMixin implements ChatComponentHook {
         ((ChatLineHook) element).chatting$setHeadHidden(chatting$pendingHideHead);
         ChatHeads.INSTANCE.tag(((GuiMessage.Line) element).content(), chatting$pendingHead, chatting$pendingHideHead);
     }
+    //?} else {
+    /*@Unique
+    private int chatting$newLines;
+
+    // 1.8.9 adds history and display lines together, so keep filtered messages in history
+    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("HEAD"), cancellable = true)
+    private void chatting$detectHead(Component component, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        if ((ChatTabs.INSTANCE.shouldFilter() && !ChatTabs.INSTANCE.shouldRender(component))
+            || (ChatSearch.INSTANCE.shouldFilter() && !ChatSearch.INSTANCE.matches(component))) {
+            chatting$keepInHistory(component, chatLineId, updateCounter, displayOnly);
+            ci.cancel();
+            return;
+        }
+        chatting$newLines = 0;
+        chatting$headConsumed = false;
+        chatting$pendingHead = ChattingConfig.INSTANCE.getShowChatHeads()
+            ? ChatHeads.INSTANCE.detect(component)
+            : null;
+        chatting$pendingHideHead = ChattingConfig.INSTANCE.getHideChatHeadOnConsecutiveMessages()
+            && ChatHeads.INSTANCE.sameOwner(chatting$pendingHead, chatting$lastHeadOwner);
+        chatting$lastHeadOwner = chatting$pendingHead;
+        if (!chatting$refreshing) SmoothChat.INSTANCE.start();
+        chatting$addingMessage = true;
+        chatting$scrollPosBefore = chatScrollbarPos;
+    }
+
+    @Unique
+    private void chatting$keepInHistory(Component component, int chatLineId, int updateCounter, boolean displayOnly) {
+        if (chatLineId != 0) ((ChatComponent) (Object) this).removeMessage(chatLineId);
+        if (displayOnly) return;
+        allMessages.add(0, new ChatMessage(updateCounter, component, chatLineId));
+        while (allMessages.size() > 100) allMessages.remove(allMessages.size() - 1);
+    }
+
+    @ModifyExpressionValue(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;floor(F)I"))
+    private int chatting$headWrapWidth(int width) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads() || !ChatHeads.INSTANCE.shouldOffset(chatting$pendingHead)) return width;
+        return width - 10;
+    }
+
+    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("RETURN"))
+    private void chatting$endDisplayQueue(Component component, int chatLineId, int updateCounter, boolean displayOnly, CallbackInfo ci) {
+        if (!chatting$addingMessage) return;
+        chatting$addingMessage = false;
+        int delta = chatScrollbarPos - chatting$scrollPosBefore;
+        if (delta != 0) ChatScrolling.INSTANCE.shift(delta);
+        // the history entry only exists after vanilla adds it
+        ChatMessage parent = null;
+        for (ChatMessage entry : allMessages) {
+            if (entry.getText() == component) {
+                parent = entry;
+                break;
+            }
+        }
+        // wrapped lines are inserted at the front, so index 0 ends the entry
+        int count = Math.min(chatting$newLines, trimmedMessages.size());
+        for (int i = 0; i < count; i++) {
+            ChatLineHook line = (ChatLineHook) trimmedMessages.get(i);
+            line.chatting$setParent(parent);
+            line.chatting$setEndOfEntry(i == 0);
+        }
+    }
+
+    @Unique
+    private void chatting$applyHead(Object element) {
+        chatting$newLines++;
+        if (!chatting$refreshing) SmoothChat.INSTANCE.addLine((ChatMessage) element);
+        if (chatting$headConsumed) return;
+        chatting$headConsumed = true;
+        ((ChatLineHook) element).chatting$setPlayerInfo(chatting$pendingHead);
+        ((ChatLineHook) element).chatting$setHeadHidden(chatting$pendingHideHead);
+        ChatHeads.INSTANCE.tag((ChatMessage) element, chatting$pendingHead, chatting$pendingHideHead);
+    }
+    *///?}
 
     @Unique
     private boolean chatting$refreshing;
 
     @Shadow
     @Final
+    //~ if =1.8.9 'GuiMessage.Line' -> 'ChatMessage'
     private List<GuiMessage.Line> trimmedMessages;
 
     @Unique
     private boolean chatting$previewing;
 
     @Unique
+    //~ if =1.8.9 'GuiMessage.Line' -> 'ChatMessage'
     private final List<GuiMessage.Line> chatting$previewBackup = new ArrayList<>();
 
     @Unique
@@ -284,18 +379,27 @@ public class ChatComponentMixin implements ChatComponentHook {
         ChatScrolling.INSTANCE.setShouldSmooth(true);
     }
 
+    //~ if =1.8.9 'refreshTrimmedMessages' -> 'rescaleChat'
     @Inject(method = "refreshTrimmedMessages", at = @At("HEAD"))
     private void chatting$beginRefresh(CallbackInfo ci) {
         chatting$refreshing = true;
         chatting$lastHeadOwner = null;
     }
 
+    //~ if =1.8.9 'refreshTrimmedMessages' -> 'rescaleChat'
     @Inject(method = "refreshTrimmedMessages", at = @At("RETURN"))
     private void chatting$endRefresh(CallbackInfo ci) {
         chatting$refreshing = false;
     }
 
-    //? if <=1.21.10 {
+    //? if = 1.8.9 {
+    /*// ordinal 0 is trimmedMessages, ordinal 1 is history
+    @Redirect(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", ordinal = 0))
+    private void chatting$tagHead(List<Object> list, int index, Object element) {
+        chatting$applyHead(element);
+        list.add(index, element);
+    }
+    *///?} elif <=1.21.10 {
     /*@Redirect(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
     private void chatting$tagHead(List<Object> list, int index, Object element) {
         chatting$applyHead(element);
@@ -309,7 +413,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
     //?}
 
-    //? if <=1.21.10 {
+    //? if > 1.8.9 <=1.21.10 {
     /*@Unique
     private boolean chatting$posed;
 
@@ -413,9 +517,69 @@ public class ChatComponentMixin implements ChatComponentHook {
     private double chatting$queueY(double y) {
         return ChatWindowHud.mapMouseY(y);
     }
+    *///?} elif = 1.8.9 {
+    /*@Unique
+    private boolean chatting$posed;
+
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    private void chatting$beginChatWindow(int ticks, CallbackInfo ci) {
+        if (ChatWindowHud.shouldHideForVisibility(((ChatComponent) (Object) this).isChatFocused())) {
+            chatting$posed = false;
+            ci.cancel();
+            return;
+        }
+        chatting$installPreview();
+        ChatScrolling.INSTANCE.step(chatScrollbarPos);
+        chatting$posed = ChatWindowHud.isActive();
+        if (!chatting$posed) return;
+        // the gui has already translated chat down by scaledHeight - 48
+        float guiY = minecraft.getWindow().getGuiScaledHeight() - 48;
+        float scale = ChatWindowHud.chatScale();
+        GlStateManager.pushMatrix();
+        GlStateManager.translatef(0.0F, -guiY, 0.0F);
+        GlStateManager.translatef(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY(), 0.0F);
+        if (scale != 1f) GlStateManager.scalef(scale, scale, 1.0F);
+        GlStateManager.translatef(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop(), 0.0F);
+        GlStateManager.translatef(0.0F, guiY, 0.0F);
+    }
+
+    @Inject(method = "render", at = @At("RETURN"))
+    private void chatting$endChatWindow(int ticks, CallbackInfo ci) {
+        chatting$restorePreview();
+        if (!chatting$posed) return;
+        chatting$posed = false;
+        GlStateManager.popMatrix();
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/platform/GlStateManager;pushMatrix()V", ordinal = 0, shift = At.Shift.AFTER))
+    private void chatting$translateNewMessage(int ticks, CallbackInfo ci) {
+        GlStateManager.translatef(0f, SmoothChat.INSTANCE.translateY(hasNewMessagesSinceScroll), 0f);
+    }
+
+    @ModifyVariable(method = "getMessageAt", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private int chatting$messageX(int x) {
+        if (!ChatWindowHud.isActive()) return x;
+        int factor = minecraft.getWindow().getGuiScale();
+        return (int) (ChatWindowHud.mapMouseX((double) x / factor) * factor);
+    }
+
+    @ModifyVariable(method = "getMessageAt", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private int chatting$messageY(int y) {
+        if (!ChatWindowHud.isActive()) return y;
+        Window window = minecraft.getWindow();
+        int factor = window.getGuiScale();
+        int height = window.getGuiScaledHeight();
+        return (int) ((height - ChatWindowHud.mapMouseY(height - (double) y / factor)) * factor);
+    }
+
+    // chat is drawn 28px above the bottom edge but vanilla hit tests from 27
+    @ModifyConstant(method = "getMessageAt", constant = @Constant(intValue = 27))
+    private int chatting$alignComponentHitTest(int original) {
+        return 28;
+    }
     *///?}
 
-    //? if <=1.21.10 {
+    //? if > 1.8.9 <=1.21.10 {
     /*@Unique
     private int chatting$mouseX;
 
@@ -428,39 +592,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         PlayerInfo info = ((ChatLineHook) (Object) line).chatting$getPlayerInfo();
         boolean hidden = ((ChatLineHook) (Object) line).chatting$isHeadHidden();
         if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
-            int shadow = ChatHeads.SHADOW_OFFSET;
-            int headY = ChatHeads.INSTANCE.headY(y);
-            boolean drawShadow = ChatHeads.INSTANCE.shouldDrawShadow();
-            float dy = ChatHeads.INSTANCE.headYFraction();
-            if (dy != 0f) graphics.pose().translate(0f, dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
-            //? if 1.21.1 {
-            /^RenderSystem.enableBlend();
-            if (drawShadow) {
-                if (ChatHeads.INSTANCE.isLegacyShadow()) {
-                    graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, ChatHeads.INSTANCE.shadowColor(info, alpha));
-                } else {
-                    float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
-                    graphics.setColor(s, s, s, alpha / 255f);
-                    if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x + shadow, headY + shadow, 8, -1, true, false);
-                    else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8);
-                }
-            }
-            graphics.setColor(1f, 1f, 1f, alpha / 255f);
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin().texture(), x, headY, 8, -1, true, false);
-            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8);
-            RenderSystem.disableBlend();
-            graphics.setColor(1f, 1f, 1f, 1f);
-            ^///?} else {
-            if (drawShadow) {
-                int shadowColor = ChatHeads.INSTANCE.shadowColor(info, alpha);
-                if (ChatHeads.INSTANCE.isLegacyShadow()) graphics.fill(x + shadow, headY + shadow, x + shadow + 8, headY + shadow + 8, shadowColor);
-                else if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x + shadow, headY + shadow, 8, shadowColor, true, false);
-                else PlayerFaceRenderer.draw(graphics, info.getSkin(), x + shadow, headY + shadow, 8, shadowColor);
-            }
-            if (ChattingConfig.INSTANCE.getImprovedHeads()) ((HeadHook) chatting$playerFaceRenderer).chatting$draw(graphics, info.getSkin()/^? if >= 1.21.10 {^/.body().texturePath()/^?} else {^//^.texture()^//^?}^/, x, headY, 8, 0xFFFFFF | (alpha << 24), true, false);
-            else PlayerFaceRenderer.draw(graphics, info.getSkin(), x, headY, 8, 0xFFFFFF | (alpha << 24));
-            //?}
-            if (dy != 0f) graphics.pose().translate(0f, -dy/^? if <=1.21.5 {^/ /^, 0f ^//^?}^/);
+            ChatHeads.INSTANCE.draw(graphics, info, x, y, alpha);
         }
         return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10 : x;
     }
@@ -571,6 +703,87 @@ public class ChatComponentMixin implements ChatComponentHook {
         }
     }
     //?}
+    *///?} elif = 1.8.9 {
+    /*@Unique
+    private float chatting$drawHead(ChatMessage line, float x, float y, int alpha) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads()) return x;
+        PlayerInfo info = ((ChatLineHook) line).chatting$getPlayerInfo();
+        boolean hidden = ((ChatLineHook) line).chatting$isHeadHidden();
+        if (ChatHeads.INSTANCE.shouldDrawHead(info, hidden)) {
+            ChatHeads.INSTANCE.draw(new GuiGraphics(), info, (int) x, (int) y, alpha);
+            // heads leave blending off
+            GlStateManager.enableBlend();
+        }
+        return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10.0F : x;
+    }
+
+    @ModifyArgs(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 0))
+    private void chatting$hoverBackground(Args args, int ticks) {
+        int vanillaColor = args.get(4);
+        int left = args.get(0);
+        int top = args.get(1);
+        int right = (int) args.get(2) + chatting$buttonBackgroundWidth();
+        int bottom = args.get(3);
+        int color = ChatBackground.tint(vanillaColor);
+        if (minecraft.screen instanceof ChatScreen && chatting$highlighted(bottom)) {
+            color = ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
+        }
+        boolean rounded = ChattingConfig.INSTANCE.getRoundedChatCorners();
+        int lineIndex = -bottom / 9;
+        int[] bounds = rounded ? chatting$roundedBounds(ticks) : null;
+        RoundedChat.fill(GuiElement::fill, RoundedChat.scaler(new PoseStack()), left, top, right, bottom, color, rounded && lineIndex == bounds[1], rounded && lineIndex == bounds[0]);
+        args.set(2, right);
+        args.set(4, vanillaColor & 0x00FFFFFF);
+    }
+
+    // replicates the render loop's per line visibility gate to find the first and last lines whose background fill will run
+    @Unique
+    private int[] chatting$roundedBounds(int ticks) {
+        ChatComponent self = (ChatComponent) (Object) this;
+        int visibleLines = Math.min(self.getLinesPerPage(), Math.max(0, trimmedMessages.size() - chatScrollbarPos));
+        int first = -1;
+        int last = -1;
+        boolean keepMessagesVisible = !ChattingConfig.INSTANCE.getFade() || self.isChatFocused() || HudManager.INSTANCE.isEditing();
+        float opacity = minecraft.options.chatOpacity * 0.9F + 0.1F;
+
+        for (int lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
+            ChatMessage line = trimmedMessages.get(lineIndex + chatScrollbarPos);
+            int age = ticks - line.getTimeOfCreation() + chatting$fadeOffset();
+            if (age >= 200 && !keepMessagesVisible) continue;
+
+            double fade = 1.0D - age / 200.0D;
+            fade = Math.max(0.0D, Math.min(1.0D, fade * 10.0D));
+            int alpha = keepMessagesVisible ? 255 : (int) (255.0D * fade * fade);
+            if ((int) (alpha * opacity) <= 3) continue;
+            if (first < 0) first = lineIndex;
+            last = lineIndex;
+        }
+        return new int[]{first, last};
+    }
+
+    @Unique
+    private int chatting$buttonBackgroundWidth() {
+        if (!ChattingConfig.INSTANCE.getExtendBG() || !(minecraft.screen instanceof ChatScreen)) return 0;
+        return ChatButtons.extraBackgroundWidth();
+    }
+
+    @Unique
+    private boolean chatting$highlighted(int bottom) {
+        Window window = minecraft.getWindow();
+        int screenX = Mouse.getX() * window.getGuiScaledWidth() / minecraft.width;
+        int screenY = window.getGuiScaledHeight() - Mouse.getY() * window.getGuiScaledHeight() / minecraft.height - 1;
+        // truncated to match the buttons
+        int mouseX = (int) ChatWindowHud.mapMouseX(screenX);
+        int mouseY = (int) ChatWindowHud.mapMouseY(screenY);
+        return ChatHover.highlighted((ChatComponent) (Object) this, mouseX, mouseY, -bottom / 9 + ChatHover.scrollPos());
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;drawWithShadow(Ljava/lang/String;FFI)I"))
+    private int chatting$renderLine(Font font, String text, float x, float y, int color, @Local ChatMessage line) {
+        color = SmoothChat.INSTANCE.fadeColor(line, color);
+        float dx = chatting$drawHead(line, x, y, color >>> 24);
+        return font.draw(text, dx, y, color, ChattingConfig.INSTANCE.getTextRenderType() != 0);
+    }
     *///?}
 
     @Unique
@@ -578,7 +791,17 @@ public class ChatComponentMixin implements ChatComponentHook {
         return 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20);
     }
 
-    //? if <=1.21.5 {
+    //? if = 1.8.9 {
+    /*@ModifyVariable(method = "render", at = @At(value = "STORE", ordinal = 0), ordinal = 6)
+    private int chatting$fadeAge(int age) {
+        return age + chatting$fadeOffset();
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;isChatFocused()Z"))
+    private boolean chatting$fadeFocused(ChatComponent chat) {
+        return !ChattingConfig.INSTANCE.getFade() || chat.isChatFocused() || HudManager.INSTANCE.isEditing();
+    }
+    *///?} elif <=1.21.5 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage$Line;addedTime()I"))
     private int chatting$fadeAge(int addedTime) {
         if (!ChattingConfig.INSTANCE.getFade()) return Integer.MAX_VALUE;
@@ -614,7 +837,22 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
     //?}
 
-    //? if <=1.21.5 {
+    //? if = 1.8.9 {
+    /*@Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(ChatComponent instance) {
+        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 1))
+    private void chatting$scrollBar1(int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) GuiElement.fill(x1, y1, x2, y2, color);
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 2))
+    private void chatting$scrollBar2(int x1, int y1, int x2, int y2, int color) {
+        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) GuiElement.fill(x1, y1, x2, y2, color);
+    }
+    *///?} elif <=1.21.5 {
     /*@Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
     private int chatting$smoothScrollPos(ChatComponent instance) {
         return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
@@ -677,4 +915,3 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
     //?}
 }
-//?}

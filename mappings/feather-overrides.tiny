@@ -1,0 +1,46 @@
+tiny	2	0	intermediary	named
+c	net/minecraft/client/Minecraft	net/minecraft/client/Minecraft
+	f	Lnet/minecraft/unmapped/C_23014920;	f_21497584	font
+	f	Lnet/minecraft/unmapped/C_91543234;	f_32571834	currentServer
+	m	()Lnet/minecraft/unmapped/C_88014908;	m_55181026	getConnection
+	m	()Lnet/minecraft/unmapped/C_91543234;	m_73689431	getCurrentServer
+c	net/minecraft/unmapped/C_16178213	net/minecraft/client/gui/components/EditBox
+	m	(Ljava/lang/String;)V	m_31911570	setValue
+	m	()Ljava/lang/String;	m_79292215	getValue
+	m	(Z)V	m_43135179	setCanLoseFocus
+c	net/minecraft/unmapped/C_22168528	net/minecraft/resources/Identifier
+c	net/minecraft/unmapped/C_23014920	net/minecraft/client/gui/Font
+	f	I	f_30706543	lineHeight
+	m	(Ljava/lang/String;)I	m_09235706	width
+	m	(C)I	m_11668766	width
+c	net/minecraft/unmapped/C_32220415	net/minecraft/server/Bootstrap
+	m	()V	m_84022598	bootStrap
+c	net/minecraft/unmapped/C_40996800	net/minecraft/world/entity/player/Player
+c	net/minecraft/unmapped/C_45510667	net/minecraft/util/Mth
+c	net/minecraft/unmapped/C_49122968	net/minecraft/ChatFormatting
+	m	(Ljava/lang/String;)Ljava/lang/String;	m_43649046	stripFormatting
+c	net/minecraft/unmapped/C_50927867	net/minecraft/network/chat/Style
+c	net/minecraft/unmapped/C_51094326	net/minecraft/client/gui/components/ChatComponent
+	f	Ljava/util/List;	f_59243976	allMessages
+	f	I	f_01826520	chatScrollbarPos
+	m	()V	m_72776213	resetChatScroll
+	m	(I)V	m_43105399	scrollChat
+	m	()V	m_27568887	rescaleChat
+	m	()F	m_22474860	getScale
+	m	()I	m_81289727	getLinesPerPage
+c	net/minecraft/unmapped/C_63704535	net/minecraft/client/gui/screens/ChatScreen
+	f	Lnet/minecraft/unmapped/C_16178213;	f_48091600	input
+c	net/minecraft/unmapped/C_66554568	net/minecraft/client/renderer/texture/DynamicTexture
+c	net/minecraft/unmapped/C_76792751	net/minecraft/client/Options
+c	net/minecraft/unmapped/C_76792751$C_92207510	net/minecraft/client/Options$Option
+c	net/minecraft/unmapped/C_82920792	net/minecraft/client/render/texture/TextureManager
+	m	(Lnet/minecraft/unmapped/C_22168528;)Lnet/minecraft/unmapped/C_65241354;	m_17123242	getTexture
+c	net/minecraft/unmapped/C_85125467	net/minecraft/client/gui/components/Button
+c	net/minecraft/unmapped/C_85740840	net/minecraft/client/gui/screens/Screen
+	f	Lnet/minecraft/unmapped/C_23014920;	f_11884601	font
+c	net/minecraft/unmapped/C_88014908	net/minecraft/client/multiplayer/ClientPacketListener
+	m	(Ljava/util/UUID;)Lnet/minecraft/unmapped/C_97147141;	m_00890679	getPlayerInfo
+	m	(Ljava/lang/String;)Lnet/minecraft/unmapped/C_97147141;	m_86503790	getPlayerInfo
+c	net/minecraft/unmapped/C_95231345	net/minecraft/network/chat/Component
+c	net/minecraft/unmapped/C_97147141	net/minecraft/client/multiplayer/PlayerInfo
+	m	()Lnet/minecraft/unmapped/C_95231345;	m_93267006	getTabListDisplayName

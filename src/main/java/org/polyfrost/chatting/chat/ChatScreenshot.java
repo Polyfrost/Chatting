@@ -185,21 +185,7 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                int hy = ChatHeads.INSTANCE.headY(y);
-                float dy = ChatHeads.INSTANCE.headYFraction();
-                if (dy != 0f) graphics.pose().translate(0f, dy, 0f);
-                if (ChatHeads.INSTANCE.shouldDrawShadow()) {
-                    if (ChatHeads.INSTANCE.isLegacyShadow()) {
-                        graphics.fill(m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, m + ChatHeads.SHADOW_OFFSET + 8, hy + ChatHeads.SHADOW_OFFSET + 8, ChatHeads.INSTANCE.shadowColor(info, 255));
-                    } else {
-                        float s = ((ChatHeads.INSTANCE.shadowColor(255) >> 16) & 0xFF) / 255f;
-                        graphics.setColor(s, s, s, 1f);
-                        net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, 8);
-                        graphics.setColor(1f, 1f, 1f, 1f);
-                    }
-                }
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(graphics, info.getSkin(), m, hy, 8);
-                if (dy != 0f) graphics.pose().translate(0f, -dy, 0f);
+                ChatHeads.INSTANCE.draw(graphics, info, m, y, 255);
             }
             int hx = headOffset(line.content()) + m;
             if (style.border()) {
@@ -344,19 +330,14 @@ public final class ChatScreenshot {
         for (GuiMessage.Line line : lines) {
             PlayerInfo info = headToDraw(line.content());
             if (info != null) {
-                int hy = ChatHeads.INSTANCE.headY(y);
-                float dy = ChatHeads.INSTANCE.headYFraction();
-                if (dy != 0f) context.pose().translate(0f, dy, 0f);
-                boolean legacy = ChatHeads.INSTANCE.isLegacyShadow();
-                if (ChatHeads.INSTANCE.shouldDrawShadow() && legacy) {
+                if (ChatHeads.INSTANCE.isLegacyShadow()) {
                     consumer.beginSolid();
-                    context.fill(m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, m + ChatHeads.SHADOW_OFFSET + 8, hy + ChatHeads.SHADOW_OFFSET + 8, ChatHeads.INSTANCE.shadowColor(info, 255));
+                    ChatHeads.INSTANCE.drawLegacyShadow(context, info, m, y, 255);
                     consumer.endSolid();
                 }
-                consumer.beginHead(info.getSkin().texture());
-                if (ChatHeads.INSTANCE.shouldDrawShadow() && !legacy) net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m + ChatHeads.SHADOW_OFFSET, hy + ChatHeads.SHADOW_OFFSET, 8, ChatHeads.INSTANCE.shadowColor(255));
-                net.minecraft.client.gui.components.PlayerFaceRenderer.draw(context, info.getSkin(), m, hy, 8);
-                if (dy != 0f) context.pose().translate(0f, -dy, 0f);
+                HeadTextures.Head head = HeadTextures.INSTANCE.get(info);
+                consumer.beginHead(HeadTextures.INSTANCE.texture(info, head));
+                ChatHeads.INSTANCE.drawHead(context, info, head, m, y, 255);
                 consumer.endHead();
             }
             int hx = headOffset(line.content()) + m;
@@ -467,4 +448,257 @@ public final class ChatScreenshot {
         Notifications.send("Chatting", message, NotificationType.ERROR);
     }
 }
-//?}
+//?} else {
+/*import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ChatMessage;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.render.pipeline.RenderTarget;
+import net.minecraft.client.render.platform.GLX;
+import net.minecraft.client.render.platform.GlStateManager;
+import net.minecraft.client.render.texture.TextureUtil;
+import net.minecraft.network.chat.Component;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import net.minecraft.client.gui.GuiGraphics;
+import org.polyfrost.chatting.config.ChattingConfig;
+import org.polyfrost.oneconfig.api.notifications.v1.NotificationType;
+import org.polyfrost.oneconfig.api.notifications.v1.Notifications;
+import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.nio.IntBuffer;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
+
+public final class ChatScreenshot {
+    private static final Pattern FORMATTING = Pattern.compile("§[0-9a-zA-Z]");
+    private static final Pattern COLOR = Pattern.compile("§[0-9a-fA-Fr]");
+
+    private ChatScreenshot() {
+    }
+
+    public static void allowAwtClipboard() {
+        // MacOS *will* crash if you did this
+        if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("mac")) return;
+        if ("true".equalsIgnoreCase(System.getProperty("java.awt.headless"))) {
+            System.clearProperty("java.awt.headless");
+        }
+    }
+
+    public record ScreenshotStyle(boolean shadow, boolean background, boolean border) {
+        public static ScreenshotStyle current() {
+            ChattingConfig c = ChattingConfig.INSTANCE;
+            boolean shadow = c.getTextRenderType() == 1 || c.getScreenshotForceShadow();
+            boolean background = c.getScreenshotBackground();
+            boolean border = c.getScreenshotBorder() && !shadow && !background;
+            return new ScreenshotStyle(shadow, background, border);
+        }
+    }
+
+    static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+
+    static String blackOut(String text) {
+        return COLOR.matcher(text).replaceAll("§0");
+    }
+
+    // black at chat opacity with full unfaded alpha
+    static int backgroundColor(Minecraft mc) {
+        return ((int) ((mc.options.chatOpacity * 0.9F + 0.1F) * 127.5F)) << 24;
+    }
+
+    public static void copyText(List<ChatMessage> lines, Component fullMessage) {
+        copyText(lines, fullMessage, false);
+    }
+
+    public static void copyText(List<ChatMessage> lines, Component fullMessage, boolean keepFormatting) {
+        if (fullMessage == null && lines.isEmpty()) {
+            notifyError("Could not find chat message.");
+            return;
+        }
+
+        String text;
+        if (keepFormatting) {
+            text = fullMessage != null ? LegacyText.INSTANCE.toFormatted(fullMessage) : collectFormatted(lines);
+        } else {
+            text = fullMessage != null ? fullMessage.getString() : collect(lines);
+            text = FORMATTING.matcher(text).replaceAll("");
+        }
+        ClipboardHelper.setString(text);
+        notifySuccess("Copied to clipboard", text);
+    }
+
+    private static String collectFormatted(List<ChatMessage> lines) {
+        StringBuilder sb = new StringBuilder();
+        for (ChatMessage line : lines) {
+            sb.append(LegacyText.INSTANCE.toFormatted(line.getText()));
+        }
+        return sb.toString();
+    }
+
+    private static String collect(List<ChatMessage> lines) {
+        StringBuilder sb = new StringBuilder();
+        for (ChatMessage line : lines) {
+            sb.append(line.getText().getString());
+        }
+        return sb.toString();
+    }
+
+    static PlayerInfo headToDraw(ChatMessage content) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads()) return null;
+        PlayerInfo info = ChatHeads.INSTANCE.lookup(content);
+        return ChatHeads.INSTANCE.shouldDrawHead(info, ChatHeads.INSTANCE.isHidden(content)) ? info : null;
+    }
+
+    static int headOffset(ChatMessage content) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads()) return 0;
+        return ChatHeads.INSTANCE.shouldOffset(ChatHeads.INSTANCE.lookup(content)) ? 10 : 0;
+    }
+
+    public static void copyImage(List<ChatMessage> lines) {
+        Minecraft mc = Minecraft.getInstance();
+        if (lines.isEmpty()) {
+            notifyError("Chat window is empty.");
+            return;
+        }
+        int width = 0;
+        for (ChatMessage line : lines) {
+            width = Math.max(width, headOffset(line) + mc.font.width(line.getText().getFormattedString()));
+        }
+        if (width <= 0) {
+            notifyError("Chat window is empty.");
+            return;
+        }
+        int height = lines.size() * 9;
+        ScreenshotStyle style = ScreenshotStyle.current();
+        // border draws 1px outside the glyph extent so pad the canvas
+        int margin = style.border() ? 1 : 0;
+        width += margin * 2;
+        height += margin * 2;
+        int scale = 2;
+
+        if (!GLX.useFbo()) {
+            notifyError("Screenshot failed.");
+            return;
+        }
+        capture(mc, lines, width, height, scale, style);
+    }
+
+    private static void capture(Minecraft mc, List<ChatMessage> lines, int width, int height, int scale, ScreenshotStyle style) {
+        RenderTarget rt = new RenderTarget(width * scale, height * scale, false);
+        try {
+            rt.setClearColor(0f, 0f, 0f, 0f);
+            rt.clear();
+            GlStateManager.matrixMode(GL11.GL_PROJECTION);
+            GlStateManager.loadIdentity();
+            GlStateManager.ortho(0.0, width, height, 0.0, 1000.0, 3000.0);
+            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            GlStateManager.loadIdentity();
+            GlStateManager.translatef(0f, 0f, -2000f);
+            rt.bindWrite(true);
+
+            GuiGraphics graphics = new GuiGraphics();
+            if (style.background()) {
+                graphics.fill(0, 0, width, height, backgroundColor(mc));
+            }
+            int m = style.border() ? 1 : 0;
+            int y = m;
+            for (ChatMessage line : lines) {
+                PlayerInfo info = headToDraw(line);
+                if (info != null) {
+                    ChatHeads.INSTANCE.draw(graphics, info, m, y, 255);
+                }
+                GlStateManager.enableBlend();
+                int hx = headOffset(line) + m;
+                String text = line.getText().getFormattedString();
+                if (style.border()) {
+                    String bl = blackOut(text);
+                    for (int[] o : OUTLINE) {
+                        mc.font.draw(bl, hx + o[0], y + o[1], 0xFF000000);
+                    }
+                }
+                mc.font.draw(text, hx, y, 0xFFFFFFFF, style.shadow());
+                y += 9;
+            }
+            persist(read(rt));
+        } catch (Exception e) {
+            e.printStackTrace();
+            notifyError("Screenshot failed.");
+        } finally {
+            rt.destroyBuffers();
+            mc.gameRenderer.setupGuiState();
+            mc.getRenderTarget().bindWrite(true);
+        }
+    }
+
+    private static BufferedImage read(RenderTarget rt) {
+        int[] values = new int[rt.width * rt.height];
+        IntBuffer pixels = BufferUtils.createIntBuffer(values.length);
+        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
+        GlStateManager.bindTexture(rt.colorTextureId);
+        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
+        pixels.get(values);
+        TextureUtil.flipImageVertically(values, rt.width, rt.height);
+        BufferedImage image = new BufferedImage(rt.viewWidth, rt.viewHeight, BufferedImage.TYPE_INT_ARGB);
+        int offset = rt.height - rt.viewHeight;
+        for (int y = 0; y < rt.viewHeight; y++) {
+            image.setRGB(0, y, rt.viewWidth, 1, values, (offset + y) * rt.width, rt.width);
+        }
+        return image;
+    }
+
+    static void persist(BufferedImage image) {
+        int copyMode = ChattingConfig.INSTANCE.getCopyMode();
+        boolean save = copyMode != 1;
+        boolean clip = copyMode != 0;
+        if (!save && !clip) {
+            throw new IllegalStateException("Attempted to save a screenshot with no destination");
+        }
+        try {
+            if (save) {
+                File dir = new File("screenshots/chat");
+                dir.mkdirs();
+                File file = uniqueFile(dir);
+                ImageIO.write(image, "png", file);
+            }
+            boolean copied = clip && ClipboardHelper.setImage(image);
+            if (save && copied) {
+                notifySuccess("Chatting", "Screenshot saved to clipboard and file.");
+            } else if (copied) {
+                notifySuccess("Chatting", "Screenshot saved to clipboard.");
+            } else if (save) {
+                notifySuccess("Chatting", clip
+                        ? "Screenshot saved to file. The clipboard was unavailable."
+                        : "Screenshot saved to file.");
+            } else {
+                notifyError("Could not copy the screenshot to the clipboard.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            notifyError("Screenshot failed.");
+        }
+    }
+
+    private static File uniqueFile(File dir) {
+        String stamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
+        int i = 1;
+        File file;
+        while ((file = new File(dir, stamp + (i == 1 ? "" : "_" + i) + ".png")).exists()) {
+            i++;
+        }
+        return file;
+    }
+
+    static void notifySuccess(String title, String message) {
+        Notifications.send(title, message, NotificationType.SUCCESS);
+    }
+
+    static void notifyError(String message) {
+        Notifications.send("Chatting", message, NotificationType.ERROR);
+    }
+}
+*///?}

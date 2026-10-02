@@ -21,6 +21,16 @@ stonecutter parameters {
         to = "classTweaker v2 official"
     }
 
+    replacements.string(eval(current.version, "= 1.8.9")) {
+        replace("import com.mojang.blaze3d.platform.InputConstants", "import org.polyfrost.oneconfig.internal.legacy.InputConstants")
+        replace("import com.mojang.blaze3d.platform.NativeImage", "import org.polyfrost.oneconfig.internal.legacy.NativeImage")
+        replace("import com.mojang.blaze3d.platform.Window", "import org.polyfrost.oneconfig.internal.legacy.Window")
+        replace("import net.minecraft.client.gui.GuiGraphics", "import org.polyfrost.chatting.compat.GuiGraphics")
+        replace("import com.mojang.blaze3d.vertex.PoseStack", "import org.polyfrost.chatting.compat.PoseStack")
+        replace("import com.mojang.blaze3d.systems.RenderSystem", "import org.polyfrost.chatting.compat.RenderSystem")
+        replace("import net.minecraft.client.gui.components.PlayerFaceRenderer", "import org.polyfrost.chatting.compat.PlayerFaceRenderer")
+    }
+
     replacements.string(eval(current.version, ">=26.3")) {
         replace("com.mojang.blaze3d.buffers", "com.mojang.renderpearl.api.buffers")
         replace("com.mojang.blaze3d.textures", "com.mojang.renderpearl.api.textures")

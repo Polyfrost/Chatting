@@ -1,6 +1,5 @@
 package org.polyfrost.chatting.config.shortcut
 
-//? if > 1.8.9 {
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -55,6 +54,9 @@ import org.polyfrost.oneconfig.internal.ui.components.rememberInteractionSource
 import org.polyfrost.oneconfig.internal.ui.themes.Accent
 import org.polyfrost.oneconfig.internal.ui.themes.LocalTheme
 import org.polyfrost.oneconfig.internal.ui.themes.Theme
+//? if = 1.8.9 {
+/*import org.lwjgl.input.Keyboard
+*///?}
 import org.polyfrost.oneconfig.internal.ui.themes.ThemeRegistry
 
 class ChatShortcutManagerScreen : ComposeScreen() {
@@ -68,6 +70,7 @@ class ChatShortcutManagerScreen : ComposeScreen() {
         super.init()
     }
 
+    //? if > 1.8.9 {
     override fun onClose() {
         if (closing) return
         closing = true
@@ -78,6 +81,17 @@ class ChatShortcutManagerScreen : ComposeScreen() {
         super.onClose()
         super.removed()
     }
+    //?} else {
+    /*fun onClose() {
+        if (closing) return
+        closing = true
+        Platform.screen().display(OneConfigUIScreen(ChattingConfig.id, "Shortcuts"))
+    }
+
+    override fun keyPressed(chr: Char, key: Int) {
+        if (key == Keyboard.KEY_ESCAPE) onClose() else super.keyPressed(chr, key)
+    }
+    *///?}
 
     @Composable
     override fun compose() {
@@ -605,4 +619,3 @@ private fun EllipsizedText(
         ),
     )
 }
-//?}

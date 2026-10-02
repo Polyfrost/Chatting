@@ -1,10 +1,10 @@
 package org.polyfrost.chatting.mixin;
 
-//? if > 1.8.9 {
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
-/*import net.minecraft.client.GuiMessage;
+/*//~ if =1.8.9 'net.minecraft.client.GuiMessage' -> 'net.minecraft.client.gui.ChatMessage'
+import net.minecraft.client.GuiMessage;
 *///?}
 import net.minecraft.client.multiplayer.PlayerInfo;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +12,7 @@ import org.polyfrost.chatting.hook.ChatLineHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
+//~ if =1.8.9 'GuiMessage.Line' -> 'ChatMessage'
 @Mixin(GuiMessage.Line.class)
 public class GuiMessageLineMixin implements ChatLineHook {
 
@@ -57,18 +58,35 @@ public class GuiMessageLineMixin implements ChatLineHook {
     //?} else {
     /*@Unique
     @Nullable
+    //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
     private GuiMessage chatting$parent;
 
     @Override
     @Nullable
+    //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
     public GuiMessage chatting$getParent() {
         return chatting$parent;
     }
 
     @Override
+    //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
     public void chatting$setParent(@Nullable GuiMessage parent) {
         this.chatting$parent = parent;
     }
     *///?}
+    //? if = 1.8.9 {
+
+    /*@Unique
+    private boolean chatting$endOfEntry;
+
+    @Override
+    public boolean chatting$isEndOfEntry() {
+        return chatting$endOfEntry;
+    }
+
+    @Override
+    public void chatting$setEndOfEntry(boolean endOfEntry) {
+        this.chatting$endOfEntry = endOfEntry;
+    }
+    *///?}
 }
-//?}

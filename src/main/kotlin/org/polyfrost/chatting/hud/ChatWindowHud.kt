@@ -1,12 +1,12 @@
 package org.polyfrost.chatting.hud
 
-//? if > 1.8.9 {
 //? if >=26 {
 import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 //?} else {
 /*import net.minecraft.client.gui.GuiGraphics
 *///?}
 import net.minecraft.client.Minecraft
+import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.Section
@@ -62,7 +62,12 @@ class ChatWindowHud : LegacyHud(
         save()
     }
 
+    //? if > 1.8.9 {
     override fun render(mcCtx: GuiGraphics) {
+    //?} else {
+    /*override fun render() {
+        val mcCtx = GuiGraphics()
+    *///?}
         if (!HudManager.isEditing) return
         tickPosition(this)
         val w = width.toInt()
@@ -82,6 +87,7 @@ class ChatWindowHud : LegacyHud(
 
         private const val DEFAULT_LEFT = 0f
 
+        //~ if =1.8.9 '40' -> '28'
         private const val BOTTOM_MARGIN = 40
 
         private fun mc() = Minecraft.getInstance()
@@ -91,7 +97,11 @@ class ChatWindowHud : LegacyHud(
         private fun chatWidth(): Float {
             val scale = chatScaleOption()
             val maxWidth = ceil(ChatDimensions.width() / scale)
+            //? if > 1.8.9 {
             val configuredWidth = (maxWidth + 12) * scale
+            //?} else {
+            /*val configuredWidth = (maxWidth + 4) * scale + 2
+            *///?}
             return capToAvailableSpace(configuredWidth, mc().window.guiScaledWidth)
         }
 
@@ -112,6 +122,14 @@ class ChatWindowHud : LegacyHud(
         private var baseRelX = 0f
         private var baseRelY = 0f
 
+        private var lastHud: ChatWindowHud? = null
+        private var lastTop = 0f
+        private var lastScreenW = 0f
+        private var lastScreenH = 0f
+        private var lastScaledW = 0f
+        private var lastScaledH = 0f
+        private var lastGrowth: HudAnchor? = null
+
         /** syncs to the vanilla position unless the user has moved the chat window */
         private fun tickPosition(hud: ChatWindowHud) {
             if (ChattingConfig.chatWindowMoved) {
@@ -128,13 +146,29 @@ class ChatWindowHud : LegacyHud(
                 hasBaseline = false
                 return
             }
+            val top = defaultTop()
+            val sw = HudManager.guiScreenWidth
+            val sh = HudManager.guiScreenHeight
+            val w = hud.scaledWidth
+            val h = hud.scaledHeight
+            if (hasBaseline && hud === lastHud && !hud.isAnchored && !hud.bgMerged &&
+                top == lastTop && sw == lastScreenW && sh == lastScreenH && w == lastScaledW && h == lastScaledH &&
+                hud.growthAnchor == lastGrowth && HudManager.layoutRefWidth == sw && HudManager.layoutRefHeight == sh
+            ) return
             hud.section = Section.BottomLeft
             hud.x = DEFAULT_LEFT
-            hud.y = defaultTop()
+            hud.y = top
             baseSection = hud.section
             baseRelX = hud.relativeX
             baseRelY = hud.relativeY
             hasBaseline = true
+            lastHud = hud
+            lastTop = top
+            lastScreenW = sw
+            lastScreenH = sh
+            lastScaledW = w
+            lastScaledH = h
+            lastGrowth = hud.growthAnchor
         }
 
         private fun onPositionReset() {
@@ -192,4 +226,3 @@ class ChatWindowHud : LegacyHud(
         }
     }
 }
-//?}

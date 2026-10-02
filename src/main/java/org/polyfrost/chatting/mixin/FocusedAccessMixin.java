@@ -1,6 +1,5 @@
 package org.polyfrost.chatting.mixin;
 
-//? if > 1.8.9 {
 //? if >=1.21.11 {
 import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.ChatHover;
@@ -83,4 +82,3 @@ public class FocusedAccessMixin {
 /*public class FocusedAccessMixin {
 }
 *///?}
-//?}
