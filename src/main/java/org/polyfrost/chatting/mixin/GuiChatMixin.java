@@ -17,6 +17,7 @@ import org.polyfrost.chatting.chat.ChatSearchingManager;
 import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.chat.ChatCopyButton;
 import org.polyfrost.chatting.chat.ChatDeleteButton;
+import org.polyfrost.chatting.chat.ChatEntries;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.gui.components.ClearButton;
 import org.polyfrost.chatting.gui.components.SearchButton;
@@ -79,7 +80,9 @@ public abstract class GuiChatMixin extends GuiScreen {
         if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatDelete()) {
             ChatLine line = ChatDeleteButton.consume();
             if (line != null) {
-                chatting$deleteLine(line);
+                // Whole message by default; ctrl narrows it to the one wrapped row.
+                if (GuiScreen.isCtrlKeyDown()) chatting$deleteLine(line);
+                else chatting$deleteEntry(line);
                 ci.cancel();
                 return;
             }
@@ -87,9 +90,7 @@ public abstract class GuiChatMixin extends GuiScreen {
         if (mouseButton == 0 && ChattingConfig.INSTANCE.getChatCopy()) {
             ChatLine line = ChatCopyButton.consume();
             if (line == null) return;
-            // Copy the complete rendered line rather than the particular text
-            // fragment whose draw call found the icon.
-            GuiScreen.setClipboardString(line.getChatComponent().getUnformattedText());
+            GuiScreen.setClipboardString(chatting$textToCopy(line, GuiScreen.isCtrlKeyDown()));
             ci.cancel();
             return;
         }
@@ -98,14 +99,27 @@ public abstract class GuiChatMixin extends GuiScreen {
         GuiNewChat chat = mc.ingameGUI.getChatGUI();
         // Keep vanilla's component hit test: right-clicking empty space in a
         // line must not copy it.  Its result is only a sibling component,
-        // however, so use the matching ChatLine for the complete message.
+        // however, so resolve the row under the cursor and copy its message.
         IChatComponent component = chat.getChatComponent(Mouse.getX(), Mouse.getY());
         if (component == null) return;
         ChatLine line = chatting$lineAtMouse(chat);
+        // Ctrl already gates right-click copying when rightClickCopyCtrl is on,
+        // so it can only double as the single-row modifier when it does not.
+        boolean singleLine = !ChattingConfig.INSTANCE.getRightClickCopyCtrl() && GuiScreen.isCtrlKeyDown();
         GuiScreen.setClipboardString(line == null
             ? component.getUnformattedText()
-            : line.getChatComponent().getUnformattedText());
+            : chatting$textToCopy(line, singleLine));
         ci.cancel();
+    }
+
+    /^* Text for a clicked row: the message it belongs to, or just that row. ^/
+    @Unique
+    private String chatting$textToCopy(ChatLine line, boolean singleLine) {
+        if (!singleLine) {
+            IChatComponent parent = ChatEntries.parent(line);
+            if (parent != null) return parent.getUnformattedText();
+        }
+        return line.getChatComponent().getUnformattedText();
     }
 
     @Unique
@@ -125,9 +139,38 @@ public abstract class GuiChatMixin extends GuiScreen {
     }
 
     @Unique
+    private void chatting$deleteEntry(ChatLine line) {
+        GuiNewChatAccessor accessor = (GuiNewChatAccessor) mc.ingameGUI.getChatGUI();
+        IChatComponent parent = ChatEntries.parent(line);
+        if (parent == null) {
+            chatting$deleteLine(line);
+            return;
+        }
+
+        List<ChatLine> drawn = accessor.getDrawnChatLines();
+        for (java.util.Iterator<ChatLine> it = drawn.iterator(); it.hasNext();) {
+            if (ChatEntries.parent(it.next()) == parent) it.remove();
+        }
+        // History stores the unwrapped component, so the entry's parent is the
+        // very object held there; fall back to the per-line match if it is absent.
+        for (java.util.Iterator<ChatLine> it = accessor.getChatLines().iterator(); it.hasNext();) {
+            if (it.next().getChatComponent() == parent) {
+                it.remove();
+                return;
+            }
+        }
+        chatting$removeFromHistory(accessor, line);
+    }
+
+    @Unique
     private void chatting$deleteLine(ChatLine line) {
         GuiNewChatAccessor accessor = (GuiNewChatAccessor) mc.ingameGUI.getChatGUI();
         accessor.getDrawnChatLines().remove(line);
+        chatting$removeFromHistory(accessor, line);
+    }
+
+    @Unique
+    private void chatting$removeFromHistory(GuiNewChatAccessor accessor, ChatLine line) {
         for (java.util.Iterator<ChatLine> it = accessor.getChatLines().iterator(); it.hasNext();) {
             ChatLine candidate = it.next();
             if (candidate.getUpdatedCounter() == line.getUpdatedCounter()

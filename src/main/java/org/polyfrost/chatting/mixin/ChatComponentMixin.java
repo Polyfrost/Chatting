@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.polyfrost.chatting.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,6 +23,7 @@ import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatDimensions;
 import org.polyfrost.chatting.chat.ChatHeads;
+import org.polyfrost.chatting.chat.ChatHover;
 import org.polyfrost.chatting.chat.ChatScrolling;
 import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatTabs;
@@ -49,9 +51,6 @@ import net.minecraft.client.gui.Font;
 //? if <=1.21.10 {
 /*import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.util.FormattedCharSequence;
-*///?}
-//? if <=1.21.5 {
-/*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 *///?}
 //? if <26 {
 /*import net.minecraft.client.gui.GuiGraphics;
@@ -217,6 +216,12 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (!chatting$refreshing) SmoothChat.INSTANCE.start();
         chatting$addingMessage = true;
         chatting$scrollPosBefore = chatScrollbarPos;
+    }
+
+    @ModifyExpressionValue(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;floor(D)I"))
+    private int chatting$headWrapWidth(int width) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads() || !ChatHeads.INSTANCE.shouldOffset(chatting$pendingHead)) return width;
+        return width - 10;
     }
 
     @Inject(method = "addMessageToDisplayQueue", at = @At("RETURN"))
@@ -466,7 +471,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         if (focused) {
             x2 += ChatButtons.extraBackgroundWidth();
         }
-        if (focused && line == chatting$hoveredLine()) {
+        if (focused && chatting$highlighted(line)) {
             color = ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb();
         } else {
             color = ChatBackground.tint(color);
@@ -482,43 +487,19 @@ public class ChatComponentMixin implements ChatComponentHook {
         //?}
         boolean bottom = y2 == chatBottom;
         chatting$sawLineFill = true;
-        //? if <1.21.6 {
-        /^RoundedChat.fill(graphics::fill, (factor, body) -> {
-            graphics.pose().pushPose();
-            graphics.pose().scale(factor, factor, 1f);
-            body.run();
-            graphics.pose().popPose();
-        }, x1, y1, x2, y2, color, top, bottom);
-        ^///?} else {
-        RoundedChat.fill(graphics::fill, (factor, body) -> {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(factor, factor);
-            body.run();
-            graphics.pose().popMatrix();
-        }, x1, y1, x2, y2, color, top, bottom);
-        //?}
+        RoundedChat.fill(graphics::fill, RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
     }
 
-    // resolve the hovered line by position because trimmedMessages.indexOf collapses duplicate messages and getMessageEndIndexAt returns -1 past the text
-    // the hit test spans the per line button strip so hovering copy or delete keeps the line highlighted
+    // identity rather than indexOf because indexOf collapses duplicate messages
     @Unique
-    private GuiMessage.Line chatting$hoveredLine() {
+    private boolean chatting$highlighted(GuiMessage.Line line) {
         ChatComponent self = (ChatComponent) (Object) this;
-        if (!self.isChatFocused()) return null;
-        ChatComponentAccessor acc = (ChatComponentAccessor) (Object) this;
-        double scale = acc.chatting$getScale();
-        if (scale <= 0.0) return null;
-        double hovered = acc.chatting$screenToChatY(chatting$mouseY);
-        if (hovered < 0.0) return null;
-        int display = (int) hovered;
-        if (display >= Math.min(self.getLinesPerPage(), trimmedMessages.size())) return null;
-        double localX = chatting$mouseX / scale - 4.0;
-        double rightEdge = Math.ceil(acc.chatting$getWidth() / scale)
-                + ChatButtons.BACKGROUND_RIGHT_EDGE + ChatButtons.perLineButtonsWidth();
-        if (localX < -4.0 || localX >= rightEdge) return null;
-        int index = display + chatScrollbarPos;
-        if (index < 0 || index >= trimmedMessages.size()) return null;
-        return trimmedMessages.get(index);
+        int start = ChatHover.scrollPos();
+        int end = start + ChatHover.visibleRows(self);
+        for (int i = start; i < end; i++) {
+            if (trimmedMessages.get(i) == line) return ChatHover.highlighted(self, chatting$mouseX, chatting$mouseY, i);
+        }
+        return false;
     }
 
     //? if <=1.21.5 {

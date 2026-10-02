@@ -4,7 +4,7 @@
   "package": "org.polyfrost.chatting.mixin",
   "plugin": "org.polyfrost.chatting.mixin.ChattingMixinPlugin",
   "client": [
-    "ChatStyle_UnderlineLinks_Mixin", "ChatLineMixin_ChatHeads", "EntityPlayerSPMixin",
+    "ChatStyle_UnderlineLinks_Mixin", "ChatLineMixin_ChatHeads", "ChatLineMixin_Entry", "EntityPlayerSPMixin",
     "GuiChatMixin", "GuiContainerCreativeMixin", "GuiNewChatAccessor",
     "GuiNewChatMixin_Background", "GuiNewChatMixin_ChatHeight", "GuiNewChatMixin_ChatPeek", "GuiNewChatMixin_ChatSearching", "GuiNewChatMixin_CopyButton", "GuiNewChatMixin_Fade",
     "GuiNewChatMixin_ChatTabs", "GuiNewChatMixin_Scrolling", "GuiNewChatMixin_SmoothChat",

@@ -21,24 +21,9 @@ public class BackgroundAccessMixin {
     // a fresh DrawingBackgroundGraphicsAccess is constructed per render pass so no reset is needed
     @Unique private boolean chatting$sawLineFill;
 
-    //? if <26 {
-    /*@WrapOperation(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
-    private void chatting$roundedFill(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original) {
-        // line backgrounds are the only fills through this method with x1 == -4
-        boolean chatting$lineFill = x1 == -4;
-        boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
-        boolean chatting$bottom = chatting$lineFill && y2 == RoundedChat.chatBottom(graphics.guiHeight());
-        if (chatting$lineFill) chatting$sawLineFill = true;
-        int chatting$c = chatting$lineFill ? ChatBackground.tint(color) : color;
-        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), (chatting$factor, chatting$body) -> {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(chatting$factor, chatting$factor);
-            chatting$body.run();
-            graphics.pose().popMatrix();
-        }, x1, y1, x2, y2, chatting$c, chatting$top, chatting$bottom);
-    }
-    *///?} else {
+    //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
     @WrapOperation(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+    //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
     private void chatting$roundedFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original) {
         // line backgrounds are the only fills through this method with x1 == -4
         boolean chatting$lineFill = x1 == -4;
@@ -46,14 +31,9 @@ public class BackgroundAccessMixin {
         boolean chatting$bottom = chatting$lineFill && y2 == RoundedChat.chatBottom(graphics.guiHeight());
         if (chatting$lineFill) chatting$sawLineFill = true;
         int chatting$c = chatting$lineFill ? ChatBackground.tint(color) : color;
-        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), (chatting$factor, chatting$body) -> {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(chatting$factor, chatting$factor);
-            chatting$body.run();
-            graphics.pose().popMatrix();
-        }, x1, y1, x2, y2, chatting$c, chatting$top, chatting$bottom);
+        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), RoundedChat.scaler(graphics.pose()),
+            x1, y1, x2, y2, chatting$c, chatting$top, chatting$bottom);
     }
-    //?}
 }
 //?}
 //? if <1.21.11 {

@@ -36,13 +36,5 @@ public interface ChatComponentAccessor {
 
     @Invoker("refreshTrimmedMessages")
     void chatting$refreshTrimmedMessages();
-
-    //? if <1.21.11 {
-    /*@Invoker("getMessageEndIndexAt")
-    int chatting$getMessageEndIndexAt(double x, double y);
-
-    @Invoker("screenToChatY")
-    double chatting$screenToChatY(double y);
-    *///?}
 }
 //?}

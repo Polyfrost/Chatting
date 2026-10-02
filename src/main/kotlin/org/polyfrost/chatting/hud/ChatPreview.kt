@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.ComponentRenderUtils
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import org.polyfrost.chatting.chat.ChatDimensions
+import org.polyfrost.chatting.config.ChattingConfig
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage
 import net.minecraft.client.multiplayer.chat.GuiMessageSource
@@ -31,7 +32,8 @@ object ChatPreview {
     fun lines(): List<GuiMessage.Line> {
         val mc = Minecraft.getInstance()
         val scale = mc.options.chatScale().get().toFloat()
-        val maxWidth = Mth.floor(ChatDimensions.width() / scale)
+        var maxWidth = Mth.floor(ChatDimensions.width() / scale)
+        if (ChattingConfig.showChatHeads && ChattingConfig.offsetNonPlayerMessages) maxWidth -= 10
         var result = cached
         if (result == null || cachedWidth != maxWidth) {
             result = build(mc, maxWidth)

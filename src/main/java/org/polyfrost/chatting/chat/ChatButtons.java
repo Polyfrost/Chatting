@@ -72,11 +72,17 @@ public final class ChatButtons {
         return count;
     }
 
+    /^* Width of the per-line button strip, excluding any padding around it. ^/
+    public static int perLineButtonsWidth() {
+        int count = perLineButtonCount();
+        return count == 0 ? 0 : count * BUTTON_SIZE + (count - 1) * BUTTON_GAP;
+    }
+
     /^* Width added to a chat-line background while the chat screen is open. ^/
     public static int extraBackgroundWidth() {
         if (!ChattingConfig.INSTANCE.getExtendBG()) return 0;
-        int count = perLineButtonCount();
-        return count == 0 ? 0 : count * BUTTON_SIZE + (count - 1) * BUTTON_GAP + 1;
+        int width = perLineButtonsWidth();
+        return width == 0 ? 0 : width + 1;
     }
 }
 *///?}

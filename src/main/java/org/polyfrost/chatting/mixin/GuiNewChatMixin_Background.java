@@ -8,9 +8,11 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MathHelper;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.ChatButtons;
+import org.polyfrost.chatting.chat.ChatEntries;
 import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.spongepowered.asm.mixin.Final;
@@ -53,7 +55,7 @@ public abstract class GuiNewChatMixin_Background {
             int right = (int) args.get(2) + chatting$buttonBackgroundWidth();
             int bottom = args.get(3);
             int color = ChatBackground.tint(vanillaColor);
-            if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
+            if (mc.currentScreen instanceof GuiChat && chatting$hoveredEntryCovers(bottom)) {
                 color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
             }
             int lineIndex = -bottom / 9;
@@ -70,7 +72,7 @@ public abstract class GuiNewChatMixin_Background {
         int bottom = args.get(3);
         args.set(2, right);
         int color = ChatBackground.tint(vanillaColor);
-        if (mc.currentScreen instanceof GuiChat && chatting$hovered(left, top, right, bottom)) {
+        if (mc.currentScreen instanceof GuiChat && chatting$hoveredEntryCovers(bottom)) {
             color = ChatBackground.tint(vanillaColor, ChattingConfig.INSTANCE.getHoveredChatBackgroundColor().getArgb());
         }
         // Match the rounded path: render our configured background explicitly,
@@ -141,21 +143,51 @@ public abstract class GuiNewChatMixin_Background {
         return 28;
     }
 
+    // Highlights every row of the message under the cursor instead of just the
+    // wrapped line the cursor sits on. Upstream fix for modern versions:
+    // polyfrost/Chatting#167.
     @Unique
-    private boolean chatting$hovered(int left, int top, int right, int bottom) {
-        ScaledResolution resolution = new ScaledResolution(mc);
-        float chatScale = getChatScale();
-        if (chatScale <= 0f) return false;
+    private boolean chatting$hoveredEntryCovers(int bottom) {
+        int hovered = chatting$hoveredDrawnIndex();
+        if (hovered < 0) return false;
 
+        // drawRect's bottom edge for visible row i is -i * 9
+        int row = -bottom / 9;
+        int index = row + scrollPos;
+        if (index < 0 || index >= drawnChatLines.size()) return false;
+        return ChatEntries.sameEntry(drawnChatLines.get(index), drawnChatLines.get(hovered));
+    }
+
+    /^* Index into drawnChatLines under the cursor, or -1 when the cursor is off the strip. ^/
+    @Unique
+    private int chatting$hoveredDrawnIndex() {
+        float chatScale = getChatScale();
+        if (chatScale <= 0f) return -1;
+
+        ScaledResolution resolution = new ScaledResolution(mc);
         int factor = resolution.getScaleFactor();
+        if (!chatting$withinStrip(factor, chatScale)) return -1;
+
+        // Mirror GuiChatMixin's rendered-origin math: the outer HUD translation
+        // (-48) plus GuiNewChat's inner one (+20) puts the baseline 28 px up.
+        int localY = MathHelper.floor_float((Mouse.getY() / (float) factor - 28f) / chatScale);
+        if (localY < 0) return -1;
+
+        // Rows above the rendered page must not match, or hovering just over the
+        // chat would highlight a message that is only partly scrolled into view.
+        int row = localY / 9;
+        if (row >= Math.min(getLineCount(), drawnChatLines.size() - scrollPos)) return -1;
+        int index = row + scrollPos;
+        return index < drawnChatLines.size() ? index : -1;
+    }
+
+    // Spans the background and the per-line button strip, so moving from the
+    // message onto copy or delete keeps the entry highlighted.
+    @Unique
+    private boolean chatting$withinStrip(int factor, float chatScale) {
+        int right = (int) Math.ceil(getChatWidth() / chatScale) + 5 + ChatButtons.perLineButtonsWidth();
         int mouseX = Mouse.getX();
-        int mouseY = mc.displayHeight - Mouse.getY();
-        int actualX = (int) ((2f + left * chatScale) * factor);
-        int actualY = (int) ((resolution.getScaledHeight() - 28f + top * chatScale) * factor);
-        int width = (int) ((right - left) * chatScale * factor);
-        int height = (int) ((bottom - top) * chatScale * factor);
-        return mouseX > actualX && mouseX < actualX + width
-            && mouseY > actualY && mouseY < actualY + height;
+        return mouseX >= 2 * factor && mouseX < (int) ((2f + right * chatScale) * factor);
     }
 }
 *///?}

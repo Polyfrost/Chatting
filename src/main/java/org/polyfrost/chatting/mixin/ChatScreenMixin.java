@@ -1,6 +1,8 @@
 package org.polyfrost.chatting.mixin;
 
 //? if > 1.8.9 {
+import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -10,10 +12,10 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.fabricmc.loader.api.FabricLoader;
 import org.polyfrost.chatting.chat.ChatButtons;
-import org.polyfrost.chatting.chat.ChatSearch;
+import org.polyfrost.chatting.chat.ChatHover;
 import org.polyfrost.chatting.chat.ChatScreenshot;
+import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatTabsRenderer;
@@ -35,8 +37,8 @@ import java.util.Collections;
 import java.util.List;
 
 //? if >=26 {
-import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 //?} else {
 /*import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
@@ -47,12 +49,10 @@ import net.minecraft.client.input.MouseButtonEvent;
 //?}
 //? if >=1.21.11 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.util.Mth;
 //?}
 
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin extends Screen {
-
     protected ChatScreenMixin(Component title) {
         super(title);
     }
@@ -231,9 +231,9 @@ public abstract class ChatScreenMixin extends Screen {
         int mx = (int) ChatWindowHud.mapMouseX(mouseX);
         int my = (int) ChatWindowHud.mapMouseY(mouseY);
 
-        int lineIndex = chatting$hoveredVisualLine(chat, acc, my);
-        int messageIndex = chatting$hoveredMessageIndex(chat, acc, lineIndex);
-        if (messageIndex == -1) return;
+        int lineIndex = ChatHover.hoveredLine(chat, mx, my);
+        if (lineIndex < 0) return;
+        int messageIndex = ChatHover.entryBottom(chat, lineIndex);
 
         boolean rightClickCopies = chatting$rightClicked && cfg.getRightClickCopy()
                 && (!cfg.getRightClickCopyCtrl() || chatting$shortcutHeld);
@@ -243,14 +243,15 @@ public abstract class ChatScreenMixin extends Screen {
         }
 
         int lineHeight = acc.chatting$getLineHeight();
-        int stripStart = (int) Math.ceil(acc.chatting$getWidth() / chatScale) + ChatButtons.BACKGROUND_RIGHT_EDGE;
-        // only reveal buttons when the cursor is over the chat background or the button strip not anywhere on the row
-        if (mx < 0 || mx > (stripStart + ChatButtons.perLineButtonsWidth()) * chatScale) return;
-        int top = chatting$chatBottomLocal(chatScale) - (lineIndex + 1) * lineHeight
+        int stripStart = ChatHover.stripStart(chat);
+        int row = lineIndex - ChatHover.scrollPos();
+        int top = chatting$chatBottomLocal(chatScale) - (row + 1) * lineHeight
                 + (int) Math.ceil((lineHeight - 9) / 2.0);
 
         boolean hud = ChatWindowHud.isActive();
         float hudScale = ChatWindowHud.chatScale();
+        float slide = ChatHover.slideY(chat);
+        int by = (int) (my - slide);
         //? if <1.21.6 {
         /*graphics.pose().pushPose();
         if (hud) {
@@ -258,6 +259,7 @@ public abstract class ChatScreenMixin extends Screen {
             if (hudScale != 1f) graphics.pose().scale(hudScale, hudScale, 1f);
             graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop(), 0f);
         }
+        graphics.pose().translate(0f, slide, 0f);
         graphics.pose().scale(chatScale, chatScale, 1f);
         *///?} else {
         graphics.pose().pushMatrix();
@@ -266,18 +268,19 @@ public abstract class ChatScreenMixin extends Screen {
             if (hudScale != 1f) graphics.pose().scale(hudScale, hudScale);
             graphics.pose().translate(-ChatWindowHud.anchorLeft(), -ChatWindowHud.anchorTop());
         }
+        graphics.pose().translate(0f, slide);
         graphics.pose().scale(chatScale, chatScale);
         //?}
 
         int slot = 0;
         if (cfg.getChatCopy()) {
             chatting$button(graphics, Textures.COPY, stripStart + slot * (ChatButtons.BUTTON_WIDTH + ChatButtons.BUTTON_GAP), top,
-                    chatScale, mx, my, CHATTING$COPY_TOOLTIP, () -> chatting$copyAction(acc, messageIndex, lineIndex));
+                    chatScale, mx, by, CHATTING$COPY_TOOLTIP, () -> chatting$copyAction(acc, messageIndex, lineIndex));
             slot++;
         }
         if (cfg.getChatDelete()) {
             chatting$button(graphics, Textures.DELETE, stripStart + slot * (ChatButtons.BUTTON_WIDTH + ChatButtons.BUTTON_GAP), top,
-                    chatScale, mx, my, CHATTING$DELETE_TOOLTIP, () -> chatting$deleteAction(acc, lineIndex));
+                    chatScale, mx, by, CHATTING$DELETE_TOOLTIP, () -> chatting$deleteAction(acc, lineIndex));
         }
 
         //? if <1.21.6 {
@@ -314,9 +317,8 @@ public abstract class ChatScreenMixin extends Screen {
         boolean fmt = chatting$altHeld;
         if (chatting$shortcutHeld) {
             List<GuiMessage.Line> visible = acc.chatting$getTrimmedMessages();
-            int idx = lineIndex + acc.chatting$getScrollbarPos();
-            if (idx < 0 || idx >= visible.size()) return;
-            ChatScreenshot.copyText(Collections.singletonList(visible.get(idx)), null, fmt);
+            if (lineIndex >= visible.size()) return;
+            ChatScreenshot.copyText(Collections.singletonList(visible.get(lineIndex)), null, fmt);
         } else {
             ChatScreenshot.copyText(chatting$entryLines(acc, messageIndex), chatting$messageForLine(acc, lineIndex), fmt);
         }
@@ -326,8 +328,7 @@ public abstract class ChatScreenMixin extends Screen {
     private void chatting$deleteAction(ChatComponentAccessor acc, int lineIndex) {
         if (chatting$shortcutHeld) {
             List<GuiMessage.Line> visible = acc.chatting$getTrimmedMessages();
-            int idx = lineIndex + acc.chatting$getScrollbarPos();
-            if (idx >= 0 && idx < visible.size()) visible.remove(idx);
+            if (lineIndex < visible.size()) visible.remove(lineIndex);
             return;
         }
         chatting$deleteForLine(acc, lineIndex);
@@ -335,7 +336,6 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Unique
     private Component chatting$messageForLine(ChatComponentAccessor acc, int lineIndex) {
-        lineIndex += acc.chatting$getScrollbarPos();
         List<GuiMessage.Line> trimmed = acc.chatting$getTrimmedMessages();
         if (lineIndex < 0 || lineIndex >= trimmed.size()) return null;
         GuiMessage parent = ((ChatLineHook) (Object) trimmed.get(lineIndex)).chatting$getParent();
@@ -354,7 +354,6 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Unique
     private void chatting$deleteForLine(ChatComponentAccessor acc, int lineIndex) {
-        lineIndex += acc.chatting$getScrollbarPos();
         List<GuiMessage.Line> trimmed = acc.chatting$getTrimmedMessages();
         List<GuiMessage> all = acc.chatting$getAllMessages();
         int fullIndex = -1;
@@ -574,36 +573,6 @@ public abstract class ChatScreenMixin extends Screen {
     }
 
     @Unique
-    private int chatting$hoveredVisualLine(ChatComponent chat, ChatComponentAccessor acc, int mouseY) {
-        //? if <1.21.11 {
-        /*return (int) acc.chatting$screenToChatY(mouseY);
-        *///?} else {
-        double d = (double) this.minecraft.getWindow().getGuiScaledHeight() - mouseY - 40.0;
-        // match FocusedAccessMixin half open hover test so ceil minus 1 puts a boundary pixel on the lower line agreeing with the highlight
-        return (int) Math.ceil(d / (acc.chatting$getScale() * acc.chatting$getLineHeight())) - 1;
-        //?}
-    }
-
-    @Unique
-    private int chatting$hoveredMessageIndex(ChatComponent chat, ChatComponentAccessor acc, int lineIndex) {
-        //? if <1.21.11 {
-        /*return acc.chatting$getMessageEndIndexAt(0, lineIndex);
-        *///?} else {
-        if (!chat.isChatFocused()) return -1;
-        List<GuiMessage.Line> trimmed = acc.chatting$getTrimmedMessages();
-        int i = Math.min(chat.getLinesPerPage(), trimmed.size());
-        if (!(lineIndex >= 0 && lineIndex < i)) return -1;
-        int j = Mth.floor(lineIndex + acc.chatting$getScrollbarPos());
-        if (j < 0 || j >= trimmed.size()) return -1;
-        while (j >= 0) {
-            if (trimmed.get(j).endOfEntry()) return j;
-            j--;
-        }
-        return j;
-        //?}
-    }
-
-    @Unique
     private int chatting$chatBottomLocal(float chatScale) {
         return (int) ((height - 40) / chatScale);
     }
@@ -612,25 +581,23 @@ public abstract class ChatScreenMixin extends Screen {
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         int button = event.button();
-        chatting$shortcutHeld = event.hasControlDownWithQuirk();
         chatting$shiftHeld = event.hasShiftDown();
         chatting$altHeld = event.hasAltDown();
     //?} elif >=1.21.10 {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         int button = event.button();
-        chatting$shortcutHeld = event.hasControlDown();
         chatting$shiftHeld = event.hasShiftDown();
         chatting$altHeld = event.hasAltDown();
     *///?} else {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"))
     private void chatting$captureClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        chatting$shortcutHeld = Screen.hasControlDown();
         chatting$shiftHeld = Screen.hasShiftDown();
         chatting$altHeld = Screen.hasAltDown();
     *///?}
-        if (button == 0) chatting$leftClicked = true;
-        else if (button == 1) chatting$rightClicked = true;
+        chatting$shortcutHeld = ChatHover.ctrlHeld();
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) chatting$leftClicked = true;
+        else if (button == InputConstants.MOUSE_BUTTON_RIGHT) chatting$rightClicked = true;
     }
 
     // captureClickableText builds hit regions without the chat HUD pose so map the cursor back into vanilla space
@@ -649,14 +616,14 @@ public abstract class ChatScreenMixin extends Screen {
     //? if >=1.21.10 {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
-        if (event.button() == 0 && ChatTabsRenderer.INSTANCE.click(event.x(), event.y(), event.hasShiftDown())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && ChatTabsRenderer.INSTANCE.click(event.x(), event.y(), event.hasShiftDown())) {
             cir.setReturnValue(true);
         }
     }
     //?} else {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (button == 0 && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.hasShiftDown())) {
             cir.setReturnValue(true);
         }
     }
@@ -668,13 +635,14 @@ public abstract class ChatScreenMixin extends Screen {
     private void chatting$suppressSearchKeys(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
         if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
         int key = event.key();
-        if (event.isConfirmation() || key == 264 || key == 265) cir.setReturnValue(true);
+        if (event.isConfirmation() || key == InputConstants.KEY_DOWN || key == InputConstants.KEY_UP) cir.setReturnValue(true);
     }
     //?} else {
     /*@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void chatting$suppressSearchKeys(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if (chatting$searchBox == null || !chatting$searchBox.isFocused()) return;
-        if (keyCode == 257 || keyCode == 335 || keyCode == 264 || keyCode == 265) cir.setReturnValue(true);
+        if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER
+                || keyCode == InputConstants.KEY_DOWN || keyCode == InputConstants.KEY_UP) cir.setReturnValue(true);
     }
     *///?}
 }

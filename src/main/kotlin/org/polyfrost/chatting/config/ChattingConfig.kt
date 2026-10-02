@@ -400,7 +400,8 @@ object ChattingConfig : Config(
             addCallback(option) { ChatDimensions.refresh() }
         }
         addCallback("peekMode") { Chatting.peeking = false }
-        addCallback("showChatHeads") { ChatHeadsCompat.reevaluate() }
+        addCallback("showChatHeads") { ChatHeadsCompat.reevaluate(); ChatDimensions.refresh() }
+        addCallback("offsetNonPlayerMessages") { ChatDimensions.refresh() }
         addCallback("smoothChat") { ChatImpressiveAnimationCompat.reevaluate() }
         addCallback("chatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
         addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
@@ -767,6 +768,10 @@ object ChattingConfig : Config(
         addDependency("smoothScrollingMs", "smoothScrolling")
         addDependency("chatCornerRadius", "roundedChatCorners")
         addDependency("fadeTime", "fade")
+        // The chat-head offset is baked into the wrap width at setChatLine time,
+        // so toggling either option has to rebuild the drawn lines.
+        addCallback("showChatHeads") { ChatDimensions.refresh() }
+        addCallback("offsetNonPlayerMessages") { ChatDimensions.refresh() }
         addCallback("hideChatHeadOnConsecutiveMessages") {
             // Existing ChatLine instances cache whether they are the first
             // visible line for a player. Rebuild them from history when this
