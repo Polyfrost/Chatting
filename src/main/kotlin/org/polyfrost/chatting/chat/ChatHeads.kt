@@ -1,20 +1,25 @@
 package org.polyfrost.chatting.chat
 
-import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.client.multiplayer.PlayerInfo
-import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import java.util.Collections
 import java.util.WeakHashMap
-
-//? if >=1.21.11 {
-private typealias SkinTexture = net.minecraft.resources.Identifier
+//? if >=26.1 {
+import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+import net.minecraft.client.gui.components.PlayerFaceExtractor
 //?} else {
-/*private typealias SkinTexture = net.minecraft.resources.ResourceLocation
+/*import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.PlayerFaceRenderer
 *///?}
+//? if >=1.21.6 {
+import net.minecraft.client.renderer.RenderPipelines
+//?} elif >=1.21.4 {
+/*import net.minecraft.client.renderer.RenderType
+*///?} else
+//import com.mojang.blaze3d.systems.RenderSystem
 
 object ChatHeads {
 
@@ -40,80 +45,83 @@ object ChatHeads {
 
     fun shouldDrawHead(info: PlayerInfo?, hidden: Boolean): Boolean = info != null && !hidden
 
-    const val SHADOW_OFFSET = 1
+    private const val SHADOW_OFFSET = 1
 
-    fun shouldDrawShadow(): Boolean = ChattingConfig.chatHeadShadow != 0
+    private fun isNormalShadow(): Boolean = ChattingConfig.chatHeadShadow == 1
 
     fun isLegacyShadow(): Boolean = ChattingConfig.chatHeadShadow == 2
 
-    fun headY(textY: Int): Int = textY - 1
+    private fun headY(textY: Int): Int = textY - 1
 
-    fun headYFraction(): Float = if (ChattingConfig.centerChatHeads) 0.5f else 0f
+    private fun headYFraction(): Float = if (ChattingConfig.centerChatHeads) 0.5f else 0f
 
-    fun darken(color: Int): Int = ((color and 0xFCFCFC) shr 2) or (color and 0xFF000000.toInt())
+    private fun darken(color: Int): Int = ((color and 0xFCFCFC) shr 2) or (color and 0xFF000000.toInt())
 
-    fun shadowColor(alpha: Int): Int = darken((alpha shl 24) or 0xFFFFFF)
+    private fun shadowColor(alpha: Int): Int = darken((alpha shl 24) or 0xFFFFFF)
 
-    fun shadowColor(info: PlayerInfo, alpha: Int): Int =
-        if (isLegacyShadow()) (alpha shl 24) or (darken(faceColor(skinTexture(info))) and 0xFFFFFF)
-        else shadowColor(alpha)
+    private fun legacyShadowColor(info: PlayerInfo, alpha: Int): Int =
+        (alpha shl 24) or (darken(HeadTextures.averageColor(info)) and 0xFFFFFF)
 
-    private const val FALLBACK_FACE_COLOR = 0x7F7F7F
-
-    private val faceColors = HashMap<SkinTexture, Int>()
-
-    private fun skinTexture(info: PlayerInfo): SkinTexture =
-        info.skin/*? if >=1.21.10 {*/.body().texturePath()/*?} else {*//*.texture()*//*?}*/
-
-    private fun faceColor(texture: SkinTexture): Int {
-        faceColors[texture]?.let { return it }
-        val color = computeFaceColor(texture) ?: return FALLBACK_FACE_COLOR
-        faceColors[texture] = color
-        return color
+    fun draw(graphics: GuiGraphics, info: PlayerInfo, x: Int, textY: Int, alpha: Int) {
+        drawLegacyShadow(graphics, info, x, textY, alpha)
+        drawHead(graphics, info, HeadTextures.get(info), x, textY, alpha)
     }
 
-    private fun computeFaceColor(texture: SkinTexture): Int? {
-        val loaded = runCatching { mc.textureManager.getTexture(texture) }.getOrNull()
-        if (loaded is DynamicTexture) {
-            runCatching { loaded.pixels?.let { return average(it) } }
+    fun drawLegacyShadow(graphics: GuiGraphics, info: PlayerInfo, x: Int, textY: Int, alpha: Int) {
+        if (!isLegacyShadow()) return
+        val dy = headYFraction()
+        val y = headY(textY) + SHADOW_OFFSET
+        translate(graphics, 0f, dy)
+        graphics.fill(x + SHADOW_OFFSET, y, x + SHADOW_OFFSET + 8, y + 8, legacyShadowColor(info, alpha))
+        translate(graphics, 0f, -dy)
+    }
+
+    /** Draws the head and its normal shadow from [HeadTextures.texture] alone, so callers can bind that texture up front. */
+    fun drawHead(graphics: GuiGraphics, info: PlayerInfo, head: HeadTextures.Head?, x: Int, textY: Int, alpha: Int) {
+        val inset = head?.inset ?: 0f
+        val dy = headYFraction() - inset
+        val y = headY(textY)
+        translate(graphics, -inset, dy)
+        if (isNormalShadow()) drawFace(graphics, info, head, x + SHADOW_OFFSET, y + SHADOW_OFFSET, shadowColor(alpha))
+        drawFace(graphics, info, head, x, y, (alpha shl 24) or 0xFFFFFF)
+        translate(graphics, inset, -dy)
+    }
+
+    private fun drawFace(graphics: GuiGraphics, info: PlayerInfo, head: HeadTextures.Head?, x: Int, y: Int, color: Int) {
+        if (head == null) {
+            //? if >=26.1 {
+            PlayerFaceExtractor.extractRenderState(graphics, info.skin, x, y, 8, color)
+            //?} elif >=1.21.4 {
+            /*PlayerFaceRenderer.draw(graphics, info.skin, x, y, 8, color)
+            *///?} else
+            //withColor(graphics, color) { PlayerFaceRenderer.draw(graphics, info.skin, x, y, 8) }
+            return
         }
-        return runCatching {
-            mc.resourceManager.open(texture).use { stream ->
-                NativeImage.read(stream).use { average(it) }
-            }
-        }.getOrNull()
-    }
-
-    private fun average(image: NativeImage): Int? {
-        if (image.width < 48 || image.height < 16) return null
-        var r = 0
-        var g = 0
-        var b = 0
-        var count = 0
-        for (y in 0 until 8) {
-            for (x in 0 until 8) {
-                var pixel = pixel(image, 8 + x, 8 + y)
-                val hat = pixel(image, 40 + x, 8 + y)
-                if ((hat ushr 24) >= 128) pixel = hat
-                if ((pixel ushr 24) < 128) continue
-                r += (pixel shr 16) and 0xFF
-                g += (pixel shr 8) and 0xFF
-                b += pixel and 0xFF
-                count++
-            }
-        }
-        if (count == 0) return null
-        return ((r / count) shl 16) or ((g / count) shl 8) or (b / count)
-    }
-
-    private fun pixel(image: NativeImage, x: Int, y: Int): Int {
+        val size = head.textureSize
         //? if >=1.21.4 {
-        return image.getPixel(x, y)
-        //?} else {
-        /*val abgr = image.getPixelRGBA(x, y)
-        return (abgr and 0xFF00FF00.toInt()) or ((abgr and 0xFF) shl 16) or ((abgr shr 16) and 0xFF)
-        *///?}
+        //~ if <1.21.6 'RenderPipelines.GUI_TEXTURED' -> 'RenderType::guiTextured'
+        graphics.blit(RenderPipelines.GUI_TEXTURED, head.texture, x, y, 0f, 0f, head.size, head.size, size, size, size, size, color)
+        //?} else
+        //withColor(graphics, color) { graphics.blit(head.texture, x, y, head.size, head.size, 0f, 0f, size, size, size, size) }
     }
+
+    private fun translate(graphics: GuiGraphics, x: Float, y: Float) {
+        if (x == 0f && y == 0f) return
+        //? if >=1.21.6 {
+        graphics.pose().translate(x, y)
+        //?} else
+        //graphics.pose().translate(x, y, 0f)
+    }
+
+    //? if <1.21.4 {
+    /*private inline fun withColor(graphics: GuiGraphics, color: Int, draw: () -> Unit) {
+        RenderSystem.enableBlend()
+        graphics.setColor(((color shr 16) and 0xFF) / 255f, ((color shr 8) and 0xFF) / 255f, (color and 0xFF) / 255f, (color ushr 24) / 255f)
+        draw()
+        graphics.setColor(1f, 1f, 1f, 1f)
+        RenderSystem.disableBlend()
+    }
+    *///?}
 
     fun shouldOffset(info: PlayerInfo?): Boolean =
         info != null || ChattingConfig.offsetNonPlayerMessages
