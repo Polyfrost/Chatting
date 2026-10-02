@@ -1,6 +1,5 @@
 package org.polyfrost.chatting.mixin;
 
-//? if > 1.8.9 {
 //? if >=1.21.6 {
 //? if >=26 {
 import net.minecraft.client.renderer.Projection;
@@ -194,5 +193,4 @@ public class GuiRendererMixin implements GuiRendererInterface {
     }
     *///?}
 }
-//?}
 //?}

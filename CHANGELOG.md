@@ -1,2 +1,2 @@
 ## 3.2.0
-- Port to 1.8.9
+- Added support for Minecraft 26.3

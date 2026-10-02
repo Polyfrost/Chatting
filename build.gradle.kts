@@ -74,11 +74,7 @@ repositories {
         content { includeGroup("pl.tomgirl") }
     }
     strictMaven("https://maven.deftu.dev/releases", "Deftu", "dev.deftu")
-    if (isOrnithe) {
-        strictMaven("https://maven.ornithemc.net/releases", "Ornithe", "com.terraformersmc")
-    } else {
-        strictMaven("https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
-    }
+    strictMaven(if (isOrnithe) "https://maven.ornithemc.net/releases" else "https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
     strictMaven("https://maven.fabricmc.net/", "FabricMC", "net.fabricmc")
     strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
     strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
@@ -88,24 +84,19 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:$mcDependencyVersion")
     if (isOrnithe) {
-        mappings(ploceus!!.mcpMappings("stable", mcversion, "22"))
-        ploceus.dependOsl(sc.properties["deps.osl"] as String)
+        mappings(ploceus!!.layeredMappings {
+            mappings("net.ornithemc:feather-gen2:$mcversion+build.${sc.properties.get<String>("deps.feather_build")}:v2") {
+                containsUnpick()
+            }
+            mappings(rootProject.file("mappings/feather-overrides.tiny"))
+        })
+        ploceus.dependOsl(sc.properties.get<String>("deps.osl"))
     } else {
         loomx.applyMojangMappings()
     }
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
-    if (isOrnithe) {
-        modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion") {
-            // Loom strips the nested Kotlin jars from a remapped copy, so the plain copy below must stay the only candidate
-            exclude(group = "net.fabricmc", module = "fabric-language-kotlin")
-        }
-        // This is a library, not a traditional mod. It must not use modRuntimeOnly,
-        // or it does not get properly loaded into the test environment.
-        runtimeOnly("net.fabricmc:fabric-language-kotlin:${sc.properties.get<String>("deps.fabric_language_kotlin")}")
-    } else {
-        modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion")
-    }
+    modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion")
     for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "notifications", "ui", "utils", "hud")) {
         implementation("org.polyfrost.oneconfig:$module:$oneconfigversion")
     }
@@ -123,11 +114,6 @@ loom {
         rootProject.file("src/main/resources/$modid.ct"),
         "build/processed.ct"
     )
-
-    // fabric-api's transitive class tweakers pulled in via OneConfig 1.2.0 break the 1.8.9 build
-    if (isOrnithe) {
-        enableTransitiveAccessWideners = false
-    }
 
     decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1")
@@ -192,13 +178,6 @@ tasks {
         inputs.properties(props)
 
         filesMatching("fabric.mod.json") { expand(props) }
-
-        if (isOrnithe) {
-            exclude("mixins.$modid.json")
-            filesMatching("mixins.$modid.ornithe.json") { name = "mixins.$modid.json" }
-        } else {
-            exclude("mixins.$modid.ornithe.json")
-        }
     }
 
     jar {
@@ -250,7 +229,7 @@ publishMods {
 
     modLoaders.add(loader)
 
-    dryRun = modrinthId == null || modrinthToken == null || !isOrnithe
+    dryRun = modrinthId == null || modrinthToken == null
 
     if (modrinthId != null) {
         modrinth {

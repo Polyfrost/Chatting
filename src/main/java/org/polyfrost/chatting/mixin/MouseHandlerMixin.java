@@ -42,4 +42,32 @@ public class MouseHandlerMixin {
         ci.cancel();
     }
 }
-//?}
+//?} else {
+/*import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import org.lwjgl.input.Mouse;
+import org.polyfrost.chatting.Chatting;
+import org.polyfrost.chatting.config.ChattingConfig;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+// 1.8.9 reads the scroll wheel in Minecraft.tick
+@Mixin(Minecraft.class)
+public class MouseHandlerMixin {
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lorg/lwjgl/input/Mouse;getEventDWheel()I"))
+    private int chatting$peekScroll() {
+        int wheel = Mouse.getEventDWheel();
+        if (!Chatting.INSTANCE.getPeeking() || !ChattingConfig.INSTANCE.getPeekScrolling()) return wheel;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen != null || mc.player == null) return wheel;
+        if (wheel == 0) return wheel;
+
+        int amount = wheel > 0 ? 1 : -1;
+        if (!Screen.isShiftDown()) amount *= 7;
+
+        mc.gui.getChat().scrollChat(amount);
+        return 0;
+    }
+}
+*///?}

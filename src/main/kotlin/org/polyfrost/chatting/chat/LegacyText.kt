@@ -55,4 +55,11 @@ object LegacyText {
         return sb.toString()
     }
 }
-//?}
+//?} else {
+/*import net.minecraft.network.chat.Component
+
+object LegacyText {
+
+    fun toFormatted(component: Component): String = component.formattedString
+}
+*///?}
