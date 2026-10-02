@@ -111,7 +111,6 @@ public final class ChatHover {
     }
 
     private static int row(ChatComponentAccessor acc, double mouseY) {
-        //~ if =1.8.9 '40.0' -> '28.0'
         double d = Minecraft.getInstance().getWindow().getGuiScaledHeight() - mouseY - 40.0;
         // ceil minus 1 because line backgrounds span y1 <= y < y2
         //~ if =1.8.9 'acc.chatting$getLineHeight()' -> '9'

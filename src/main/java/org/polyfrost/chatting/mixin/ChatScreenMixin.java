@@ -668,7 +668,6 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Unique
     private int chatting$chatBottomLocal(float chatScale) {
-        //~ if =1.8.9 '40' -> '28'
         return (int) ((height - 40) / chatScale);
     }
 

@@ -87,7 +87,6 @@ class ChatWindowHud : LegacyHud(
 
         private const val DEFAULT_LEFT = 0f
 
-        //~ if =1.8.9 '40' -> '28'
         private const val BOTTOM_MARGIN = 40
 
         private fun mc() = Minecraft.getInstance()

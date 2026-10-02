@@ -530,12 +530,14 @@ public class ChatComponentMixin implements ChatComponentHook {
         }
         chatting$installPreview();
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
+        GlStateManager.pushMatrix();
+        // vanilla draws chat 28px above the bottom edge, lift it to modern's 40
+        GlStateManager.translatef(0.0F, -12.0F, 0.0F);
         chatting$posed = ChatWindowHud.isActive();
         if (!chatting$posed) return;
-        // the gui has already translated chat down by scaledHeight - 48
-        float guiY = minecraft.getWindow().getGuiScaledHeight() - 48;
+        // the gui has translated chat down by scaledHeight - 48, plus our lift above
+        float guiY = minecraft.getWindow().getGuiScaledHeight() - 60;
         float scale = ChatWindowHud.chatScale();
-        GlStateManager.pushMatrix();
         GlStateManager.translatef(0.0F, -guiY, 0.0F);
         GlStateManager.translatef(ChatWindowHud.chatTranslateX(), ChatWindowHud.chatTranslateY(), 0.0F);
         if (scale != 1f) GlStateManager.scalef(scale, scale, 1.0F);
@@ -546,7 +548,6 @@ public class ChatComponentMixin implements ChatComponentHook {
     @Inject(method = "render", at = @At("RETURN"))
     private void chatting$endChatWindow(int ticks, CallbackInfo ci) {
         chatting$restorePreview();
-        if (!chatting$posed) return;
         chatting$posed = false;
         GlStateManager.popMatrix();
     }
@@ -572,10 +573,10 @@ public class ChatComponentMixin implements ChatComponentHook {
         return (int) ((height - ChatWindowHud.mapMouseY(height - (double) y / factor)) * factor);
     }
 
-    // chat is drawn 28px above the bottom edge but vanilla hit tests from 27
+    // chat is drawn 40px above the bottom edge but vanilla hit tests from 27
     @ModifyConstant(method = "getMessageAt", constant = @Constant(intValue = 27))
     private int chatting$alignComponentHitTest(int original) {
-        return 28;
+        return 40;
     }
     *///?}
 
