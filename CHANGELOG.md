@@ -1,5 +1,2 @@
-## 3.2.1
-- account for chat head offset when wrapping chat lines
-- hover whole chat messages instead of single lines
-- share head drawing and bake head textures
-- fix constant hud updates
+## 3.2.2
+- 1.8: fix chat position not aligning with modern mc
