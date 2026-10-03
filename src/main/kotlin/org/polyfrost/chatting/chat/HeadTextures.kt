@@ -6,13 +6,18 @@ import net.minecraft.client.renderer.texture.DynamicTexture
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.min
-//? if >=1.21.11 {
+//? if >=1.21.11 || =1.8.9 {
 import net.minecraft.resources.Identifier
 //?} else
 //import net.minecraft.resources.ResourceLocation as Identifier
 //? if <1.21.4 {
-/*import com.mojang.blaze3d.platform.GlStateManager
+/*//~ if =1.8.9 'com.mojang.blaze3d.platform' -> 'net.minecraft.client.render.platform'
+import com.mojang.blaze3d.platform.GlStateManager
 import org.lwjgl.opengl.GL11
+*///?}
+//? if = 1.8.9 {
+/*import net.minecraft.client.render.texture.HttpTexture
+import net.minecraft.client.render.texture.TextureManager
 *///?}
 
 object HeadTextures {
@@ -95,10 +100,11 @@ object HeadTextures {
     // null if the skin isn't uploaded yet, throws if its pixels can't be read
     private fun readLayers(skin: Identifier): Layers? {
         val texture = mc.textureManager.getTexture(skin)
+        //~ if =1.8.9 'DynamicTexture' -> 'HttpTexture'
         (texture as? DynamicTexture)?.pixels?.let { return layers(it) }
         //? if >=1.21.4 {
         return mc.resourceManager.open(skin).use { NativeImage.read(it) }.use { layers(it) }
-        //?} else {
+        //?} elif > 1.8.9 {
         /*// downloaded skins free their image once uploaded, so read back from the GPU
         val previous = GlStateManager._getInteger(GL11.GL_TEXTURE_BINDING_2D)
         GlStateManager._bindTexture(texture.id)
@@ -109,6 +115,19 @@ object HeadTextures {
             return NativeImage(width, height, false).use { it.downloadTexture(0, false); layers(it) }
         } finally {
             GlStateManager._bindTexture(previous)
+        }
+        *///?} else {
+        /*// skins still downloading retry on the next draw, while default skins are read back from the GPU
+        if (texture == null || texture is HttpTexture) return null
+        val previous = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D)
+        GlStateManager.bindTexture(texture.glId)
+        try {
+            val width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH)
+            val height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT)
+            if (width <= 0 || height <= 0) return null
+            return NativeImage(width, height, false).use { it.downloadTexture(0, false); layers(it) }
+        } finally {
+            GlStateManager.bindTexture(previous)
         }
         *///?}
     }
@@ -140,7 +159,9 @@ object HeadTextures {
     }
 
     private inline fun register(skin: Identifier, kind: String, textureSize: Int, size: Int, pixel: (Int, Int) -> Int): Head {
+        //~ if =1.8.9 'Identifier.fromNamespaceAndPath(' -> 'Identifier('
         val id = Identifier.fromNamespaceAndPath("chatting", "heads/$kind/${skin.namespace}/${skin.path}")
+        //? if > 1.8.9 {
         val image = NativeImage(textureSize, textureSize, false)
         for (y in 0 until textureSize) for (x in 0 until textureSize) image.setArgb(x, y, pixel(x, y))
         //? if >=1.21.5 {
@@ -149,6 +170,11 @@ object HeadTextures {
         //val texture = DynamicTexture(image)
         // the constructor already uploaded the pixels, so only keep a 1x1 stand-in since close() needs one
         texture.setPixels(NativeImage(1, 1, false))
+        //?} else {
+        /*val texture = DynamicTexture(textureSize, textureSize)
+        for (y in 0 until textureSize) for (x in 0 until textureSize) texture.pixels[y * textureSize + x] = pixel(x, y)
+        texture.upload()
+        *///?}
         mc.textureManager.register(id, texture)
         return Head(id, size, textureSize)
     }
@@ -193,3 +219,11 @@ object HeadTextures {
         (color and 0xFF00FF00.toInt()) or ((color and 0xFF) shl 16) or ((color shr 16) and 0xFF)
     *///?}
 }
+
+//? if = 1.8.9 {
+/*// 1.8.9's close frees the GL texture but leaves it registered
+private fun TextureManager.release(id: Identifier) {
+    close(id)
+    textures.remove(id)
+}
+*///?}

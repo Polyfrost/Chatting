@@ -62,7 +62,12 @@ class ChatWindowHud : LegacyHud(
         save()
     }
 
+    //? if > 1.8.9 {
     override fun render(mcCtx: GuiGraphics) {
+    //?} else {
+    /*override fun render() {
+        val mcCtx = GuiGraphics()
+    *///?}
         if (!HudManager.isEditing) return
         tickPosition(this)
         val w = width.toInt()
@@ -91,7 +96,11 @@ class ChatWindowHud : LegacyHud(
         private fun chatWidth(): Float {
             val scale = chatScaleOption()
             val maxWidth = ceil(ChatDimensions.width() / scale)
+            //? if > 1.8.9 {
             val configuredWidth = (maxWidth + 12) * scale
+            //?} else {
+            /*val configuredWidth = (maxWidth + 4) * scale + 2
+            *///?}
             return capToAvailableSpace(configuredWidth, mc().window.guiScaledWidth)
         }
 

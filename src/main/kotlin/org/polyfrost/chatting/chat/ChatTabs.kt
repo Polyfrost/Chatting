@@ -257,6 +257,7 @@ object ChatTabs {
         tabs.add(guild)
         tabs.add(pm)
         val jsonArray = JsonArray()
+        //~ if =1.8.9 'JsonParser.parseString(' -> 'JsonParser().parse('
         listOf(all, party, guild, pm).forEach { jsonArray.add(JsonParser.parseString(GSON.toJson(it)).asJsonObject) }
         return jsonArray
     }
