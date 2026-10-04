@@ -24,7 +24,7 @@ object ChatPreview {
     private val MESSAGES = listOf(
         "§e§lChatting",
         "§7This is a preview of your chat window.",
-        "§b<Wyvest>§r Chatting for modern Minecraft is out NOW!",
+        "§b<Wyvest>§r Chatting for Fabric is out NOW!",
         "§b<Steve>§r Awesome!",
         "§b<Alex>§r Let's go!",
     )
