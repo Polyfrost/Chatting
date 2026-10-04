@@ -10,6 +10,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.Section
+import org.polyfrost.oneconfig.api.hud.v1.hudStateRevision
 import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.config.ChattingConfig
 import kotlin.math.ceil
@@ -128,6 +129,8 @@ class ChatWindowHud : LegacyHud(
         private var lastScaledW = 0f
         private var lastScaledH = 0f
         private var lastGrowth: HudAnchor? = null
+        private var lastRevision = -1
+        private var lastHuds = -1
 
         /** syncs to the vanilla position unless the user has moved the chat window */
         private fun tickPosition(hud: ChatWindowHud) {
@@ -135,6 +138,15 @@ class ChatWindowHud : LegacyHud(
                 hasBaseline = false
                 return
             }
+            val top = defaultTop()
+            val sw = HudManager.guiScreenWidth
+            val sh = HudManager.guiScreenHeight
+            val rev = hudStateRevision
+            val huds = HudManager.activeInstances.size
+            if (!HudManager.isGuiScreenOpen && hasBaseline && hud === lastHud && !hud.isAnchored && rev == lastRevision && huds == lastHuds &&
+                top == lastTop && sw == lastScreenW && sh == lastScreenH &&
+                HudManager.layoutRefWidth == sw && HudManager.layoutRefHeight == sh
+            ) return
             if (hasBaseline &&
                 (hud.section != baseSection ||
                     hud.relativeX != baseRelX ||
@@ -145,15 +157,16 @@ class ChatWindowHud : LegacyHud(
                 hasBaseline = false
                 return
             }
-            val top = defaultTop()
-            val sw = HudManager.guiScreenWidth
-            val sh = HudManager.guiScreenHeight
             val w = hud.scaledWidth
             val h = hud.scaledHeight
             if (hasBaseline && hud === lastHud && !hud.isAnchored && !hud.bgMerged &&
                 top == lastTop && sw == lastScreenW && sh == lastScreenH && w == lastScaledW && h == lastScaledH &&
                 hud.growthAnchor == lastGrowth && HudManager.layoutRefWidth == sw && HudManager.layoutRefHeight == sh
-            ) return
+            ) {
+                lastRevision = rev
+                lastHuds = huds
+                return
+            }
             hud.section = Section.BottomLeft
             hud.x = DEFAULT_LEFT
             hud.y = top
@@ -168,6 +181,8 @@ class ChatWindowHud : LegacyHud(
             lastScaledW = w
             lastScaledH = h
             lastGrowth = hud.growthAnchor
+            lastRevision = hudStateRevision
+            lastHuds = huds
         }
 
         private fun onPositionReset() {
@@ -182,9 +197,9 @@ class ChatWindowHud : LegacyHud(
 
         @JvmStatic
         fun isActive(): Boolean {
+            if (!HudManager.isEditing && !ChattingConfig.chatWindowMoved) return false
             val hud = placed() ?: return false
-            if (hud.hidden) return false
-            return HudManager.isEditing || ChattingConfig.chatWindowMoved
+            return !hud.hidden
         }
 
         @JvmStatic
@@ -198,13 +213,13 @@ class ChatWindowHud : LegacyHud(
         }
 
         @JvmStatic
-        fun chatScale(): Float = placed()?.effectiveScale ?: 1f
+        fun chatScale(): Float = placed()?.frameScale ?: 1f
 
         @JvmStatic
-        fun chatTranslateX(): Float = placed()?.x ?: DEFAULT_LEFT
+        fun chatTranslateX(): Float = placed()?.frameX ?: DEFAULT_LEFT
 
         @JvmStatic
-        fun chatTranslateY(): Float = placed()?.y ?: defaultTop()
+        fun chatTranslateY(): Float = placed()?.frameY ?: defaultTop()
 
         @JvmStatic
         fun anchorLeft(): Float = DEFAULT_LEFT
