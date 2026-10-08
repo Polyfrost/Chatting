@@ -145,7 +145,7 @@ class ChatWindowHud : LegacyHud(
                 hasBaseline = false
                 return
             }
-            val top = defaultTop()
+            val top = mc().window.guiScaledHeight - BOTTOM_MARGIN - chatHeight() * hud.effectiveScale
             val sw = HudManager.guiScreenWidth
             val sh = HudManager.guiScreenHeight
             val w = hud.scaledWidth
@@ -184,7 +184,7 @@ class ChatWindowHud : LegacyHud(
         fun isActive(): Boolean {
             val hud = placed() ?: return false
             if (hud.hidden) return false
-            return HudManager.isEditing || ChattingConfig.chatWindowMoved
+            return HudManager.isEditing || ChattingConfig.chatWindowMoved || hud.effectiveScale != 1f
         }
 
         @JvmStatic
