@@ -2,7 +2,6 @@ package org.polyfrost.chatting.config
 
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
-import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
@@ -434,12 +433,7 @@ object ChattingConfig : Config(
         addCallback("smoothChat") { ChatImpressiveAnimationCompat.reevaluate() }
         addCallback("chatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
         addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
-    }
 
-    override fun initialize(byConfigManager: Boolean) {
-        super.initialize(byConfigManager)
-        val tree = tree ?: return
-        val toggle = Property.recast<Boolean>(getProperty("modEnabled"))
-        tree.onAllProps { _, option -> if (option !== toggle) option.addDisplayCondition(toggle, false) }
+        disableAllUnless("modEnabled")
     }
 }
