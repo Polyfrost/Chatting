@@ -68,7 +68,7 @@ class ChatWindowHud : LegacyHud(
     /*override fun render() {
         val mcCtx = GuiGraphics()
     *///?}
-        if (!isEditing()) return
+        if (!HudManager.isEditing) return
         tickPosition(this)
         val w = width.toInt()
         val h = height.toInt()
