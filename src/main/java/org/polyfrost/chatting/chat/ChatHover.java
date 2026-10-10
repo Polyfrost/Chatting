@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.util.Mth;
+import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.polyfrost.chatting.mixin.ChatComponentAccessor;
 import org.polyfrost.oneconfig.api.platform.v1.DesktopHelper;
@@ -61,7 +62,7 @@ public final class ChatHover {
     }
 
     private static int hoveredLine(ChatComponent chat, double mouseY) {
-        if (!chat.isChatFocused()) return -1;
+        if (!ChattingConfig.INSTANCE.getModEnabled() || !chat.isChatFocused()) return -1;
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
         if (acc.chatting$getScale() <= 0.0) return -1;
         int row = row(acc, mouseY - slideY(chat));

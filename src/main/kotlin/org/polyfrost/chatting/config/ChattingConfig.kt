@@ -2,6 +2,7 @@ package org.polyfrost.chatting.config
 
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Config
+import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
@@ -21,11 +22,18 @@ object ChattingConfig : Config(
     Category.VISUALS,
 ) {
 
+    @Switch(
+        title = "Global Mod Toggle", category = "General",
+        description = "Toggle all mod features on or off."
+    )
+    var modEnabled = true
+
     @Dropdown(
         title = "Text Render Type", category = "General", options = ["No Shadow", "Shadow"],
         description = "Specifies how text should be rendered in the chat. Shadow displays a drop shadow behind the text (the vanilla style); No Shadow renders the text flat."
     )
     var textRenderType = 1
+        get() = if (modEnabled) field else 1
 
     @Color(
         title = "Chat Background Color", category = "General",
@@ -44,6 +52,7 @@ object ChattingConfig : Config(
         description = "Round the outer corners of the chat message block."
     )
     var roundedChatCorners = false
+        get() = modEnabled && field
 
     @Slider(
         title = "Corner Radius", category = "General",
@@ -57,6 +66,7 @@ object ChattingConfig : Config(
         description = "Fade out chat messages after a period of time."
     )
     var fade = true
+        get() = !modEnabled || field
 
     @Slider(
         title = "Time Before Fade", category = "General",
@@ -82,6 +92,7 @@ object ChattingConfig : Config(
         description = "Set an exact width for the chat window instead of using the vanilla chat width option."
     )
     var customChatWidth = false
+        get() = modEnabled && field
 
     @Slider(
         title = "Chat Width (px)", category = "Chat Window",
@@ -96,6 +107,7 @@ object ChattingConfig : Config(
         description = "Set exact heights for the chat window instead of using the vanilla chat height options."
     )
     var customChatHeight = false
+        get() = modEnabled && field
 
     @Slider(
         title = "Focused Height (px)", category = "Chat Window",
@@ -118,6 +130,7 @@ object ChattingConfig : Config(
         description = "Allows you to view / scroll chat while moving around."
     )
     var chatPeek = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Chat Peek Scrolling", category = "Chat Peek",
@@ -141,6 +154,7 @@ object ChattingConfig : Config(
         description = "Smoothly animate chat messages when they appear."
     )
     var smoothChat = true
+        get() = modEnabled && field
 
     @Slider(
         title = "Message Animation Duration (ms)",
@@ -156,6 +170,7 @@ object ChattingConfig : Config(
         description = "Smoothly animate scrolling when scrolling through the chat."
     )
     var smoothScrolling = true
+        get() = modEnabled && field
 
     @Slider(
         title = "Scrolling Animation Duration (ms)",
@@ -171,6 +186,7 @@ object ChattingConfig : Config(
         description = "Removes the vanilla scroll bar from the chat."
     )
     var removeScrollBar = true
+        get() = modEnabled && field
 
     @Color(
         title = "Chat Button Color", category = "Buttons",
@@ -213,12 +229,14 @@ object ChattingConfig : Config(
         description = "Enable copying chat messages via a button."
     )
     var chatCopy = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Right Click to Copy Chat Message", category = "Buttons",
         description = "Enable right clicking on a chat message to copy it."
     )
     var rightClickCopy = false
+        get() = modEnabled && field
 
     @Switch(
         title = "Only Click Copy Chat Message when Holding Shortcut Key", category = "Buttons",
@@ -231,30 +249,35 @@ object ChattingConfig : Config(
         description = "Enable deleting individual chat messages via a button."
     )
     var chatDelete = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Delete Chat History Button", category = "Buttons",
         description = "Enable deleting chat history via a button."
     )
     var chatDeleteHistory = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Chat Screenshot Button", category = "Buttons",
         description = "Enable taking a screenshot of the chat via a button."
     )
     var chatScreenshot = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Chat Searching", category = "Buttons",
         description = "Enable searching through chat messages."
     )
     var chatSearch = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Show Chat Heads", category = "Chat Heads",
         description = "Show the chat heads of players in chat.",
     )
     var showChatHeads = true
+        get() = modEnabled && field
 
     @Switch(
         title = "Show 3D Heads", category = "Chat Heads",
@@ -316,7 +339,7 @@ object ChattingConfig : Config(
     )
     var chatTabs = true
         get() {
-            if (!field) return false
+            if (!modEnabled || !field) return false
             return if (hypixelOnlyChatTabs) isHypixel() else true
         }
 
@@ -331,7 +354,7 @@ object ChattingConfig : Config(
     )
     var chatShortcuts = false
         get() {
-            if (!field) return false
+            if (!modEnabled || !field) return false
             return if (hypixelOnlyChatShortcuts) isHypixel() else true
         }
 
@@ -398,11 +421,25 @@ object ChattingConfig : Config(
         for (option in listOf("customChatWidth", "chatWidth", "customChatHeight", "focusedChatHeight", "unfocusedChatHeight")) {
             addCallback(option) { ChatDimensions.refresh() }
         }
+        addCallback("modEnabled") {
+            Chatting.peeking = false
+            ChatHeadsCompat.reevaluate()
+            ChatImpressiveAnimationCompat.reevaluate()
+            TextTunnelsCompat.reevaluate()
+            ChatDimensions.refresh()
+        }
         addCallback("peekMode") { Chatting.peeking = false }
         addCallback("showChatHeads") { ChatHeadsCompat.reevaluate(); ChatDimensions.refresh() }
         addCallback("offsetNonPlayerMessages") { ChatDimensions.refresh() }
         addCallback("smoothChat") { ChatImpressiveAnimationCompat.reevaluate() }
         addCallback("chatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
         addCallback("hypixelOnlyChatTabs") { ChatTabs.refresh(); TextTunnelsCompat.reevaluate() }
+    }
+
+    override fun initialize(byConfigManager: Boolean) {
+        super.initialize(byConfigManager)
+        val tree = tree ?: return
+        val toggle = Property.recast<Boolean>(getProperty("modEnabled"))
+        tree.onAllProps { _, option -> if (option !== toggle) option.addDisplayCondition(toggle, false) }
     }
 }

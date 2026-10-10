@@ -33,7 +33,6 @@ import org.polyfrost.chatting.hook.ChatComponentHook;
 import org.polyfrost.chatting.hook.ChatLineHook;
 import org.polyfrost.chatting.hud.ChatPreview;
 import org.polyfrost.chatting.hud.ChatWindowHud;
-import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -97,17 +96,17 @@ public class ChatComponentMixin implements ChatComponentHook {
     *///?} elif <=1.21.10 {
     /*@ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private boolean chatting$peek(boolean focused) {
-        return focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing();
+        return focused || Chatting.INSTANCE.getPeeking() || ChatWindowHud.isEditing();
     }
     *///?} elif <26 {
     /*@ModifyVariable(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private boolean chatting$peek(boolean focused) {
-        return focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing();
+        return focused || Chatting.INSTANCE.getPeeking() || ChatWindowHud.isEditing();
     }
     *///?} else {
     @ModifyVariable(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private ChatComponent.DisplayMode chatting$peek(ChatComponent.DisplayMode mode) {
-        return (mode == ChatComponent.DisplayMode.BACKGROUND && (Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing()))
+        return (mode == ChatComponent.DisplayMode.BACKGROUND && (Chatting.INSTANCE.getPeeking() || ChatWindowHud.isEditing()))
             ? ChatComponent.DisplayMode.FOREGROUND
             : mode;
     }
@@ -353,7 +352,7 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @Unique
     private void chatting$installPreview() {
-        if (!HudManager.INSTANCE.isEditing()) return;
+        if (!ChatWindowHud.isEditing()) return;
         chatting$previewing = true;
         chatting$previewBackup.clear();
         chatting$previewBackup.addAll(trimmedMessages);
@@ -438,7 +437,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         //? if <=1.21.5 {
         /^// peek ModifyVariable also targets HEAD and may run after this inject so focused is recomputed here and the OR is idempotent
         chatting$visibleLines = chatting$countVisibleLines(tick,
-            focused || Chatting.INSTANCE.getPeeking() || HudManager.INSTANCE.isEditing());
+            focused || Chatting.INSTANCE.getPeeking() || ChatWindowHud.isEditing());
         ^///?}
         boolean hud = ChatWindowHud.isActive();
         float smoothDy = chatting$previewing ? 0f : SmoothChat.INSTANCE.translateY(chatScrollbarPos > 0);
@@ -532,7 +531,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         ChatScrolling.INSTANCE.step(chatScrollbarPos);
         GlStateManager.pushMatrix();
         // vanilla draws chat 28px above the bottom edge, lift it to modern's 40
-        GlStateManager.translatef(0.0F, -12.0F, 0.0F);
+        if (ChattingConfig.INSTANCE.getModEnabled()) GlStateManager.translatef(0.0F, -12.0F, 0.0F);
         chatting$posed = ChatWindowHud.isActive();
         if (!chatting$posed) return;
         // the gui has translated chat down by scaledHeight - 48, plus our lift above
@@ -576,7 +575,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     // chat is drawn 40px above the bottom edge but vanilla hit tests from 27
     @ModifyConstant(method = "getMessageAt", constant = @Constant(intValue = 27))
     private int chatting$alignComponentHitTest(int original) {
-        return 40;
+        return ChattingConfig.INSTANCE.getModEnabled() ? 40 : original;
     }
     *///?}
 
@@ -744,7 +743,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         int visibleLines = Math.min(self.getLinesPerPage(), Math.max(0, trimmedMessages.size() - chatScrollbarPos));
         int first = -1;
         int last = -1;
-        boolean keepMessagesVisible = !ChattingConfig.INSTANCE.getFade() || self.isChatFocused() || HudManager.INSTANCE.isEditing();
+        boolean keepMessagesVisible = !ChattingConfig.INSTANCE.getFade() || self.isChatFocused() || ChatWindowHud.isEditing();
         float opacity = minecraft.options.chatOpacity * 0.9F + 0.1F;
 
         for (int lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
@@ -789,6 +788,7 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @Unique
     private int chatting$fadeOffset() {
+        if (!ChattingConfig.INSTANCE.getModEnabled()) return 0;
         return 200 - (int) (ChattingConfig.INSTANCE.getFadeTime() * 20);
     }
 
@@ -800,7 +800,7 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;isChatFocused()Z"))
     private boolean chatting$fadeFocused(ChatComponent chat) {
-        return !ChattingConfig.INSTANCE.getFade() || chat.isChatFocused() || HudManager.INSTANCE.isEditing();
+        return !ChattingConfig.INSTANCE.getFade() || chat.isChatFocused() || ChatWindowHud.isEditing();
     }
     *///?} elif <=1.21.5 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage$Line;addedTime()I"))

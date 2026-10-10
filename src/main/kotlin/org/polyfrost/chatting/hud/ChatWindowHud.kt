@@ -68,7 +68,7 @@ class ChatWindowHud : LegacyHud(
     /*override fun render() {
         val mcCtx = GuiGraphics()
     *///?}
-        if (!HudManager.isEditing) return
+        if (!isEditing()) return
         tickPosition(this)
         val w = width.toInt()
         val h = height.toInt()
@@ -181,7 +181,11 @@ class ChatWindowHud : LegacyHud(
         private fun placed(): ChatWindowHud? = instance?.takeIf { it.isReal }
 
         @JvmStatic
+        fun isEditing(): Boolean = ChattingConfig.modEnabled && HudManager.isEditing
+
+        @JvmStatic
         fun isActive(): Boolean {
+            if (!ChattingConfig.modEnabled) return false
             val hud = placed() ?: return false
             if (hud.hidden) return false
             return HudManager.isEditing || ChattingConfig.chatWindowMoved || hud.effectiveScale != 1f
@@ -189,6 +193,7 @@ class ChatWindowHud : LegacyHud(
 
         @JvmStatic
         fun shouldHideForVisibility(chatFocused: Boolean): Boolean {
+            if (!ChattingConfig.modEnabled) return false
             val hud = placed() ?: return false
             if (HudManager.isEditing) return false
             if (HudManager.isDebugScreenVisible && !hud.showInF3) return true

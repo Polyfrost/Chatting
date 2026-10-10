@@ -125,6 +125,7 @@ public abstract class ChatScreenMixin extends Screen {
     //? if > 1.8.9 {
     @Inject(method = "init", at = @At("TAIL"))
     private void chatting$initSearch(CallbackInfo ci) {
+        if (!ChattingConfig.INSTANCE.getModEnabled()) return;
         int boxWidth = width / 4;
         int buttonRow = 3 * (ChatButtons.BUTTON_WIDTH + 2) + 12;
         EditBox box = new EditBox(this.font, width - boxWidth - buttonRow,
@@ -144,6 +145,7 @@ public abstract class ChatScreenMixin extends Screen {
     /*// 1.8.9 text fields aren't screen widgets
     @Inject(method = "init", at = @At("TAIL"))
     private void chatting$initSearch(CallbackInfo ci) {
+        if (!ChattingConfig.INSTANCE.getModEnabled()) return;
         int boxWidth = width / 4;
         int buttonRow = 3 * (ChatButtons.BUTTON_WIDTH + 2) + 12;
         EditBox box = new EditBox(0, this.font, width - boxWidth - buttonRow,
