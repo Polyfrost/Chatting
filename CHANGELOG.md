@@ -1,2 +1,3 @@
-## 3.2.2
-- 1.8: fix chat position not aligning with modern mc
+## 3.2.3
+- Scale chat window correctly at default position
+- Add support for global mod toggles
