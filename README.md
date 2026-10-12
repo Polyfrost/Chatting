@@ -3,48 +3,46 @@
 [![Modrinth downloads](https://img.shields.io/modrinth/dt/8pJYUDNi?style=flat&logo=modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/mod/chatting)
 [![CurseForge downloads](https://img.shields.io/curseforge/dt/1147241?style=flat&logo=curseforge&label=CurseForge&color=f16436)](https://www.curseforge.com/minecraft/mc-mods/chatting)
 
-Chatting adds tabs, search, message buttons and player heads to the Minecraft chat. It also lets you move, resize and recolor the chat window.
-
-## Features
+Chatting adds tabs, search, message buttons and player heads to the Minecraft chat, and lets you move and restyle the chat window itself.
 
 ### Chat tabs
 
-A tab shows only the messages that match its rules. The default tabs are ALL, PARTY, GUILD and PM, and they match Hypixel's chat channels. While you have a tab selected, Chatting sends your messages to that channel, so a message you type in the PARTY tab goes out with `/pc` in front. Shift-click to select more than one tab.
+Filter your chat with tabs! The default ALL, PARTY, GUILD and PM tabs are made for Hypixel, and anything you type while a tab is selected goes straight to that channel (no more typing `/pc`).
 
-Tabs only turn on while you play on Hypixel. You can switch that restriction off and write your own tabs with prefix, suffix, substring and regex rules. The [chat tabs guide](docs/chattabs.md) explains the file format.
+- Shift-click to select more than one tab at once
+- Make your own tabs with prefix, suffix, substring and regex rules, as explained in the [chat tabs guide](docs/chattabs.md)
+- Tabs only show up on Hypixel unless you turn that restriction off
 
 ![Chat heads and chat tabs on Hypixel](images/chat.png)
 
-### Search
-
-The search button opens a search box while the chat is open. Chatting then shows only the messages that contain your text, ignoring case.
-
 ### Message buttons
 
-Hover over a message to copy it, delete it or save it as an image. Chatting can write the image to a file, put it on your clipboard or do both. An option lets you copy a message by holding Ctrl, or Cmd on macOS, and right-clicking it. A separate button clears your whole chat history.
+Hover over a message to copy it, delete it or save it as an image. The image can go to a file, your clipboard or both.
+
+- Search your chat for any text
+- Clear your whole chat history with one button
+- Ctrl + right click to copy a message, if you prefer that over the button
 
 ### Chat heads
 
-Chatting draws the sender's head next to each player message, with the hat layer in 3D. It hides the head when the same player sends several messages in a row.
+See the sender's head next to their message, complete with a 3D hat layer.
 
 ### Chat window
 
-- Drag and scale the chat in the OneConfig HUD editor.
-- Set an exact width, and separate heights for open and closed chat.
-- Change the background color, round the corners and turn the text shadow off.
-- Choose how long messages stay on screen before they fade.
+- Move and scale the chat in the OneConfig HUD editor
+- Set an exact width, plus separate heights for when the chat is open and closed
+- Change the background color, round the corners or drop the text shadow
+- Choose how long messages stay on screen before they fade
 
-### Chat peek
+### Extras
 
-Bind a key to view and scroll the chat while you keep moving. The key works as hold or toggle.
+- Peek at the chat and scroll it while you keep moving, with a hold or toggle key
+- Animated new messages and smooth scrolling, each with its own speed
+- Chat shortcuts that turn a short alias into a full command (Hypixel only, unless you change that)
 
-### Animations
+## Compatibility
 
-Chatting animates new messages and chat scrolling. You set each duration between 0 and 1000 ms, and 0 turns the animation off.
-
-### Shortcuts
-
-Shortcuts replace a short alias with a longer command when you send a message. You create and edit them in the settings screen. Like tabs, they only turn on while you play on Hypixel unless you change that.
+Chatting does not work together with Chat Patches. If you have the Chat Heads mod installed, it is turned off while Chatting's own chat heads are enabled.
 
 ## Supported versions
 
@@ -53,20 +51,7 @@ Shortcuts replace a short alias with a longer command when you send a message. Y
 
 Chatting needs [OneConfig](https://modrinth.com/mod/oneconfig) and Fabric Language Kotlin.
 
-## Compatibility
-
-- Chatting does not load alongside Chat Patches.
-- Chatting turns off the Chat Heads mod while its own chat heads are on.
-
 ## Support
 
 - Report bugs and ask questions on the [Polyfrost Discord](https://polyfrost.org/discord).
 - Check [Polyfrost Status](https://status.polyfrost.org/) if a Polyfrost service is down.
-
-## Building
-
-```sh
-./gradlew ":26.3:build"
-```
-
-Replace `26.3` with any supported Minecraft version. The build needs JDK 21 and JDK 25 installed.
