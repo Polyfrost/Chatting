@@ -5,6 +5,8 @@
 
 Chatting is a rework of the Minecraft chat, with a bunch of new things added on.
 
+![New messages](.github/images/new-messages.gif)
+
 ### Chat tabs
 
 Filter your chat with tabs! The default ALL, PARTY, GUILD and PM tabs are made for Hypixel, and anything you type while a tab is selected goes to that channel (no more typing `/pc`).
@@ -42,8 +44,6 @@ Hover over a message to copy it, delete it or save it as an image. The image can
 - Peek at the chat and scroll it while you keep moving
 - Animated new messages and smooth scrolling
 - Chat shortcuts that turn a short alias into a full command (Hypixel only, unless you change that)
-
-![New messages](.github/images/new-messages.gif)
 
 ![Smooth scrolling](.github/images/scrolling.gif)
 
