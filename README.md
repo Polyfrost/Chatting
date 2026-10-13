@@ -13,7 +13,7 @@ Filter your chat with tabs! The default ALL, PARTY, GUILD and PM tabs are made f
 - Make your own tabs with prefix, suffix, substring and regex rules (see the [chat tabs guide](docs/chattabs.md))
 - Tabs only show up on Hypixel unless you turn that restriction off
 
-![Chat tabs](images/chat.png)
+![Chat tabs](.github/images/tabs.gif)
 
 ### Message buttons
 
@@ -23,6 +23,8 @@ Hover over a message to copy it, delete it or save it as an image. The image can
 - Clear your whole chat history with one button
 - Ctrl + right click to copy a message
 
+![Message buttons](.github/images/buttons.gif)
+
 ### Chat window
 
 - Move and scale the chat in the OneConfig HUD editor
@@ -30,12 +32,18 @@ Hover over a message to copy it, delete it or save it as an image. The image can
 - Change the background color, round the corners or remove the text shadow
 - Choose how long messages stay on screen before they fade
 
+![Moving the chat](.github/images/hud-editor.gif)
+
+![Background color](.github/images/style.gif)
+
 ### Extras
 
 - Player heads with a 3D hat layer next to chat messages
 - Peek at the chat and scroll it while you keep moving
 - Animated new messages and smooth scrolling
 - Chat shortcuts that turn a short alias into a full command (Hypixel only, unless you change that)
+
+![Settings](.github/images/settings.gif)
 
 ## Compatibility
 
