@@ -43,6 +43,10 @@ Hover over a message to copy it, delete it or save it as an image. The image can
 - Animated new messages and smooth scrolling
 - Chat shortcuts that turn a short alias into a full command (Hypixel only, unless you change that)
 
+![New messages](.github/images/new-messages.gif)
+
+![Smooth scrolling](.github/images/scrolling.gif)
+
 ![Settings](.github/images/settings.gif)
 
 ## Compatibility
