@@ -1,37 +1,66 @@
 # Chatting
-![Compact Powered by OneConfig](https://polyfrost.org/img/compact_vector.svg)
-![Dev Workflow Status](https://img.shields.io/github/v/release/Polyfrost/Chatting.svg?style=for-the-badge&color=1452cc&label=release)
 
-Chatting completely revamps the Minecraft chat with many quality-of-life improvements while remaining unintrusive, and functional.
+[![Modrinth downloads](https://img.shields.io/modrinth/dt/8pJYUDNi?style=flat&logo=modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/mod/chatting)
+[![CurseForge downloads](https://img.shields.io/curseforge/dt/1147241?style=flat&logo=curseforge&label=CurseForge&color=f16436)](https://www.curseforge.com/minecraft/mc-mods/chatting)
 
-**Features**
-- Tabs
-- Screenshot messages
-- Customize the appearance of almost every element
-- Search for messages
-- Chat heads
-- Native OneConfig support
+Chatting is a rework of the Minecraft chat, with a bunch of new things added on.
 
-## Chat tabs
-![chatScreenshot](https://user-images.githubusercontent.com/62163840/228093031-cc449511-9bc5-4147-a489-e5b9c0734494.png)
+![New messages](.github/images/new-messages.gif)
 
-## Screenshots
-![2023-03-27_17 02 01](https://user-images.githubusercontent.com/62163840/228093177-551e91fc-acf4-4144-a20b-736d164ef561.png)
+### Chat tabs
 
-## Customize appearance
+Filter your chat with tabs! The default ALL, PARTY, GUILD and PM tabs are made for Hypixel, and anything you type while a tab is selected goes to that channel (no more typing `/pc`).
 
-<table>
-  <tr>
-    <th><img src=https://user-images.githubusercontent.com/62163840/228094231-91bdce88-b019-40e1-ae3b-dea70335a3c3.png></th>
-    <th><img src=https://user-images.githubusercontent.com/62163840/228094234-93ba0a98-f817-4270-8843-423d6b354ef0.png></th>
-  </tr>
-</table>
+- Shift-click to select more than one tab at once
+- Make your own tabs with prefix, suffix, substring and regex rules (see the [chat tabs guide](docs/chattabs.md))
+- Tabs only show up on Hypixel unless you turn that restriction off
 
-## OneConfig support
-![chattingOneConfig](https://user-images.githubusercontent.com/62163840/228095008-312f1a60-4c64-4549-bcd6-5eedab85659b.png)
+![Chat tabs](.github/images/tabs.gif)
 
-## Links and support
-* [Docs for Chatting chat tabs](https://github.com/Polyfrost/Chatting/blob/main/docs/docs.md)
-* Did you run into a bug? [Open a bug report](https://polyfrost.cc/discord)
-* Service interruptions? [Checkout Polyfrost Status](https://status.polyfrost.cc/)
-* Feeling social? [Join our discord community](https://polyfrost.cc/discord)
+### Message buttons
+
+Hover over a message to copy it, delete it or save it as an image. The image can go to a file, your clipboard or both.
+
+- Search your chat for any text
+- Clear your whole chat history with one button
+- Ctrl + right click to copy a message
+
+![Message buttons](.github/images/buttons.gif)
+
+### Chat window
+
+- Move and scale the chat in the OneConfig HUD editor
+- Set an exact width, plus separate heights for when the chat is open and closed
+- Change the background color, round the corners or remove the text shadow
+- Choose how long messages stay on screen before they fade
+
+![Moving the chat](.github/images/hud-editor.gif)
+
+![Background color](.github/images/style.gif)
+
+### Extras
+
+- Player heads with a 3D hat layer next to chat messages
+- Peek at the chat and scroll it while you keep moving
+- Animated new messages and smooth scrolling
+- Chat shortcuts that turn a short alias into a full command (Hypixel only, unless you change that)
+
+![Smooth scrolling](.github/images/scrolling.gif)
+
+![Settings](.github/images/settings.gif)
+
+## Compatibility
+
+Chatting doesn't work together with Chat Patches. If you have the Chat Heads mod installed, it's turned off while Chatting's own chat heads are enabled.
+
+## Supported versions
+
+- Minecraft 1.8.9 on Ornithe.
+- Minecraft 1.21.1-26.3 on Fabric.
+
+Chatting needs [OneConfig](https://modrinth.com/mod/oneconfig) and Fabric Language Kotlin.
+
+## Support
+
+- Report bugs and ask questions on the [Polyfrost Discord](https://polyfrost.org/discord).
+- Check [Polyfrost Status](https://status.polyfrost.org/) if a Polyfrost service is down.
