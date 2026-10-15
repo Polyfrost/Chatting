@@ -32,6 +32,7 @@ object ChatShortcuts {
         shortcutsFile.parent.createDirectories()
         if (shortcutsFile.exists()) {
             try {
+                //~ if =1.8.9 'JsonParser.parseString(' -> 'JsonParser().parse('
                 val obj = JsonParser.parseString(shortcutsFile.readText()).asJsonObject
                 shortcuts.clear()
                 for (entry in obj.entrySet()) shortcuts.add(entry.key to entry.value.asString)
@@ -46,6 +47,7 @@ object ChatShortcuts {
     fun writeShortcut(key: String, value: String) {
         shortcuts.removeIf { it.first == key }
         shortcuts.add(key to value)
+        //~ if =1.8.9 'JsonParser.parseString(' -> 'JsonParser().parse('
         val obj = runCatching { JsonParser.parseString(shortcutsFile.readText()).asJsonObject }.getOrElse { JsonObject() }
         obj.addProperty(key, value)
         shortcutsFile.writeText(obj.toString())
@@ -53,6 +55,7 @@ object ChatShortcuts {
 
     fun removeShortcut(key: String) {
         shortcuts.removeIf { it.first == key }
+        //~ if =1.8.9 'JsonParser.parseString(' -> 'JsonParser().parse('
         val obj = runCatching { JsonParser.parseString(shortcutsFile.readText()).asJsonObject }.getOrElse { JsonObject() }
         obj.remove(key)
         shortcutsFile.writeText(obj.toString())

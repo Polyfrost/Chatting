@@ -36,7 +36,7 @@
     "depends": {
         "minecraft": "${minecraft_version_range}",
         "fabricloader": ">=${loader_version}",
-        "oneconfigv1": ">=1.0.0-beta.7",
+        "oneconfigv1": ">=1.4.0",
         "fabric-language-kotlin": ">=1.13.8+kotlin.2.3.0"
     },
     "breaks": {

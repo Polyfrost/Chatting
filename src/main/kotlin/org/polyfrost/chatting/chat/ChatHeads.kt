@@ -2,7 +2,11 @@ package org.polyfrost.chatting.chat
 
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
+//? if > 1.8.9 {
 import net.minecraft.util.FormattedCharSequence
+//?} else {
+/*import net.minecraft.client.gui.ChatMessage as FormattedCharSequence
+*///?}
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import java.util.Collections

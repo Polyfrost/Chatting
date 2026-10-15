@@ -63,7 +63,12 @@ class ChatWindowHud : LegacyHud(
         save()
     }
 
+    //? if > 1.8.9 {
     override fun render(mcCtx: GuiGraphics) {
+    //?} else {
+    /*override fun render() {
+        val mcCtx = GuiGraphics()
+    *///?}
         if (!HudManager.isEditing) return
         tickPosition(this)
         val w = width.toInt()
@@ -92,7 +97,11 @@ class ChatWindowHud : LegacyHud(
         private fun chatWidth(): Float {
             val scale = chatScaleOption()
             val maxWidth = ceil(ChatDimensions.width() / scale)
+            //? if > 1.8.9 {
             val configuredWidth = (maxWidth + 12) * scale
+            //?} else {
+            /*val configuredWidth = (maxWidth + 4) * scale + 2
+            *///?}
             return capToAvailableSpace(configuredWidth, mc().window.guiScaledWidth)
         }
 
@@ -129,7 +138,7 @@ class ChatWindowHud : LegacyHud(
                 hasBaseline = false
                 return
             }
-            val top = defaultTop()
+            val top = mc().window.guiScaledHeight - BOTTOM_MARGIN - chatHeight() * hud.effectiveScale
             val sw = HudManager.guiScreenWidth
             val sh = HudManager.guiScreenHeight
             val rev = hudStateRevision
@@ -187,14 +196,19 @@ class ChatWindowHud : LegacyHud(
         private fun placed(): ChatWindowHud? = instance?.takeIf { it.isReal }
 
         @JvmStatic
+        fun isEditing(): Boolean = ChattingConfig.modEnabled && HudManager.isEditing
+
+        @JvmStatic
         fun isActive(): Boolean {
-            if (!HudManager.isEditing && !ChattingConfig.chatWindowMoved) return false
+            if (!ChattingConfig.modEnabled) return false
             val hud = placed() ?: return false
-            return !hud.hidden
+            if (hud.hidden) return false
+            return HudManager.isEditing || ChattingConfig.chatWindowMoved || hud.effectiveScale != 1f
         }
 
         @JvmStatic
         fun shouldHideForVisibility(chatFocused: Boolean): Boolean {
+            if (!ChattingConfig.modEnabled) return false
             val hud = placed() ?: return false
             if (HudManager.isEditing) return false
             if (HudManager.isDebugScreenVisible && !hud.showInF3) return true

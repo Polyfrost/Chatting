@@ -6,6 +6,8 @@ import net.minecraft.network.chat.Component
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.polyfrost.chatting.chat.ChatHeads
+//? if = 1.8.9
+//import net.minecraft.text.LiteralText
 import java.util.UUID
 
 class ChatHeadsTest {
@@ -13,10 +15,12 @@ class ChatHeadsTest {
     private val beber = UUID.randomUUID()
 
     private fun info(name: String = "beber", id: UUID = beber): PlayerInfo =
+        //~ if =1.8.9 'name), false)' -> 'name))'
         PlayerInfo(GameProfile(id, name), false)
 
     @Test
     fun `plain messages carry no server head`() {
+        //~ if =1.8.9 'Component.literal(' -> 'LiteralText('
         Assertions.assertFalse(ChatHeads.hasServerHeadFor(Component.literal("<beber> bruh"), info()))
     }
 

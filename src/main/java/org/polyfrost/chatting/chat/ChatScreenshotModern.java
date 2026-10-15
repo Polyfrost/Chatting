@@ -1,5 +1,6 @@
 package org.polyfrost.chatting.chat;
 
+//? if > 1.8.9 {
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
@@ -370,3 +371,4 @@ public final class ChatScreenshotModern {
     }
     //?}
 }
+//?}

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.util.Mth;
+import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hud.ChatWindowHud;
 import org.polyfrost.chatting.mixin.ChatComponentAccessor;
 import org.polyfrost.oneconfig.api.platform.v1.DesktopHelper;
@@ -14,8 +15,12 @@ import java.util.List;
 
 //? if >=26 {
 import net.minecraft.client.multiplayer.chat.GuiMessage;
-//?} else
-//import net.minecraft.client.GuiMessage;
+//?} elif > 1.8.9 {
+/*import net.minecraft.client.GuiMessage;
+*///?} else {
+/*import net.minecraft.client.gui.ChatMessage;
+import org.polyfrost.chatting.hook.ChatLineHook;
+*///?}
 
 public final class ChatHover {
 
@@ -34,7 +39,11 @@ public final class ChatHover {
 
     public static int stripStart(ChatComponent chat) {
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
+        //? if > 1.8.9 {
         return Mth.ceil(acc.chatting$getWidth() / (float) acc.chatting$getScale()) + ChatButtons.BACKGROUND_RIGHT_EDGE;
+        //?} else {
+        /*return Mth.ceil(acc.chatting$getWidth() / acc.chatting$getScale()) + 5 + Math.round(2 / acc.chatting$getScale());
+        *///?}
     }
 
     public static boolean highlighted(ChatComponent chat, double mouseX, double mouseY, int line) {
@@ -53,7 +62,7 @@ public final class ChatHover {
     }
 
     private static int hoveredLine(ChatComponent chat, double mouseY) {
-        if (!chat.isChatFocused()) return -1;
+        if (!ChattingConfig.INSTANCE.getModEnabled() || !chat.isChatFocused()) return -1;
         ChatComponentAccessor acc = (ChatComponentAccessor) chat;
         if (acc.chatting$getScale() <= 0.0) return -1;
         int row = row(acc, mouseY - slideY(chat));
@@ -62,13 +71,17 @@ public final class ChatHover {
     }
 
     public static int entryBottom(ChatComponent chat, int line) {
+        //~ if =1.8.9 'GuiMessage.Line' -> 'ChatMessage'
         List<GuiMessage.Line> lines = ((ChatComponentAccessor) chat).chatting$getTrimmedMessages();
+        //~ if =1.8.9 'lines.get(line).endOfEntry()' -> '((ChatLineHook) lines.get(line)).chatting$isEndOfEntry()'
         while (line > 0 && !lines.get(line).endOfEntry()) line--;
         return line;
     }
 
     public static int entryTop(ChatComponent chat, int line) {
+        //~ if =1.8.9 'GuiMessage.Line' -> 'ChatMessage'
         List<GuiMessage.Line> lines = ((ChatComponentAccessor) chat).chatting$getTrimmedMessages();
+        //~ if =1.8.9 'lines.get(line + 1).endOfEntry()' -> '((ChatLineHook) lines.get(line + 1)).chatting$isEndOfEntry()'
         while (line + 1 < lines.size() && !lines.get(line + 1).endOfEntry()) line++;
         return line;
     }
@@ -79,6 +92,7 @@ public final class ChatHover {
     }
 
     public static float slideY(ChatComponent chat) {
+        //~ if =1.8.9 'chatting$getScrollbarPos() > 0' -> 'chatting$hasNewMessagesSinceScroll()'
         float dy = SmoothChat.INSTANCE.translateY(((ChatComponentAccessor) chat).chatting$getScrollbarPos() > 0);
         return ChatWindowHud.isActive() ? dy / ChatWindowHud.chatScale() : dy;
     }
@@ -88,7 +102,7 @@ public final class ChatHover {
     }
 
     private static boolean keyDown(int key) {
-        //? if >=26.3 {
+        //? if >=26.3 || =1.8.9 {
         return InputConstants.isKeyDown(key);
         //?} elif >=1.21.10 {
         /*return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key);
@@ -100,6 +114,7 @@ public final class ChatHover {
     private static int row(ChatComponentAccessor acc, double mouseY) {
         double d = Minecraft.getInstance().getWindow().getGuiScaledHeight() - mouseY - 40.0;
         // ceil minus 1 because line backgrounds span y1 <= y < y2
+        //~ if =1.8.9 'acc.chatting$getLineHeight()' -> '9'
         return (int) Math.ceil(d / (acc.chatting$getScale() * acc.chatting$getLineHeight())) - 1;
     }
 }

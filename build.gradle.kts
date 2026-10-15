@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import net.ornithemc.ploceus.api.PloceusGradleExtensionApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -6,8 +7,26 @@ plugins {
     id("dev.kikugie.loom-back-compat")
     id("org.jetbrains.kotlin.jvm") version "2.4.10"
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
+    id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT" apply false
+    id("ploceus") version "1.17.4" apply false
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
+}
+
+val isOrnithe = stonecutter.current.version == "1.8.9"
+val ploceus = if (isOrnithe) {
+    pluginManager.apply("net.fabricmc.fabric-loom-remap")
+    pluginManager.apply("ploceus")
+
+    configurations.configureEach {
+        exclude(group = "org.lwjgl.lwjgl")
+    }
+
+    extensions.getByType<PloceusGradleExtensionApi>().apply {
+        setIntermediaryGeneration(2)
+    }
+} else {
+    null
 }
 
 val modid: String = sc.properties["mod.id"]
@@ -20,6 +39,7 @@ val versionrange: String = sc.properties["mod.mc_compat"]
 val loaderversion: String = sc.properties["deps.fabric_loader"]
 val oneconfigversion: String = sc.properties["deps.oneconfig"]
 val modmenuversion: String = sc.properties["deps.modmenu"]
+val loader = if (isOrnithe) "ornithe" else "fabric"
 
 version = "$modversion+$mcversion"
 base.archivesName = modid
@@ -29,7 +49,7 @@ val requiredJava: JavaVersion = when {
     sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
     sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
     sc.current.parsed >= "1.17" -> JavaVersion.VERSION_16
-    else -> JavaVersion.VERSION_1_8
+    else -> JavaVersion.VERSION_25
 }
 
 val compatibleVersions: List<String> = sc.properties.rawOrNull("mod", "mc_releases")
@@ -50,20 +70,34 @@ repositories {
         name = "Sonatype Snapshots"
         content { includeGroup("net.kyori") }
     }
+    maven("https://maven.cloverclient.com/releases") {
+        content { includeGroup("pl.tomgirl") }
+    }
     strictMaven("https://maven.deftu.dev/releases", "Deftu", "dev.deftu")
-    strictMaven("https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
+    strictMaven(if (isOrnithe) "https://maven.ornithemc.net/releases" else "https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
     strictMaven("https://maven.fabricmc.net/", "FabricMC", "net.fabricmc")
     strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
     strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
+    strictMaven("https://maven.pkg.jetbrains.space/public/p/compose/dev", "JetBrains Compose Dev", "org.jetbrains.skiko")
     strictMaven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1", "DJtheRedstoner", "me.djtheredstoner")
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:$mcDependencyVersion")
-    loomx.applyMojangMappings()
+    if (isOrnithe) {
+        mappings(ploceus!!.layeredMappings {
+            mappings("net.ornithemc:feather-gen2:$mcversion+build.${sc.properties.get<String>("deps.feather_build")}:v2") {
+                containsUnpick()
+            }
+            mappings(rootProject.file("mappings/feather-overrides.tiny"))
+        })
+        ploceus.dependOsl(sc.properties.get<String>("deps.osl"))
+    } else {
+        loomx.applyMojangMappings()
+    }
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion")
     for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "notifications", "ui", "utils", "hud")) {
         implementation("org.polyfrost.oneconfig:$module:$oneconfigversion")
     }
@@ -169,20 +203,26 @@ val modrinthId = listOf("oneconfig.publish.modrinth", "publish.modrinth")
     .firstNotNullOfOrNull { findProperty(it) }?.toString()?.takeIf { it.isNotBlank() }
 val modrinthToken = listOf("oneconfig.publish.modrinth.token", "publish.modrinth.token", "modrinth.token")
     .firstNotNullOfOrNull { findProperty(it) }?.toString()?.takeIf { it.isNotBlank() }
+val curseforgeId = listOf("oneconfig.publish.curseforge", "publish.curseforge")
+    .firstNotNullOfOrNull { findProperty(it) }?.toString()?.takeIf { it.isNotBlank() }
+val curseforgeToken = listOf("oneconfig.publish.curseforge.token", "publish.curseforge.token", "curseforge.token")
+    .firstNotNullOfOrNull { findProperty(it) }?.toString()?.takeIf { it.isNotBlank() }
 
 val changelogs = rootProject.file("CHANGELOG.md").takeIf { it.exists() }?.readText() ?: "No changelog provided."
 
 val validateChangelog = tasks.register("validateChangelog") {
     description = "Validates that the changelog is written for the current version."
-    if (!changelogs.contains(modversion)) {
-        throw GradleException("Changelog for version $modversion not found.")
+    doLast {
+        if (!changelogs.contains(modversion)) {
+            throw GradleException("Changelog for version $modversion not found.")
+        }
     }
 }
 
 tasks.publishMods.configure {
     dependsOn(validateChangelog)
 }
-tasks.matching { it.name == "publishModrinth" }.configureEach {
+tasks.matching { it.name == "publishModrinth" || it.name == "publishCurseforge" }.configureEach {
     dependsOn(validateChangelog)
 }
 
@@ -194,9 +234,9 @@ publishMods {
     changelog = changelogs
     type = STABLE
 
-    modLoaders.add("fabric")
+    modLoaders.add(loader)
 
-    dryRun = modrinthId == null || modrinthToken == null
+    dryRun = modrinthId == null || modrinthToken == null || (curseforgeId != null && curseforgeToken == null)
 
     if (modrinthId != null) {
         modrinth {
@@ -213,4 +253,23 @@ publishMods {
                 ?.let { requires(it) }
         }
     }
+
+    if (curseforgeId != null && !isOrnithe) {
+        curseforge {
+            projectId = curseforgeId
+            accessToken = curseforgeToken.orEmpty()
+
+            minecraftVersions.addAll(compatibleVersions.ifEmpty { listOf(mcversion) })
+            client = true
+
+            requires("oneconfig")
+            requires("fabric-language-kotlin")
+            findProperty("publish.curseforge.compose-bundle.slug")
+                ?.toString()
+                ?.takeIf { it.isNotBlank() }
+                ?.let { requires(it) }
+        }
+    }
 }
+
+if (curseforgeId != null && isOrnithe) tasks.register("publishCurseforge")
