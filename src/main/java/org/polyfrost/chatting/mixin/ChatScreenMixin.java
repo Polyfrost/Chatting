@@ -414,20 +414,7 @@ public abstract class ChatScreenMixin extends Screen {
         //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
         GuiMessage parent = ((ChatLineHook) (Object) trimmed.get(lineIndex)).chatting$getParent();
         //~ if =1.8.9 'content()' -> 'getText()'
-        if (parent != null) return parent.content();
-        // fallback for lines that never passed through the message pipeline such as HUD editor preview
-        //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
-        List<GuiMessage> all = acc.chatting$getAllMessages();
-        int fullIndex = -1;
-        for (int i = 0; i < trimmed.size(); i++) {
-            //~ if =1.8.9 'trimmed.get(i).endOfEntry()' -> '((ChatLineHook) trimmed.get(i)).chatting$isEndOfEntry()'
-            if (trimmed.get(i).endOfEntry()) fullIndex++;
-            if (i != lineIndex) continue;
-            //~ if =1.8.9 'content()' -> 'getText()'
-            if (fullIndex >= 0 && fullIndex < all.size()) return all.get(fullIndex).content();
-            break;
-        }
-        return null;
+        return parent != null ? parent.content() : null;
     }
 
     @Unique
@@ -436,15 +423,13 @@ public abstract class ChatScreenMixin extends Screen {
         List<GuiMessage.Line> trimmed = acc.chatting$getTrimmedMessages();
         //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
         List<GuiMessage> all = acc.chatting$getAllMessages();
-        int fullIndex = -1;
-        for (int i = 0; i < trimmed.size(); i++) {
-            //~ if =1.8.9 'trimmed.get(i).endOfEntry()' -> '((ChatLineHook) trimmed.get(i)).chatting$isEndOfEntry()'
-            if (trimmed.get(i).endOfEntry()) fullIndex++;
-            if (i != lineIndex) continue;
-            if (fullIndex >= 0 && fullIndex < all.size()) {
-                all.remove(fullIndex);
-                acc.chatting$refreshTrimmedMessages();
-            }
+        if (lineIndex < 0 || lineIndex >= trimmed.size()) return;
+        //~ if =1.8.9 'GuiMessage' -> 'ChatMessage'
+        GuiMessage parent = ((ChatLineHook) (Object) trimmed.get(lineIndex)).chatting$getParent();
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i) != parent) continue;
+            all.remove(i);
+            acc.chatting$refreshTrimmedMessages();
             return;
         }
     }
