@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalOneConfigUiApi::class)
+
 package org.polyfrost.chatting.config.shortcut
 
 import androidx.compose.foundation.background
@@ -44,20 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.polyfrost.chatting.chat.ChatShortcuts
 import org.polyfrost.chatting.config.ChattingConfig
-import org.polyfrost.oneconfig.api.platform.v1.Platform
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
+import org.polyfrost.oneconfig.api.ui.v1.OneConfigUI
+import org.polyfrost.oneconfig.api.ui.v1.components.Icon
+import org.polyfrost.oneconfig.api.ui.v1.components.Text
+import org.polyfrost.oneconfig.api.ui.v1.components.onClick
+import org.polyfrost.oneconfig.api.ui.v1.components.rememberInteractionSource
+import org.polyfrost.oneconfig.api.ui.v1.page.OneConfigPages
+import org.polyfrost.oneconfig.api.ui.v1.theme.OneConfigTheme
+import org.polyfrost.oneconfig.api.ui.v1.theme.ProvideOneConfigTheme
 import org.polyfrost.oneconfig.internal.ui.compose.ComposeScreen
-import org.polyfrost.oneconfig.internal.ui.compose.impls.OneConfigUIScreen
-import org.polyfrost.oneconfig.internal.ui.components.Icon
-import org.polyfrost.oneconfig.internal.ui.components.Text
-import org.polyfrost.oneconfig.internal.ui.components.onClick
-import org.polyfrost.oneconfig.internal.ui.components.rememberInteractionSource
-import org.polyfrost.oneconfig.internal.ui.themes.Accent
-import org.polyfrost.oneconfig.internal.ui.themes.LocalTheme
-import org.polyfrost.oneconfig.internal.ui.themes.Theme
 //? if = 1.8.9 {
 /*import org.lwjgl.input.Keyboard
 *///?}
-import org.polyfrost.oneconfig.internal.ui.themes.ThemeRegistry
 
 class ChatShortcutManagerScreen : ComposeScreen() {
 
@@ -65,8 +66,7 @@ class ChatShortcutManagerScreen : ComposeScreen() {
 
     override fun init() {
         ChatShortcuts.initialize()
-        ThemeRegistry.init()
-        ThemeRegistry.loadFromConfig()
+        OneConfigTheme.ensureLoaded()
         super.init()
     }
 
@@ -74,7 +74,7 @@ class ChatShortcutManagerScreen : ComposeScreen() {
     override fun onClose() {
         if (closing) return
         closing = true
-        Platform.screen().display(OneConfigUIScreen(ChattingConfig.id, "Shortcuts"))
+        OneConfigUI.open(OneConfigPages.modConfig(ChattingConfig.id, "Shortcuts"))
     }
 
     override fun removed() {
@@ -85,7 +85,7 @@ class ChatShortcutManagerScreen : ComposeScreen() {
     /*fun onClose() {
         if (closing) return
         closing = true
-        Platform.screen().display(OneConfigUIScreen(ChattingConfig.id, "Shortcuts"))
+        OneConfigUI.open(OneConfigPages.modConfig(ChattingConfig.id, "Shortcuts"))
     }
 
     override fun keyPressed(chr: Char, key: Int) {
@@ -95,7 +95,7 @@ class ChatShortcutManagerScreen : ComposeScreen() {
 
     @Composable
     override fun compose() {
-        Theme {
+        ProvideOneConfigTheme {
             ShortcutManagerContent(onClose = ::onClose)
         }
     }
@@ -117,7 +117,7 @@ private data class ShortcutEditorState(
 
 @Composable
 private fun ShortcutManagerContent(onClose: () -> Unit) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     var revision by remember { mutableIntStateOf(0) }
     var editor by remember { mutableStateOf<ShortcutEditorState?>(null) }
     var pendingOverwrite by remember { mutableStateOf<ShortcutEditorState?>(null) }
@@ -277,16 +277,16 @@ private fun ShortcutManagerContent(onClose: () -> Unit) {
 
 @Composable
 private fun Header(onNew: () -> Unit, onClose: () -> Unit) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon("text-input", color = Accent, modifier = Modifier.size(24.dp))
+        Icon("text-input", color = OneConfigTheme.accent, modifier = Modifier.size(24.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text("Chat Shortcuts", color = theme.textColor, fontSize = 22.sp, fontWeight = FontWeight.Medium)
-            Text("Manage the aliases expanded before messages are sent.", color = theme.textColorSecondary, fontSize = 13.sp)
+            Text("Chat Shortcuts", modifier = Modifier, color = theme.textColor, fontSize = 22.sp, fontWeight = FontWeight.Medium)
+            Text("Manage the aliases expanded before messages are sent.", modifier = Modifier, color = theme.textColorSecondary, fontSize = 13.sp)
         }
         ActionButton("New", icon = "plus", onClick = onNew)
         IconAction("close", onClick = onClose)
@@ -301,7 +301,7 @@ private fun ShortcutList(
     onDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     Column(
         modifier = modifier
             .clip(theme.modCardShape)
@@ -311,14 +311,14 @@ private fun ShortcutList(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Saved Aliases", color = theme.textColor, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text("Saved Aliases", modifier = Modifier, color = theme.textColor, fontSize = 15.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.weight(1f))
-            Text(shortcuts.size.toString(), color = theme.textColorSecondary, fontSize = 13.sp)
+            Text(shortcuts.size.toString(), modifier = Modifier, color = theme.textColorSecondary, fontSize = 13.sp)
         }
 
         if (shortcuts.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No shortcuts saved yet.", color = theme.textColorSecondary, fontSize = 14.sp)
+                Text("No shortcuts saved yet.", modifier = Modifier, color = theme.textColorSecondary, fontSize = 14.sp)
             }
             return@Column
         }
@@ -346,11 +346,11 @@ private fun ShortcutRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     val interactionSource = rememberInteractionSource()
     val hovered by interactionSource.collectIsHoveredAsState()
     val background = when {
-        selected -> Accent.copy(alpha = 0.22f)
+        selected -> OneConfigTheme.accent.copy(alpha = 0.22f)
         hovered -> theme.componentBackground
         else -> Color.Transparent
     }
@@ -383,7 +383,7 @@ private fun ShortcutEditor(
     onSave: (ShortcutEditorState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     Column(
         modifier = modifier
             .clip(theme.modCardShape)
@@ -395,6 +395,7 @@ private fun ShortcutEditor(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 if (state?.editingExisting == true) "Edit Alias" else "New Alias",
+                modifier = Modifier,
                 color = theme.textColor,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium,
@@ -404,7 +405,7 @@ private fun ShortcutEditor(
 
         if (state == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Select a shortcut or create a new one.", color = theme.textColorSecondary, fontSize = 14.sp)
+                Text("Select a shortcut or create a new one.", modifier = Modifier, color = theme.textColorSecondary, fontSize = 14.sp)
             }
             return@Column
         }
@@ -428,7 +429,7 @@ private fun ShortcutEditor(
         }
 
         message?.let {
-            Text(it, color = theme.textColorSecondary, fontSize = 13.sp)
+            Text(it, modifier = Modifier, color = theme.textColorSecondary, fontSize = 13.sp)
         }
 
         Spacer(Modifier.weight(1f))
@@ -446,9 +447,9 @@ private fun ShortcutEditor(
 
 @Composable
 private fun LabeledField(label: String, content: @Composable () -> Unit) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(label, color = theme.textColorSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Text(label, modifier = Modifier, color = theme.textColorSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
         content()
     }
 }
@@ -460,12 +461,12 @@ private fun ShortcutTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     val interactionSource = rememberInteractionSource()
     val focused by interactionSource.collectIsFocusedAsState()
     val hovered by interactionSource.collectIsHoveredAsState()
     val borderColor = when {
-        focused -> Accent
+        focused -> OneConfigTheme.accent
         hovered -> theme.textColorSecondary
         else -> theme.borderColor
     }
@@ -477,7 +478,7 @@ private fun ShortcutTextField(
         textStyle = TextStyle(
             color = theme.textColor,
             fontSize = 14.sp,
-            fontFamily = theme.typography.family,
+            fontFamily = theme.fontFamily,
         ),
         interactionSource = interactionSource,
         cursorBrush = SolidColor(theme.textColor),
@@ -489,10 +490,10 @@ private fun ShortcutTextField(
         decorationBox = { innerTextField ->
             // the leading slash is a fixed adornment not part of the stored value so players can still type an extra slash for commands like //set
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("/", color = theme.textColorSecondary, fontSize = 14.sp)
+                Text("/", modifier = Modifier, color = theme.textColorSecondary, fontSize = 14.sp)
                 Box(modifier = Modifier.weight(1f)) {
                     if (value.isEmpty() && !focused) {
-                        Text(placeholder, color = theme.textColorSecondary, fontSize = 14.sp)
+                        Text(placeholder, modifier = Modifier, color = theme.textColorSecondary, fontSize = 14.sp)
                     }
                     innerTextField()
                 }
@@ -507,7 +508,7 @@ private fun ConfirmOverwriteDialog(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -523,9 +524,10 @@ private fun ConfirmOverwriteDialog(
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("Overwrite Alias?", color = theme.textColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            Text("Overwrite Alias?", modifier = Modifier, color = theme.textColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
             Text(
                 "\"$alias\" already exists. Saving will replace its current replacement.",
+                modifier = Modifier,
                 color = theme.textColorSecondary,
                 fontSize = 13.sp,
             )
@@ -547,13 +549,13 @@ private fun ActionButton(
     subtle: Boolean = false,
     onClick: () -> Unit,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     val interactionSource = rememberInteractionSource()
     val hovered by interactionSource.collectIsHoveredAsState()
     val background = if (subtle) {
         if (hovered) theme.componentBackground else Color.Transparent
     } else {
-        if (hovered) Accent.copy(alpha = 0.75f) else Accent
+        if (hovered) OneConfigTheme.accent.copy(alpha = 0.75f) else OneConfigTheme.accent
     }
     val foreground = if (subtle) theme.textColor else theme.accentTextColor
 
@@ -569,7 +571,7 @@ private fun ActionButton(
         horizontalArrangement = Arrangement.spacedBy(7.dp),
     ) {
         icon?.let { Icon(it, color = foreground, modifier = Modifier.size(14.dp)) }
-        Text(label, color = foreground, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(label, modifier = Modifier, color = foreground, fontSize = 13.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -579,7 +581,7 @@ private fun IconAction(
     subtle: Boolean = false,
     onClick: () -> Unit,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     val interactionSource = rememberInteractionSource()
     val hovered by interactionSource.collectIsHoveredAsState()
     val background = if (hovered && !subtle) theme.componentBackground else Color.Transparent
@@ -605,7 +607,7 @@ private fun EllipsizedText(
     fontSize: TextUnit,
     fontWeight: FontWeight = FontWeight.Normal,
 ) {
-    val theme = LocalTheme.current
+    val theme = OneConfigTheme.current
     BasicText(
         text = text,
         modifier = Modifier.fillMaxWidth(),
@@ -614,7 +616,7 @@ private fun EllipsizedText(
         style = TextStyle(
             color = color,
             fontSize = fontSize,
-            fontFamily = theme.typography.family,
+            fontFamily = theme.fontFamily,
             fontWeight = fontWeight,
         ),
     )
