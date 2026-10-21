@@ -46,6 +46,8 @@ import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
 *///?}
+//? if <1.21.4
+//import com.mojang.blaze3d.systems.RenderSystem;
 //? if = 1.8.9 {
 /*import org.lwjgl.input.Keyboard;
 import org.polyfrost.oneconfig.internal.legacy.KeyCodes;
@@ -557,7 +559,8 @@ public abstract class ChatScreenMixin extends Screen {
 
         int bg = (hover ? cfg.getChatButtonHoveredBackgroundColor() : cfg.getChatButtonBackgroundColor()).getArgb();
         graphics.fill(localX, localY, localX + ChatButtons.BUTTON_WIDTH, localY + ChatButtons.BUTTON_WIDTH, bg);
-        chatting$blit(graphics, icon, localX, localY);
+        int color = (hover ? cfg.getChatButtonHoveredColor() : cfg.getChatButtonColor()).getArgb();
+        chatting$blit(graphics, icon, localX, localY, color);
 
         if (hover) {
             if (tooltip != null) chatting$tooltip = tooltip;
@@ -649,7 +652,7 @@ public abstract class ChatScreenMixin extends Screen {
     }
 
     @Unique
-    private void chatting$blit(Object g0, Object icon, int x, int y) {
+    private void chatting$blit(Object g0, Object icon, int x, int y, int color) {
         //? if >=26 {
         GuiGraphicsExtractor graphics = (GuiGraphicsExtractor) g0;
         //?} else {
@@ -657,14 +660,18 @@ public abstract class ChatScreenMixin extends Screen {
         *///?}
         int size = ChatButtons.BUTTON_WIDTH;
         //? if <1.21.4 {
-        /*//~ if =1.8.9 'ResourceLocation' -> 'Identifier'
+        /*RenderSystem.enableBlend();
+        graphics.setColor(((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, (color & 0xFF) / 255f, (color >>> 24) / 255f);
+        //~ if =1.8.9 'ResourceLocation' -> 'Identifier'
         graphics.blit((net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size);
+        graphics.setColor(1f, 1f, 1f, 1f);
+        RenderSystem.disableBlend();
         *///?} elif <1.21.6 {
-        /*graphics.blit(net.minecraft.client.renderer.RenderType::guiTextured, (net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size);
+        /*graphics.blit(net.minecraft.client.renderer.RenderType::guiTextured, (net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size, color);
         *///?} elif <1.21.11 {
-        /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.ResourceLocation) icon, x, y, 0, 0, size, size, size, size);
+        /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.ResourceLocation) icon, x, y, 0, 0, size, size, size, size, color);
         *///?} else {
-        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, size, size, size, size);
+        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, size, size, size, size, color);
         //?}
     }
 

@@ -188,25 +188,25 @@ object ChattingConfig : Config(
         get() = modEnabled && field
 
     @Color(
-        title = "Chat Button Color", category = "Buttons",
-        description = "The color of the chat button."
+        title = "Button Icon Color", category = "Buttons",
+        description = "The color of the chat button icons."
     )
     var chatButtonColor = PolyColor.rgba(255, 255, 255, 255)
 
     @Color(
-        title = "Chat Button Hovered Color", category = "Buttons",
-        description = "The color of the chat button when hovered."
+        title = "Button Icon Hovered Color", category = "Buttons",
+        description = "The color of the chat button icons when hovered."
     )
     var chatButtonHoveredColor = PolyColor.rgba(255, 255, 160, 255)
 
     @Color(
-        title = "Chat Button Background Color", category = "Buttons",
+        title = "Button Background Color", category = "Buttons",
         description = "The color of the chat button background."
     )
     var chatButtonBackgroundColor = PolyColor.rgba(0, 0, 0, 128)
 
     @Color(
-        title = "Chat Button Hovered Background Color", category = "Buttons",
+        title = "Button Hovered Background Color", category = "Buttons",
         description = "The color of the chat button background when hovered."
     )
     var chatButtonHoveredBackgroundColor = PolyColor.rgba(255, 255, 255, 128)
