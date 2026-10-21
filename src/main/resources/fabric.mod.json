@@ -36,8 +36,8 @@
     "depends": {
         "minecraft": "${minecraft_version_range}",
         "fabricloader": ">=${loader_version}",
-        "oneconfigv1": ">=1.4.3",
-        "fabric-language-kotlin": ">=1.13.8+kotlin.2.3.0"
+        "oneconfigv1": ">=1.5.0",
+        "fabric-language-kotlin": ">=1.14.1+kotlin.2.4.20"
     },
     "breaks": {
         "chatpatches": "*"
