@@ -10,7 +10,6 @@ import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.Section
-import org.polyfrost.oneconfig.api.hud.v1.hudStateRevision
 import org.polyfrost.chatting.chat.ChatDimensions
 import org.polyfrost.chatting.config.ChattingConfig
 import kotlin.math.ceil
@@ -141,7 +140,7 @@ class ChatWindowHud : LegacyHud(
             val top = mc().window.guiScaledHeight - BOTTOM_MARGIN - chatHeight() * hud.effectiveScale
             val sw = HudManager.guiScreenWidth
             val sh = HudManager.guiScreenHeight
-            val rev = hudStateRevision
+            val rev = HudManager.revision
             val huds = HudManager.activeInstances.size
             if (!HudManager.isGuiScreenOpen && hasBaseline && hud === lastHud && !hud.isAnchored && rev == lastRevision && huds == lastHuds &&
                 top == lastTop && sw == lastScreenW && sh == lastScreenH &&
@@ -181,7 +180,7 @@ class ChatWindowHud : LegacyHud(
             lastScaledW = w
             lastScaledH = h
             lastGrowth = hud.growthAnchor
-            lastRevision = hudStateRevision
+            lastRevision = HudManager.revision
             lastHuds = huds
         }
 
