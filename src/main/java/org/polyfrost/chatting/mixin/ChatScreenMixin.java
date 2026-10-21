@@ -263,11 +263,11 @@ public abstract class ChatScreenMixin extends Screen {
         GuiGraphics graphics = new GuiGraphics();
         if (chatting$searchBox != null && chatting$searchBox.isVisible()) chatting$searchBox.render();
     *///?}
-        chatting$closeSearchOnFocusLoss();
         chatting$tooltip = null;
         chatting$tooltipFixed = false;
         chatting$lineButtons(graphics, mouseX, mouseY);
         chatting$globalButtons(graphics, mouseX, mouseY);
+        chatting$closeSearchOnFocusLoss();
         chatting$drawTooltip(graphics, mouseX, mouseY);
         chatting$leftClicked = false;
         chatting$rightClicked = false;
