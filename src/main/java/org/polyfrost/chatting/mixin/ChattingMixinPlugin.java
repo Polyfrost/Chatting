@@ -25,6 +25,8 @@ public class ChattingMixinPlugin implements IMixinConfigPlugin {
         //?}
         //? if = 1.8.9
         //mixins.add("MinecraftMixin");
+        //? if > 1.8.9
+        mixins.add("MainMixin");
         if (FabricLoader.getInstance().isModLoaded("text_tunnels")) {
             mixins.add("MessageReceiveHandlerMixin");
             mixins.add("ButtonsHandlerMixin");
