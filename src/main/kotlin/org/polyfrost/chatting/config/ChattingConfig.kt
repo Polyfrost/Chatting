@@ -36,9 +36,21 @@ object ChattingConfig : Config(
 
     @Color(
         title = "Chat Background Color", category = "General",
-        description = "The color of the chat background (alpha is scaled by the vanilla text background opacity)."
+        description = "The color of the chat background. Opacity stacks with Minecraft's own chat background opacity."
     )
     var chatBackgroundColor = PolyColor.rgba(0, 0, 0, 255)
+
+    @Switch(
+        title = "Separate Unfocused Background", category = "General",
+        description = "Use a different background color while chat is closed."
+    )
+    var separateUnfocusedBackground = false
+
+    @Color(
+        title = "Unfocused Chat Background Color", category = "General",
+        description = "The color of the chat background while chat is closed. Opacity stacks with Minecraft's own chat background opacity."
+    )
+    var unfocusedChatBackgroundColor = PolyColor.rgba(0, 0, 0, 255)
 
     @Color(
         title = "Hover Message Background Color", category = "General",
@@ -399,6 +411,7 @@ object ChattingConfig : Config(
     init {
         addDependency("rightClickCopyCtrl", "rightClickCopy")
         addDependency("chatCornerRadius", "roundedChatCorners")
+        addDependency("unfocusedChatBackgroundColor", "separateUnfocusedBackground")
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
