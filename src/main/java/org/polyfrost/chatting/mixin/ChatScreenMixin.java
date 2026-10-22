@@ -260,7 +260,7 @@ public abstract class ChatScreenMixin extends Screen {
     /*@Inject(method = "render", at = @At("TAIL"))
     private void chatting$renderTabs(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     *///?} else {
-    /*@Inject(method = "render", at = @At("TAIL"))
+    /*@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;getMessageAt(II)Lnet/minecraft/network/chat/Component;"))
     private void chatting$renderTabs(int mouseX, int mouseY, float delta, CallbackInfo ci) {
         GuiGraphics graphics = new GuiGraphics();
         if (chatting$searchBox != null && chatting$searchBox.isVisible()) chatting$searchBox.render();
