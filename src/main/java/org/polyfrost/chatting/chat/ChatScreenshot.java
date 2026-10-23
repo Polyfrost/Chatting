@@ -145,8 +145,8 @@ public final class ChatScreenshot {
         ScreenshotStyle style = ScreenshotStyle.current();
         // border draws 1px outside the glyph extent so pad the canvas
         int margin = style.border() ? 1 : 0;
-        width += margin * 2;
-        height += margin * 2;
+        width += margin * 2 + (style.shadow() ? 1 : 0);
+        height += margin * 2 + (style.shadow() ? 1 : 0);
         int scale = 2; // supersample mirroring the 1.8.9 2x scale
 
         //? if <1.21.5 {
@@ -576,8 +576,8 @@ public final class ChatScreenshot {
         ScreenshotStyle style = ScreenshotStyle.current();
         // border draws 1px outside the glyph extent so pad the canvas
         int margin = style.border() ? 1 : 0;
-        width += margin * 2;
-        height += margin * 2;
+        width += margin * 2 + (style.shadow() ? 1 : 0);
+        height += margin * 2 + (style.shadow() ? 1 : 0);
         int scale = 2;
 
         if (!GLX.useFbo()) {
