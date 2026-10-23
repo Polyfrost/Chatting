@@ -93,7 +93,11 @@ public final class ChatScreenshot {
             text = fullMessage != null ? fullMessage.getString() : collect(lines);
             text = FORMATTING.matcher(text).replaceAll("");
         }
-        ClipboardHelper.setString(text);
+        if (text.isEmpty()) {
+            ClipboardHelper.clear();
+        } else {
+            Minecraft.getInstance().keyboardHandler.setClipboard(text);
+        }
         notifySuccess("Copied to clipboard", text);
     }
 
@@ -451,6 +455,7 @@ public final class ChatScreenshot {
 //?} else {
 /*import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatMessage;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.render.pipeline.RenderTarget;
 import net.minecraft.client.render.platform.GLX;
@@ -527,7 +532,11 @@ public final class ChatScreenshot {
             text = fullMessage != null ? fullMessage.getString() : collect(lines);
             text = FORMATTING.matcher(text).replaceAll("");
         }
-        ClipboardHelper.setString(text);
+        if (text.isEmpty()) {
+            ClipboardHelper.clear();
+        } else {
+            Screen.setClipboard(text);
+        }
         notifySuccess("Copied to clipboard", text);
     }
 
