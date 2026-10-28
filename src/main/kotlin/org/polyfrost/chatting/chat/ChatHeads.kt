@@ -24,6 +24,11 @@ import net.minecraft.client.renderer.RenderPipelines
 /*import net.minecraft.client.renderer.RenderType
 *///?} else
 //import com.mojang.blaze3d.systems.RenderSystem
+//? if >=1.21.10 {
+import com.mojang.authlib.GameProfile
+import net.minecraft.network.chat.contents.ObjectContents
+import net.minecraft.network.chat.contents.objects.PlayerSprite
+//?}
 
 object ChatHeads {
 
@@ -138,16 +143,16 @@ object ChatHeads {
     //? if >=1.21.10 {
     fun hasServerHeadFor(component: Component, info: PlayerInfo): Boolean {
         val contents = component.contents
-        if (contents is net.minecraft.network.chat.contents.ObjectContents) {
+        if (contents is ObjectContents) {
             val sprite = contents.contents()
-            if (sprite is net.minecraft.network.chat.contents.objects.PlayerSprite &&
+            if (sprite is PlayerSprite &&
                 sameOwner(sprite.player().partialProfile(), info)
             ) return true
         }
         return component.siblings.any { hasServerHeadFor(it, info) }
     }
 
-    private fun sameOwner(profile: com.mojang.authlib.GameProfile, info: PlayerInfo): Boolean =
+    private fun sameOwner(profile: GameProfile, info: PlayerInfo): Boolean =
         profile.id == info.profile.id ||
             (profile.name.isNotEmpty() && profile.name.equals(info.profile.name, ignoreCase = true))
     //?} else {

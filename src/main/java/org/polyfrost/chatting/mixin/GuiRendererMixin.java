@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.state.gui.GuiRenderState;
 /*import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 *///?}
+//? if >=26.2
+import net.minecraft.client.renderer.StagedVertexBuffer;
 
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -63,7 +65,7 @@ public class GuiRendererMixin implements GuiRendererInterface {
     //? if >=26.2 {
     @Final
     @Shadow
-    private net.minecraft.client.renderer.StagedVertexBuffer vertexBuffer;
+    private StagedVertexBuffer vertexBuffer;
     //?} else {
     /*@Final
     @Shadow

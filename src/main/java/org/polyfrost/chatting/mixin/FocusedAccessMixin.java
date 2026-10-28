@@ -2,6 +2,7 @@ package org.polyfrost.chatting.mixin;
 
 //? if >=1.21.11 {
 import org.polyfrost.chatting.chat.ChatBackground;
+import org.polyfrost.chatting.chat.ChatButtons;
 import org.polyfrost.chatting.chat.ChatHover;
 import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.config.ChattingConfig;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.gui.screens.ChatScreen;
 //? if <26 {
 /*import net.minecraft.client.gui.GuiGraphics;
 *///?} else {
@@ -40,7 +42,7 @@ public class FocusedAccessMixin {
     @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
     //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
     private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color) {
-        int chatting$ex2 = chatting$chatFocused() ? x2 + org.polyfrost.chatting.chat.ChatButtons.extraBackgroundWidth() : x2;
+        int chatting$ex2 = chatting$chatFocused() ? x2 + ChatButtons.extraBackgroundWidth() : x2;
         // line backgrounds are the only fills through this method with x1 == -4
         boolean chatting$lineFill = x1 == -4;
         int chatting$chatBottom = RoundedChat.chatBottom(graphics.guiHeight());
@@ -71,9 +73,9 @@ public class FocusedAccessMixin {
     @Unique
     private boolean chatting$chatFocused() {
         //? if >=26.2 {
-        return Minecraft.getInstance().gui.screen() instanceof net.minecraft.client.gui.screens.ChatScreen;
+        return Minecraft.getInstance().gui.screen() instanceof ChatScreen;
         //?} else {
-        /*return Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen;
+        /*return Minecraft.getInstance().screen instanceof ChatScreen;
         *///?}
     }
 }

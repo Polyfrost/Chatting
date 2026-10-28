@@ -6,6 +6,10 @@ import net.minecraft.network.chat.Component
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.polyfrost.chatting.chat.ChatHeads
+//? if >=1.21.10 {
+import net.minecraft.network.chat.contents.objects.PlayerSprite
+import net.minecraft.world.item.component.ResolvableProfile
+//?}
 //? if = 1.8.9
 //import net.minecraft.text.LiteralText
 import java.util.UUID
@@ -25,30 +29,30 @@ class ChatHeadsTest {
     }
 
     //? if >=1.21.10 {
-    private fun message(profile: net.minecraft.world.item.component.ResolvableProfile): Component =
+    private fun message(profile: ResolvableProfile): Component =
         Component.empty()
             .append(
                 Component.`object`(
-                    net.minecraft.network.chat.contents.objects.PlayerSprite(profile, true)
+                    PlayerSprite(profile, true)
                 )
             )
             .append(" <beber> bruh")
 
     @Test
     fun `a nested head with only a uuid is matched`() {
-        val message = message(net.minecraft.world.item.component.ResolvableProfile.createUnresolved(beber))
+        val message = message(ResolvableProfile.createUnresolved(beber))
         Assertions.assertTrue(ChatHeads.hasServerHeadFor(message, info()))
     }
 
     @Test
     fun `a nested head with only a name is matched`() {
-        val message = message(net.minecraft.world.item.component.ResolvableProfile.createUnresolved("BEBER"))
+        val message = message(ResolvableProfile.createUnresolved("BEBER"))
         Assertions.assertTrue(ChatHeads.hasServerHeadFor(message, info()))
     }
 
     @Test
     fun `another players head does not suppress ours`() {
-        val message = message(net.minecraft.world.item.component.ResolvableProfile.createUnresolved("notbeber"))
+        val message = message(ResolvableProfile.createUnresolved("notbeber"))
         Assertions.assertFalse(ChatHeads.hasServerHeadFor(message, info()))
     }
     //?}

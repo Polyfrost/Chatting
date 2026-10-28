@@ -14,9 +14,12 @@ import org.joml.Vector4f;
 //?}
 
 //? if >=26 {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 //?} else {
 /*import net.minecraft.client.GuiMessage;
+import net.minecraft.client.gui.GuiGraphics;
 *///?}
 
 //? if >=1.21.5 {
@@ -26,12 +29,35 @@ import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.textures.GpuTexture;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.util.FormattedCharSequence;
 //?}
 
+//? if >=1.21.6 {
+import net.minecraft.client.gui.render.GuiRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
+import org.polyfrost.chatting.hook.GuiRendererInterface;
+//?}
+
+//? if >=1.21.6 <26 {
+/*import net.minecraft.client.gui.render.state.GuiRenderState;
+*///?}
+
 //? if =1.21.5 {
-/*import com.mojang.renderpearl.api.buffers.BufferType;
+/*import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.buffers.BufferType;
 import com.mojang.renderpearl.api.buffers.BufferUsage;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.TriState;
+
+import java.util.function.Function;
 *///?}
 
 public final class ChatScreenshotModern {
@@ -48,74 +74,74 @@ public final class ChatScreenshotModern {
 
     //? if >=1.21.6 {
     private static void chatting$flush(Minecraft mc, Object renderState, RenderTarget rt) {
-        net.minecraft.client.gui.render.GuiRenderer guiRenderer = mc.gameRenderer.guiRenderer;
-        org.polyfrost.chatting.hook.GuiRendererInterface gri = (org.polyfrost.chatting.hook.GuiRendererInterface) (Object) guiRenderer;
+        GuiRenderer guiRenderer = mc.gameRenderer.guiRenderer;
+        GuiRendererInterface gri = (GuiRendererInterface) (Object) guiRenderer;
         Object saved = gri.chatting$getRenderState();
         gri.chatting$setRenderState(renderState);
-        gri.chatting$render(mc.gameRenderer.fogRenderer.getBuffer(net.minecraft.client.renderer.fog.FogRenderer.FogMode.NONE), rt);
+        gri.chatting$render(mc.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE), rt);
         gri.chatting$setRenderState(saved);
     }
     //?}
 
     //? if =1.21.5 {
-    /*private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
+    /*private static final Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
             "chatting_text", 786432, false, false,
-            net.minecraft.client.renderer.RenderPipelines.TEXT,
+            RenderPipelines.TEXT,
             RenderType.CompositeState.builder()
-                    .setTextureState(net.minecraft.client.renderer.RenderStateShard.NO_TEXTURE)
-                    .setOutputState(new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
-                    .setLightmapState(net.minecraft.client.renderer.RenderStateShard.LIGHTMAP)
+                    .setTextureState(RenderStateShard.NO_TEXTURE)
+                    .setOutputState(new RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
                     .createCompositeState(false));
 
-    private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_SOLID_LAYER = (rt) -> RenderType.create(
+    private static final Function<RenderTarget, RenderType> CUSTOM_SOLID_LAYER = (rt) -> RenderType.create(
             "chatting_solid", 786432, false, false,
-            net.minecraft.client.renderer.RenderPipelines.GUI,
+            RenderPipelines.GUI,
             RenderType.CompositeState.builder()
-                    .setOutputState(new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
+                    .setOutputState(new RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
                     .createCompositeState(false));
 
     // heads blit through RenderType.guiTextured whose vertex format lacks the lightmap element the shared text layer needs so they get their own layer
-    private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
+    private static RenderType headLayer(ResourceLocation skin, RenderTarget rt) {
         return RenderType.create(
                 "chatting_head", 786432, false, false,
-                net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+                RenderPipelines.GUI_TEXTURED,
                 RenderType.CompositeState.builder()
-                        .setTextureState(new net.minecraft.client.renderer.RenderStateShard.TextureStateShard(skin, net.minecraft.util.TriState.FALSE, false))
-                        .setOutputState(new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
+                        .setTextureState(new RenderStateShard.TextureStateShard(skin, TriState.FALSE, false))
+                        .setOutputState(new RenderStateShard.OutputStateShard("chatting_fbo", () -> rt))
                         .createCompositeState(false));
     }
 
-    private static class OverrideVertexProvider extends net.minecraft.client.renderer.MultiBufferSource.BufferSource {
+    private static class OverrideVertexProvider extends MultiBufferSource.BufferSource {
         private final RenderTarget rt;
         private final RenderType textLayer;
-        private final com.mojang.blaze3d.vertex.BufferBuilder textBuffer;
-        private final com.mojang.blaze3d.vertex.ByteBufferBuilder headAllocator;
+        private final BufferBuilder textBuffer;
+        private final ByteBufferBuilder headAllocator;
 
         private final RenderType solidLayer;
 
         private RenderType headLayer;
-        private com.mojang.blaze3d.vertex.BufferBuilder headBuffer;
-        private com.mojang.blaze3d.vertex.BufferBuilder solidBuffer;
+        private BufferBuilder headBuffer;
+        private BufferBuilder solidBuffer;
 
-        private OverrideVertexProvider(com.mojang.blaze3d.vertex.ByteBufferBuilder allocator, RenderTarget rt) {
-            super(allocator, it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps.emptyMap());
+        private OverrideVertexProvider(ByteBufferBuilder allocator, RenderTarget rt) {
+            super(allocator, Object2ObjectSortedMaps.emptyMap());
             this.rt = rt;
             this.solidLayer = CUSTOM_SOLID_LAYER.apply(rt);
             this.textLayer = CUSTOM_TEXT_LAYER.apply(rt);
-            this.textBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
-            this.headAllocator = new com.mojang.blaze3d.vertex.ByteBufferBuilder(256);
+            this.textBuffer = new BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
+            this.headAllocator = new ByteBufferBuilder(256);
         }
 
         @Override
-        public com.mojang.blaze3d.vertex.VertexConsumer getBuffer(RenderType renderType) {
+        public VertexConsumer getBuffer(RenderType renderType) {
             if (this.headBuffer != null) return this.headBuffer;
             return this.solidBuffer != null ? this.solidBuffer : this.textBuffer;
         }
 
         // route following blits into a dedicated head layer sharing our framebuffer because each head has its own skin texture and must flush first
-        public void beginHead(net.minecraft.resources.ResourceLocation skin) {
+        public void beginHead(ResourceLocation skin) {
             this.headLayer = headLayer(skin, rt);
-            this.headBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
+            this.headBuffer = new BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
         }
 
         public void endHead() {
@@ -127,7 +153,7 @@ public final class ChatScreenshotModern {
         }
 
         public void beginSolid() {
-            this.solidBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, solidLayer.mode(), solidLayer.format());
+            this.solidBuffer = new BufferBuilder(this.headAllocator, solidLayer.mode(), solidLayer.format());
         }
 
         public void endSolid() {
@@ -152,8 +178,8 @@ public final class ChatScreenshotModern {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
-        OverrideVertexProvider consumer = new OverrideVertexProvider(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256), rt);
-        net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, consumer);
+        OverrideVertexProvider consumer = new OverrideVertexProvider(new ByteBufferBuilder(256), rt);
+        GuiGraphics context = new GuiGraphics(mc, consumer);
         // this variant's vertex provider only serves the text layer so context.fill would crash on a missing vertex format and we clear the target instead
         int clearColor = style.background() ? ChatScreenshot.backgroundColor(mc) : 0x00000000;
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), clearColor);
@@ -161,7 +187,7 @@ public final class ChatScreenshotModern {
         int m = style.border() ? 1 : 0;
         int y = m;
         for (GuiMessage.Line line : lines) {
-            net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
+            PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
                 if (ChatHeads.INSTANCE.isLegacyShadow()) {
                     consumer.beginSolid();
@@ -175,7 +201,7 @@ public final class ChatScreenshotModern {
             }
             int hx = ChatScreenshot.headOffset(line.content()) + m;
             if (style.border()) {
-                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
                 for (int[] o : ChatScreenshot.OUTLINE) {
                     context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
                 }
@@ -198,8 +224,8 @@ public final class ChatScreenshotModern {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
-        net.minecraft.client.gui.render.state.GuiRenderState renderState = new net.minecraft.client.gui.render.state.GuiRenderState();
-        net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, renderState);
+        GuiRenderState renderState = new GuiRenderState();
+        GuiGraphics context = new GuiGraphics(mc, renderState);
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
         if (style.background()) {
@@ -208,13 +234,13 @@ public final class ChatScreenshotModern {
         int m = style.border() ? 1 : 0;
         int y = m;
         for (GuiMessage.Line line : lines) {
-            net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
+            PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
                 ChatHeads.INSTANCE.draw(context, info, m, y, 255);
             }
             int hx = ChatScreenshot.headOffset(line.content()) + m;
             if (style.border()) {
-                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
                 for (int[] o : ChatScreenshot.OUTLINE) {
                     context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
                 }
@@ -236,8 +262,8 @@ public final class ChatScreenshotModern {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
-        net.minecraft.client.gui.render.state.GuiRenderState renderState = new net.minecraft.client.gui.render.state.GuiRenderState();
-        net.minecraft.client.gui.GuiGraphics context = new net.minecraft.client.gui.GuiGraphics(mc, renderState, 0, 0);
+        GuiRenderState renderState = new GuiRenderState();
+        GuiGraphics context = new GuiGraphics(mc, renderState, 0, 0);
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), 0x00000000);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height);
         if (style.background()) {
@@ -246,13 +272,13 @@ public final class ChatScreenshotModern {
         int m = style.border() ? 1 : 0;
         int y = m;
         for (GuiMessage.Line line : lines) {
-            net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
+            PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
                 ChatHeads.INSTANCE.draw(context, info, m, y, 255);
             }
             int hx = ChatScreenshot.headOffset(line.content()) + m;
             if (style.border()) {
-                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
                 for (int[] o : ChatScreenshot.OUTLINE) {
                     context.drawString(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
                 }
@@ -280,8 +306,8 @@ public final class ChatScreenshotModern {
             ChatScreenshot.notifyError("Chat window is empty.");
             return null;
         }
-        net.minecraft.client.renderer.state.gui.GuiRenderState renderState = new net.minecraft.client.renderer.state.gui.GuiRenderState();
-        net.minecraft.client.gui.GuiGraphicsExtractor context = new net.minecraft.client.gui.GuiGraphicsExtractor(mc, renderState, 0, 0);
+        GuiRenderState renderState = new GuiRenderState();
+        GuiGraphicsExtractor context = new GuiGraphicsExtractor(mc, renderState, 0, 0);
         //? if >=26.2 {
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(rt.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
         //?} else {
@@ -294,13 +320,13 @@ public final class ChatScreenshotModern {
         int m = style.border() ? 1 : 0;
         int y = m;
         for (GuiMessage.Line line : lines) {
-            net.minecraft.client.multiplayer.PlayerInfo info = ChatScreenshot.headToDraw(line.content());
+            PlayerInfo info = ChatScreenshot.headToDraw(line.content());
             if (info != null) {
                 ChatHeads.INSTANCE.draw(context, info, m, y, 255);
             }
             int hx = ChatScreenshot.headOffset(line.content()) + m;
             if (style.border()) {
-                net.minecraft.util.FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
+                FormattedCharSequence bl = ChatScreenshot.blackOut(line.content());
                 for (int[] o : ChatScreenshot.OUTLINE) {
                     context.text(mc.font, bl, hx + o[0], y + o[1], 0xFF000000, false);
                 }

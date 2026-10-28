@@ -59,7 +59,16 @@ import net.minecraft.client.input.MouseButtonEvent;
 //?}
 //? if >=1.21.11 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-//?}
+import net.minecraft.resources.Identifier;
+//?} else {
+/*//~ if =1.8.9 'ResourceLocation' -> 'Identifier'
+import net.minecraft.resources.ResourceLocation;
+*///?}
+//? if >=1.21.6 {
+import net.minecraft.client.renderer.RenderPipelines;
+//?} elif >=1.21.4 {
+/*import net.minecraft.client.renderer.RenderType;
+*///?}
 
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin extends Screen {
@@ -648,15 +657,15 @@ public abstract class ChatScreenMixin extends Screen {
         /*RenderSystem.enableBlend();
         graphics.setColor(((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, (color & 0xFF) / 255f, (color >>> 24) / 255f);
         //~ if =1.8.9 'ResourceLocation' -> 'Identifier'
-        graphics.blit((net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size);
+        graphics.blit((ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size);
         graphics.setColor(1f, 1f, 1f, 1f);
         RenderSystem.disableBlend();
         *///?} elif <1.21.6 {
-        /*graphics.blit(net.minecraft.client.renderer.RenderType::guiTextured, (net.minecraft.resources.ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size, color);
+        /*graphics.blit(RenderType::guiTextured, (ResourceLocation) icon, x, y, 0f, 0f, size, size, size, size, color);
         *///?} elif <1.21.11 {
-        /*graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.ResourceLocation) icon, x, y, 0, 0, size, size, size, size, color);
+        /*graphics.blit(RenderPipelines.GUI_TEXTURED, (ResourceLocation) icon, x, y, 0, 0, size, size, size, size, color);
         *///?} else {
-        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, (net.minecraft.resources.Identifier) icon, x, y, 0, 0, size, size, size, size, color);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, (Identifier) icon, x, y, 0, 0, size, size, size, size, color);
         //?}
     }
 

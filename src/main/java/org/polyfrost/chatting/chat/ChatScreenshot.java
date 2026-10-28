@@ -16,6 +16,8 @@ import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -32,12 +34,24 @@ import net.minecraft.client.multiplayer.chat.GuiMessage;
 *///?}
 
 //? if =1.21.4 {
-/*import com.mojang.renderpearl.api.vertex.VertexFormat;
+/*import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.TriState;
+
+import java.util.function.Function;
 *///?}
 
 //? if <1.21.4 {
-/*import org.joml.Matrix4f;
+/*import com.mojang.blaze3d.vertex.VertexSorting;
+import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 *///?}
 
@@ -170,7 +184,7 @@ public final class ChatScreenshot {
         rt.bindWrite(true);
 
         Matrix4f projection = new Matrix4f().setOrtho(0f, width, height, 0f, 1000f, 21000f);
-        RenderSystem.setProjectionMatrix(projection, com.mojang.blaze3d.vertex.VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(projection, VertexSorting.ORTHOGRAPHIC_Z);
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
         modelView.pushMatrix();
         modelView.translation(0f, 0f, -11000f);
@@ -214,75 +228,75 @@ public final class ChatScreenshot {
     *///?}
 
     //? if =1.21.4 {
-    /*private static net.minecraft.client.renderer.RenderStateShard.OutputStateShard chatting$fbo(RenderTarget rt) {
-        return new net.minecraft.client.renderer.RenderStateShard.OutputStateShard("chatting_fbo", () -> rt.bindWrite(true), () -> {});
+    /*private static RenderStateShard.OutputStateShard chatting$fbo(RenderTarget rt) {
+        return new RenderStateShard.OutputStateShard("chatting_fbo", () -> rt.bindWrite(true), () -> {});
     }
 
     // vanilla text and guiTextured layers bind the main render target so give text and head geometry their own layers redirected to our framebuffer
-    private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
-            "chatting_text", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+    private static final Function<RenderTarget, RenderType> CUSTOM_TEXT_LAYER = (rt) -> RenderType.create(
+            "chatting_text", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
             VertexFormat.Mode.QUADS, 786432, false, false,
             RenderType.CompositeState.builder()
-                    .setShaderState(net.minecraft.client.renderer.RenderStateShard.RENDERTYPE_TEXT_SHADER)
-                    .setTextureState(net.minecraft.client.renderer.RenderStateShard.NO_TEXTURE)
-                    .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-                    .setLightmapState(net.minecraft.client.renderer.RenderStateShard.LIGHTMAP)
+                    .setShaderState(RenderStateShard.RENDERTYPE_TEXT_SHADER)
+                    .setTextureState(RenderStateShard.NO_TEXTURE)
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
                     .setOutputState(chatting$fbo(rt))
                     .createCompositeState(false));
 
-    private static final java.util.function.Function<RenderTarget, RenderType> CUSTOM_SOLID_LAYER = (rt) -> RenderType.create(
-            "chatting_solid", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR,
+    private static final Function<RenderTarget, RenderType> CUSTOM_SOLID_LAYER = (rt) -> RenderType.create(
+            "chatting_solid", DefaultVertexFormat.POSITION_COLOR,
             VertexFormat.Mode.QUADS, 786432, false, false,
             RenderType.CompositeState.builder()
-                    .setShaderState(net.minecraft.client.renderer.RenderStateShard.POSITION_COLOR_SHADER)
-                    .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setOutputState(chatting$fbo(rt))
                     .createCompositeState(false));
 
-    private static RenderType headLayer(net.minecraft.resources.ResourceLocation skin, RenderTarget rt) {
+    private static RenderType headLayer(ResourceLocation skin, RenderTarget rt) {
         return RenderType.create(
-                "chatting_head", com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR,
+                "chatting_head", DefaultVertexFormat.POSITION_TEX_COLOR,
                 VertexFormat.Mode.QUADS, 786432,
                 RenderType.CompositeState.builder()
-                        .setTextureState(new net.minecraft.client.renderer.RenderStateShard.TextureStateShard(skin, net.minecraft.util.TriState.FALSE, false))
-                        .setShaderState(net.minecraft.client.renderer.RenderStateShard.POSITION_TEXTURE_COLOR_SHADER)
-                        .setTransparencyState(net.minecraft.client.renderer.RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-                        .setDepthTestState(net.minecraft.client.renderer.RenderStateShard.LEQUAL_DEPTH_TEST)
+                        .setTextureState(new RenderStateShard.TextureStateShard(skin, TriState.FALSE, false))
+                        .setShaderState(RenderStateShard.POSITION_TEXTURE_COLOR_SHADER)
+                        .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                        .setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
                         .setOutputState(chatting$fbo(rt))
                         .createCompositeState(false));
     }
 
-    private static class OverrideVertexProvider extends net.minecraft.client.renderer.MultiBufferSource.BufferSource {
+    private static class OverrideVertexProvider extends MultiBufferSource.BufferSource {
         private final RenderTarget rt;
         private final RenderType textLayer;
-        private final com.mojang.blaze3d.vertex.BufferBuilder textBuffer;
-        private final com.mojang.blaze3d.vertex.ByteBufferBuilder headAllocator;
+        private final BufferBuilder textBuffer;
+        private final ByteBufferBuilder headAllocator;
 
         private final RenderType solidLayer;
 
         private RenderType headLayer;
-        private com.mojang.blaze3d.vertex.BufferBuilder headBuffer;
-        private com.mojang.blaze3d.vertex.BufferBuilder solidBuffer;
+        private BufferBuilder headBuffer;
+        private BufferBuilder solidBuffer;
 
-        private OverrideVertexProvider(com.mojang.blaze3d.vertex.ByteBufferBuilder allocator, RenderTarget rt) {
-            super(allocator, it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps.emptyMap());
+        private OverrideVertexProvider(ByteBufferBuilder allocator, RenderTarget rt) {
+            super(allocator, Object2ObjectSortedMaps.emptyMap());
             this.rt = rt;
             this.solidLayer = CUSTOM_SOLID_LAYER.apply(rt);
             this.textLayer = CUSTOM_TEXT_LAYER.apply(rt);
-            this.textBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
-            this.headAllocator = new com.mojang.blaze3d.vertex.ByteBufferBuilder(256);
+            this.textBuffer = new BufferBuilder(this.sharedBuffer, textLayer.mode(), textLayer.format());
+            this.headAllocator = new ByteBufferBuilder(256);
         }
 
         @Override
-        public com.mojang.blaze3d.vertex.VertexConsumer getBuffer(RenderType renderType) {
+        public VertexConsumer getBuffer(RenderType renderType) {
             if (this.headBuffer != null) return this.headBuffer;
             return this.solidBuffer != null ? this.solidBuffer : this.textBuffer;
         }
 
         // route following blits into a dedicated head layer sharing our framebuffer because each head has its own skin texture and must flush first
-        public void beginHead(net.minecraft.resources.ResourceLocation skin) {
+        public void beginHead(ResourceLocation skin) {
             this.headLayer = headLayer(skin, rt);
-            this.headBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
+            this.headBuffer = new BufferBuilder(this.headAllocator, headLayer.mode(), headLayer.format());
         }
 
         public void endHead() {
@@ -294,7 +308,7 @@ public final class ChatScreenshot {
         }
 
         public void beginSolid() {
-            this.solidBuffer = new com.mojang.blaze3d.vertex.BufferBuilder(this.headAllocator, solidLayer.mode(), solidLayer.format());
+            this.solidBuffer = new BufferBuilder(this.headAllocator, solidLayer.mode(), solidLayer.format());
         }
 
         public void endSolid() {
@@ -322,7 +336,7 @@ public final class ChatScreenshot {
         int bg = style.background() ? backgroundColor(mc) : 0x00000000;
         rt.setClearColor(((bg >> 16) & 0xFF) / 255f, ((bg >> 8) & 0xFF) / 255f, (bg & 0xFF) / 255f, (bg >>> 24) / 255f);
         rt.clear();
-        OverrideVertexProvider consumer = new OverrideVertexProvider(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256), rt);
+        OverrideVertexProvider consumer = new OverrideVertexProvider(new ByteBufferBuilder(256), rt);
         GuiGraphics context = new GuiGraphics(mc, consumer);
         context.pose().scale((float) mc.getWindow().getGuiScaledWidth() / width, (float) mc.getWindow().getGuiScaledHeight() / height, 1f);
         int m = style.border() ? 1 : 0;
@@ -430,8 +444,8 @@ public final class ChatScreenshot {
     }
 
     private static File uniqueFile(File dir) {
-        String stamp = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
+        String stamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
         int i = 1;
         File file;
         while ((file = new File(dir, stamp + (i == 1 ? "" : "_" + i) + ".png")).exists()) {
@@ -469,6 +483,8 @@ import org.polyfrost.oneconfig.utils.v1.ClipboardHelper;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.IntBuffer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -683,8 +699,8 @@ public final class ChatScreenshot {
     }
 
     private static File uniqueFile(File dir) {
-        String stamp = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
+        String stamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
         int i = 1;
         File file;
         while ((file = new File(dir, stamp + (i == 1 ? "" : "_" + i) + ".png")).exists()) {
