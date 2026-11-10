@@ -191,7 +191,8 @@ tasks {
             "mod_version" to modversion,
             "mod_description" to moddescription,
             "minecraft_version_range" to versionrange,
-            "loader_version" to loaderversion
+            "loader_version" to loaderversion,
+            "oneconfig_version" to oneconfigversion,
         )
 
         inputs.properties(props)
