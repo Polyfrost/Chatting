@@ -9,7 +9,7 @@ plugins {
     id("dev.kikugie.loom-back-compat")
     id("org.jetbrains.kotlin.jvm") version "2.4.20"
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.20"
-    id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT" apply false
+    id("net.fabricmc.fabric-loom-remap") version "1.19-SNAPSHOT" apply false
     id("ploceus") version "1.17.4" apply false
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
