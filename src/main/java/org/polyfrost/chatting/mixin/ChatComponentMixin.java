@@ -577,6 +577,11 @@ public class ChatComponentMixin implements ChatComponentHook {
     private int chatting$alignComponentHitTest(int original) {
         return ChattingConfig.INSTANCE.getModEnabled() ? 40 : original;
     }
+
+    @ModifyVariable(method = "getMessageAt", at = @At(value = "STORE", ordinal = 0), index = 11)
+    private int chatting$skipHeadInHitTest(int textX, @Local ChatMessage line) {
+        return textX + chatting$headOffset(line);
+    }
     *///?}
 
     //? if > 1.8.9 <=1.21.10 {
@@ -714,7 +719,13 @@ public class ChatComponentMixin implements ChatComponentHook {
             // heads leave blending off
             GlStateManager.enableBlend();
         }
-        return ChatHeads.INSTANCE.shouldOffset(info) ? x + 10.0F : x;
+        return x + chatting$headOffset(line);
+    }
+
+    @Unique
+    private static int chatting$headOffset(ChatMessage line) {
+        if (!ChattingConfig.INSTANCE.getShowChatHeads()) return 0;
+        return ChatHeads.INSTANCE.shouldOffset(((ChatLineHook) line).chatting$getPlayerInfo()) ? 10 : 0;
     }
 
     @ModifyArgs(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 0))
