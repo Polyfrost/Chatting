@@ -102,8 +102,10 @@ object ChatHeads {
             PlayerFaceExtractor.extractRenderState(graphics, info.skin, x, y, 8, color)
             //?} elif >=1.21.4 {
             /*PlayerFaceRenderer.draw(graphics, info.skin, x, y, 8, color)
+            *///?} elif > 1.8.9 {
+            /*withColor(graphics, color) { PlayerFaceRenderer.draw(graphics, info.skin, x, y, 8) }
             *///?} else
-            //withColor(graphics, color) { PlayerFaceRenderer.draw(graphics, info.skin, x, y, 8) }
+            //withColor(graphics, color) { PlayerFaceRenderer.draw(graphics, info.skinTexture, x, y, 8) }
             return
         }
         val size = head.textureSize

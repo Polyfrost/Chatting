@@ -1,23 +1,23 @@
+@file:OptIn(ExperimentalOneConfigUiApi::class)
+
 package org.polyfrost.chatting.chat
 
 import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.client.renderer.texture.DynamicTexture
 import org.polyfrost.chatting.config.ChattingConfig
+import org.polyfrost.compose.render.PolyBitmap
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
+import org.polyfrost.oneconfig.api.ui.v1.components.PlayerHeads
+import org.polyfrost.oneconfig.api.ui.v1.components.PlayerSkinLayers
+import org.polyfrost.oneconfig.api.ui.v1.components.PlayerSkinLayersResult
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import kotlin.math.min
 //? if >=1.21.11 || =1.8.9 {
 import net.minecraft.resources.Identifier
 //?} else
 //import net.minecraft.resources.ResourceLocation as Identifier
-//? if <1.21.4 {
-/*//~ if =1.8.9 'com.mojang.blaze3d.platform' -> 'net.minecraft.client.render.platform'
-import com.mojang.blaze3d.platform.GlStateManager
-import org.lwjgl.opengl.GL11
-*///?}
 //? if = 1.8.9 {
-/*import net.minecraft.client.render.texture.HttpTexture
-import net.minecraft.client.render.texture.TextureManager
+/*import net.minecraft.client.render.texture.TextureManager
 *///?}
 
 object HeadTextures {
@@ -42,8 +42,6 @@ object HeadTextures {
     private const val FALLBACK_COLOR = 0x7F7F7F
 
     private const val MAX_ENTRIES = 256
-
-    private const val MAX_SCALE = 4
 
     private val evicted = HashMap<Identifier, Entry>()
 
@@ -80,16 +78,20 @@ object HeadTextures {
         evicted.clear()
     }
 
-    //~ if <1.21.10 '.body().texturePath()' -> '.texture()'
+    //? if >=1.21.10 {
     private fun skin(info: PlayerInfo): Identifier = info.skin.body().texturePath()
+    //?} elif > 1.8.9 {
+    /*private fun skin(info: PlayerInfo): Identifier = info.skin.texture()
+    *///?} else
+    //private fun skin(info: PlayerInfo): Identifier = info.skinTexture
 
     private fun entry(skin: Identifier): Entry? {
         val cached = entries[skin] ?: evicted.remove(skin)?.also { entries[skin] = it }
         if (cached != null && (cached.unreadable || cached.head != null)) return cached
-        val layers = try {
-            readLayers(skin) ?: return cached // not uploaded yet, retry on the next draw
-        } catch (e: Exception) {
-            return (cached ?: Entry(null).also { entries[skin] = it }).apply { unreadable = true }
+        val layers = when (val result = PlayerHeads.skinLayers(skin.toString())) {
+            is PlayerSkinLayersResult.Loaded -> layers(result.layers)
+            PlayerSkinLayersResult.Pending -> return cached
+            PlayerSkinLayersResult.Unreadable -> return (cached ?: Entry(null).also { entries[skin] = it }).apply { unreadable = true }
         }
         val entry = cached ?: Entry(average(layers)).also { entries[skin] = it }
         if (ChattingConfig.improvedHeads) entry.threeD = register(skin, "3d", 9 * layers.size, 9) { x, y -> threeDPixel(layers, x, y) }
@@ -97,51 +99,14 @@ object HeadTextures {
         return entry
     }
 
-    // null if the skin isn't uploaded yet, throws if its pixels can't be read
-    private fun readLayers(skin: Identifier): Layers? {
-        val texture = mc.textureManager.getTexture(skin)
-        //~ if =1.8.9 'DynamicTexture' -> 'HttpTexture'
-        (texture as? DynamicTexture)?.pixels?.let { return layers(it) }
-        //? if >=1.21.4 {
-        return mc.resourceManager.open(skin).use { NativeImage.read(it) }.use { layers(it) }
-        //?} elif > 1.8.9 {
-        /*// downloaded skins free their image once uploaded, so read back from the GPU
-        val previous = GlStateManager._getInteger(GL11.GL_TEXTURE_BINDING_2D)
-        GlStateManager._bindTexture(texture.id)
-        try {
-            val width = GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH)
-            val height = GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT)
-            if (width <= 0 || height <= 0) return null
-            return NativeImage(width, height, false).use { it.downloadTexture(0, false); layers(it) }
-        } finally {
-            GlStateManager._bindTexture(previous)
-        }
-        *///?} else {
-        /*// skins still downloading retry on the next draw, while default skins are read back from the GPU
-        if (texture == null || texture is HttpTexture) return null
-        val previous = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D)
-        GlStateManager.bindTexture(texture.glId)
-        try {
-            val width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH)
-            val height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT)
-            if (width <= 0 || height <= 0) return null
-            return NativeImage(width, height, false).use { it.downloadTexture(0, false); layers(it) }
-        } finally {
-            GlStateManager.bindTexture(previous)
-        }
-        *///?}
-    }
+    private fun layers(skin: PlayerSkinLayers): Layers = Layers(skin.size, skin.face.argb(), skin.hat.argb())
 
-    private fun layers(image: NativeImage): Layers {
-        val scale = image.width / 64
-        require(scale >= 1 && image.height >= 16 * scale) { "unsupported skin size ${image.width}x${image.height}" }
-        val s = min(scale, MAX_SCALE)
-        val size = 8 * s
-        // nearest-neighbour downsample of HD skins, output texel x reads source texel x * scale / s
-        fun layer(u: Int) = IntArray(size * size) {
-            image.argb(u * scale + it % size * scale / s, 8 * scale + it / size * scale / s)
-        }
-        return Layers(size, layer(8), layer(40))
+    private fun PolyBitmap.argb(): IntArray = IntArray(width * height) {
+        val i = it * 4
+        ((pixels[i + 3].toInt() and 0xFF) shl 24) or
+            ((pixels[i].toInt() and 0xFF) shl 16) or
+            ((pixels[i + 1].toInt() and 0xFF) shl 8) or
+            (pixels[i + 2].toInt() and 0xFF)
     }
 
     private fun flatPixel(layers: Layers, x: Int, y: Int): Int {
@@ -207,13 +172,9 @@ object HeadTextures {
     }
 
     //? if >=1.21.4 {
-    private fun NativeImage.argb(x: Int, y: Int): Int = getPixel(x, y)
-
     private fun NativeImage.setArgb(x: Int, y: Int, argb: Int) = setPixel(x, y, argb)
     //?} else {
-    /*private fun NativeImage.argb(x: Int, y: Int): Int = swapRedBlue(getPixelRGBA(x, y))
-
-    private fun NativeImage.setArgb(x: Int, y: Int, argb: Int) = setPixelRGBA(x, y, swapRedBlue(argb))
+    /*private fun NativeImage.setArgb(x: Int, y: Int, argb: Int) = setPixelRGBA(x, y, swapRedBlue(argb))
 
     private fun swapRedBlue(color: Int): Int =
         (color and 0xFF00FF00.toInt()) or ((color and 0xFF) shl 16) or ((color shr 16) and 0xFF)
