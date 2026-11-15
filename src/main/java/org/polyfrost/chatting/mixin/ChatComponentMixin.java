@@ -4,6 +4,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.polyfrost.chatting.Chatting;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -37,7 +40,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
@@ -63,7 +65,6 @@ import net.minecraft.client.render.platform.GlStateManager;
 import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 *///?}
 
@@ -393,22 +394,22 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     //? if = 1.8.9 {
     /*// ordinal 0 is trimmedMessages, ordinal 1 is history
-    @Redirect(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", ordinal = 0))
-    private void chatting$tagHead(List<Object> list, int index, Object element) {
+    @WrapOperation(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", ordinal = 0))
+    private void chatting$tagHead(List<Object> list, int index, Object element, Operation<Void> original) {
         chatting$applyHead(element);
-        list.add(index, element);
+        original.call(list, index, element);
     }
     *///?} elif <=1.21.10 {
-    /*@Redirect(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
-    private void chatting$tagHead(List<Object> list, int index, Object element) {
+    /*@WrapOperation(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V"))
+    private void chatting$tagHead(List<Object> list, int index, Object element, Operation<Void> original) {
         chatting$applyHead(element);
-        list.add(index, element);
+        original.call(list, index, element);
     }
     *///?} else {
-    @Redirect(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;addFirst(Ljava/lang/Object;)V"))
-    private void chatting$tagHead(List<Object> list, Object element) {
+    @WrapOperation(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Ljava/util/List;addFirst(Ljava/lang/Object;)V"))
+    private void chatting$tagHead(List<Object> list, Object element, Operation<Void> original) {
         chatting$applyHead(element);
-        list.addFirst(element);
+        original.call(list, element);
     }
     //?}
 
@@ -573,7 +574,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
 
     // chat is drawn 40px above the bottom edge but vanilla hit tests from 27
-    @ModifyConstant(method = "getMessageAt", constant = @Constant(intValue = 27))
+    @ModifyExpressionValue(method = "getMessageAt", at = @At(value = "CONSTANT", args = "intValue=27"))
     private int chatting$alignComponentHitTest(int original) {
         return ChattingConfig.INSTANCE.getModEnabled() ? 40 : original;
     }
@@ -598,7 +599,7 @@ public class ChatComponentMixin implements ChatComponentHook {
     }
 
     @Unique
-    private void chatting$drawHoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, GuiMessage.Line line) {
+    private void chatting$drawHoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, GuiMessage.Line line, Operation<Void> original) {
         boolean focused = ((ChatComponent) (Object) this).isChatFocused();
         if (focused) {
             x2 += ChatButtons.extraBackgroundWidth();
@@ -619,7 +620,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         //?}
         boolean bottom = y2 == chatBottom;
         chatting$sawLineFill = true;
-        RoundedChat.fill(graphics::fill, RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
+        RoundedChat.fill(original::call, RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
     }
 
     // identity rather than indexOf because indexOf collapses duplicate messages
@@ -666,40 +667,40 @@ public class ChatComponentMixin implements ChatComponentHook {
     ^///?}
 
     //? if <=1.21.5 {
-    /^@Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
-    private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, @Local GuiMessage.Line line) {
-        chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line);
+    /^@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
+    private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original, @Local GuiMessage.Line line) {
+        chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line, original);
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I", ordinal = 0))
-    private int chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, @Local GuiMessage.Line line) {
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I", ordinal = 0))
+    private int chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, Operation<Integer> original, @Local GuiMessage.Line line) {
         color = SmoothChat.INSTANCE.fadeColor(line.content(), color);
         int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
         switch (ChattingConfig.INSTANCE.getTextRenderType()) {
             case 0:
-                return graphics.drawString(font, text, dx, y, color, false);
+                return original.call(graphics, font, text, dx, y, color, false);
             default:
-                return graphics.drawString(font, text, dx, y, color);
+                return original.call(graphics, font, text, dx, y, color);
         }
     }
     ^///?} else {
     
     // method_71991 = line text drawString and method_71992 = line background fill
-    @Redirect(method = "method_71992", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
-    private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, @Local(argsOnly = true) GuiMessage.Line line) {
-        chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line);
+    @WrapOperation(method = "method_71992", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 0))
+    private void chatting$hoverBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original, @Local(argsOnly = true) GuiMessage.Line line) {
+        chatting$drawHoverBackground(graphics, x1, y1, x2, y2, color, line, original);
     }
 
-    @Redirect(method = "method_71991", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)V", ordinal = 0))
-    private void chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, @Local(argsOnly = true) GuiMessage.Line line) {
+    @WrapOperation(method = "method_71991", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)V", ordinal = 0))
+    private void chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, Operation<Void> original, @Local(argsOnly = true) GuiMessage.Line line) {
         color = SmoothChat.INSTANCE.fadeColor(line.content(), color);
         int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
         switch (ChattingConfig.INSTANCE.getTextRenderType()) {
             case 0:
-                graphics.drawString(font, text, dx, y, color, false);
+                original.call(graphics, font, text, dx, y, color, false);
                 break;
             default:
-                graphics.drawString(font, text, dx, y, color);
+                original.call(graphics, font, text, dx, y, color);
         }
     }
     //?}
@@ -778,11 +779,12 @@ public class ChatComponentMixin implements ChatComponentHook {
         return ChatHover.highlighted((ChatComponent) (Object) this, mouseX, mouseY, -bottom / 9 + ChatHover.scrollPos());
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;drawWithShadow(Ljava/lang/String;FFI)I"))
-    private int chatting$renderLine(Font font, String text, float x, float y, int color, @Local ChatMessage line) {
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;drawWithShadow(Ljava/lang/String;FFI)I"))
+    private int chatting$renderLine(Font font, String text, float x, float y, int color, Operation<Integer> original, @Local ChatMessage line) {
         color = SmoothChat.INSTANCE.fadeColor(line, color);
         float dx = chatting$drawHead(line, x, y, color >>> 24);
-        return font.draw(text, dx, y, color, ChattingConfig.INSTANCE.getTextRenderType() != 0);
+        if (ChattingConfig.INSTANCE.getTextRenderType() == 0) return font.draw(text, dx, y, color, false);
+        return original.call(text, dx, y, color);
     }
     *///?}
 
@@ -798,9 +800,9 @@ public class ChatComponentMixin implements ChatComponentHook {
         return age + chatting$fadeOffset();
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;isChatFocused()Z"))
-    private boolean chatting$fadeFocused(ChatComponent chat) {
-        return !ChattingConfig.INSTANCE.getFade() || chat.isChatFocused() || ChatWindowHud.isEditing();
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;isChatFocused()Z"))
+    private boolean chatting$fadeFocused(ChatComponent chat, Operation<Boolean> original) {
+        return !ChattingConfig.INSTANCE.getFade() || original.call() || ChatWindowHud.isEditing();
     }
     *///?} elif <=1.21.5 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage$Line;addedTime()I"))
@@ -839,80 +841,80 @@ public class ChatComponentMixin implements ChatComponentHook {
     //?}
 
     //? if = 1.8.9 {
-    /*@Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
-    private int chatting$smoothScrollPos(ChatComponent instance) {
-        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    /*@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(int original) {
+        return chatting$previewing ? 0 : (ChattingConfig.INSTANCE.getSmoothScrolling() ? ChatScrolling.INSTANCE.pos() : original);
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 1))
-    private void chatting$scrollBar1(int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) GuiElement.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 1))
+    private boolean chatting$scrollBar1(int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 2))
-    private void chatting$scrollBar2(int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) GuiElement.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;fill(IIIII)V", ordinal = 2))
+    private boolean chatting$scrollBar2(int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
     *///?} elif <=1.21.5 {
-    /*@Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
-    private int chatting$smoothScrollPos(ChatComponent instance) {
-        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    /*@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(int original) {
+        return chatting$previewing ? 0 : (ChattingConfig.INSTANCE.getSmoothScrolling() ? ChatScrolling.INSTANCE.pos() : original);
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIIII)V"))
-    private void chatting$scrollBar(GuiGraphics graphics, int x1, int y1, int x2, int y2, int z, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, z, color);
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIIII)V"))
+    private boolean chatting$scrollBar(GuiGraphics graphics, int x1, int y1, int x2, int y2, int z, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
     *///?}
 
     //? if >=1.21.8 <=1.21.10 {
-    /*@Redirect(method = {"render", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
-    private int chatting$smoothScrollPos(ChatComponent instance) {
-        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    /*@ModifyExpressionValue(method = {"render", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(int original) {
+        return chatting$previewing ? 0 : (ChattingConfig.INSTANCE.getSmoothScrolling() ? ChatScrolling.INSTANCE.pos() : original);
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 1))
-    private void chatting$scrollBar1(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 1))
+    private boolean chatting$scrollBar1(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 2))
-    private void chatting$scrollBar2(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) graphics.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 2))
+    private boolean chatting$scrollBar2(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
     *///?}
 
     //? if >=1.21.11 <26 {
-    /*@Redirect(method = {"render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
-    private int chatting$smoothScrollPos(ChatComponent instance) {
-        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    /*@ModifyExpressionValue(method = {"render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(int original) {
+        return chatting$previewing ? 0 : (ChattingConfig.INSTANCE.getSmoothScrolling() ? ChatScrolling.INSTANCE.pos() : original);
     }
 
-    @Redirect(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 1))
-    private void chatting$scrollBar1(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 1))
+    private boolean chatting$scrollBar1(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
 
-    @Redirect(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
-    private void chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
+    private boolean chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
     *///?}
 
     //? if >=26 {
-    @Redirect(method = {"extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
-    private int chatting$smoothScrollPos(ChatComponent instance) {
-        return chatting$previewing ? 0 : ChatScrolling.INSTANCE.pos();
+    @ModifyExpressionValue(method = {"extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", "forEachLine"}, at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int chatting$smoothScrollPos(int original) {
+        return chatting$previewing ? 0 : (ChattingConfig.INSTANCE.getSmoothScrolling() ? ChatScrolling.INSTANCE.pos() : original);
     }
 
-    @Redirect(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
-    private void chatting$scrollBar1(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 2))
+    private boolean chatting$scrollBar1(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
 
-    @Redirect(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 3))
-    private void chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
-        if (!ChattingConfig.INSTANCE.getRemoveScrollBar()) access.fill(x1, y1, x2, y2, color);
+    @WrapWithCondition(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;fill(IIIII)V", ordinal = 3))
+    private boolean chatting$scrollBar2(ChatComponent.ChatGraphicsAccess access, int x1, int y1, int x2, int y2, int color) {
+        return !ChattingConfig.INSTANCE.getRemoveScrollBar();
     }
     //?}
 }

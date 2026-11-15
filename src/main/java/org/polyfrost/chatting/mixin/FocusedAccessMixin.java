@@ -1,5 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 //? if >=1.21.11 {
 import org.polyfrost.chatting.chat.ChatBackground;
 import org.polyfrost.chatting.chat.ChatButtons;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -39,9 +40,9 @@ public class FocusedAccessMixin {
     }
 
     //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
-    @Redirect(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+    @WrapOperation(method = "fill", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
     //~ if <26 'GuiGraphicsExtractor' -> 'GuiGraphics'
-    private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color) {
+    private void chatting$hoverFill(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original) {
         int chatting$ex2 = chatting$chatFocused() ? x2 + ChatButtons.extraBackgroundWidth() : x2;
         // line backgrounds are the only fills through this method with x1 == -4
         boolean chatting$lineFill = x1 == -4;
@@ -50,7 +51,7 @@ public class FocusedAccessMixin {
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill && y2 == chatting$chatBottom;
         if (chatting$lineFill) chatting$sawLineFill = true;
-        RoundedChat.fill(graphics::fill, RoundedChat.scaler(graphics.pose()),
+        RoundedChat.fill(original::call, RoundedChat.scaler(graphics.pose()),
             x1, y1, chatting$ex2, y2, chatting$c, chatting$top, chatting$bottom);
     }
 
