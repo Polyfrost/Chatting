@@ -11,7 +11,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.20"
     id("net.fabricmc.fabric-loom-remap") version "1.19-SNAPSHOT" apply false
     id("ploceus") version "1.17.4" apply false
-    id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
     id("dev.detekt") version "2.0.0-alpha.6"
     id("net.ltgt.errorprone") version "5.1.1"
@@ -77,7 +76,6 @@ repositories {
     maven("https://maven.cloverclient.com/releases") {
         content { includeGroup("pl.tomgirl") }
     }
-    strictMaven("https://maven.deftu.dev/releases", "Deftu", "dev.deftu")
     strictMaven(if (isOrnithe) "https://maven.ornithemc.net/releases" else "https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
     strictMaven("https://maven.fabricmc.net/", "FabricMC", "net.fabricmc")
     strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
@@ -167,12 +165,6 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions.jvmTarget = kotlinJvmTarget
-}
-
-bloom {
-    replacement("@MOD_ID@", modid)
-    replacement("@MOD_NAME@", modname)
-    replacement("@MOD_VERSION@", modversion)
 }
 
 tasks {
