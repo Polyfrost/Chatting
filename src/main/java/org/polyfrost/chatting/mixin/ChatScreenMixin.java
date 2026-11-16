@@ -1,5 +1,7 @@
 package org.polyfrost.chatting.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.Font;
@@ -21,6 +23,8 @@ import org.polyfrost.chatting.chat.ChatSearch;
 import org.polyfrost.chatting.chat.ChatShortcuts;
 import org.polyfrost.chatting.chat.ChatTabs;
 import org.polyfrost.chatting.chat.ChatTabsRenderer;
+import org.polyfrost.chatting.chat.InputBackground;
+import org.polyfrost.chatting.chat.RoundedChat;
 import org.polyfrost.chatting.chat.Textures;
 import org.polyfrost.chatting.config.ChattingConfig;
 import org.polyfrost.chatting.hook.ChatLineHook;
@@ -49,7 +53,8 @@ import net.minecraft.client.gui.GuiGraphics;
 //? if <1.21.4
 //import com.mojang.blaze3d.systems.RenderSystem;
 //? if = 1.8.9 {
-/*import org.lwjgl.input.Keyboard;
+/*import com.mojang.blaze3d.vertex.PoseStack;
+import org.lwjgl.input.Keyboard;
 import org.polyfrost.oneconfig.internal.legacy.KeyCodes;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 *///?}
@@ -243,6 +248,45 @@ public abstract class ChatScreenMixin extends Screen {
     private String chatting$applyShortcuts(String message) {
         return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentCommand(message));
     }
+
+    // the input box background is the only fill in this method
+    //? if >=26 {
+    @WrapOperation(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+    private void chatting$inputBackground(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original) {
+        int tinted = InputBackground.tint(color);
+        int radius = InputBackground.radius();
+        if (radius <= 0) {
+            original.call(graphics, x1, y1, x2, y2, tinted);
+            return;
+        }
+        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), RoundedChat.scaler(graphics.pose()),
+                x1, y1, x2, y2, tinted, radius, true, true);
+    }
+    //?} elif > 1.8.9 {
+    /*@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
+    private void chatting$inputBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, Operation<Void> original) {
+        int tinted = InputBackground.tint(color);
+        int radius = InputBackground.radius();
+        if (radius <= 0) {
+            original.call(graphics, x1, y1, x2, y2, tinted);
+            return;
+        }
+        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), RoundedChat.scaler(graphics.pose()),
+                x1, y1, x2, y2, tinted, radius, true, true);
+    }
+    *///?} else {
+    /*@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen;fill(IIIII)V"))
+    private void chatting$inputBackground(int x1, int y1, int x2, int y2, int color, Operation<Void> original) {
+        int tinted = InputBackground.tint(color);
+        int radius = InputBackground.radius();
+        if (radius <= 0) {
+            original.call(x1, y1, x2, y2, tinted);
+            return;
+        }
+        RoundedChat.fill((a, b, c, d, e) -> original.call(a, b, c, d, e), RoundedChat.scaler(new PoseStack(), 1f),
+                x1, y1, x2, y2, tinted, radius, true, true);
+    }
+    *///?}
 
     // draw tabs before the vanilla suggestion popup so suggestions paint on top Polyfrost/Chatting#101 Polyfrost/Chatting#135
     //? if >=26 {
