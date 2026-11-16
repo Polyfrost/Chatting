@@ -153,7 +153,7 @@ private fun ShortcutManagerContent(onClose: () -> Unit) {
         }
 
         val originalAlias = state.originalAlias
-        val conflicts = ChatShortcuts.shortcuts.any { it.first == alias && it.first != originalAlias }
+        val conflicts = ChatShortcuts.shortcuts.any { it.first.equals(alias, ignoreCase = true) && it.first != originalAlias }
         if (conflicts && !overwrite) {
             pendingOverwrite = state.copy(alias = alias, replacement = replacement)
             return

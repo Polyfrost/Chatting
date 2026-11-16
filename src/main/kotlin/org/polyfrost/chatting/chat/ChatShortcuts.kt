@@ -45,10 +45,11 @@ object ChatShortcuts {
     }
 
     fun writeShortcut(key: String, value: String) {
-        shortcuts.removeIf { it.first == key }
+        shortcuts.removeIf { it.first.equals(key, ignoreCase = true) }
         shortcuts.add(key to value)
         //~ if =1.8.9 'JsonParser.parseString(' -> 'JsonParser().parse('
         val obj = runCatching { JsonParser.parseString(shortcutsFile.readText()).asJsonObject }.getOrElse { JsonObject() }
+        obj.entrySet().map { it.key }.filter { it.equals(key, ignoreCase = true) }.forEach { obj.remove(it) }
         obj.addProperty(key, value)
         shortcutsFile.writeText(obj.toString())
     }
@@ -66,8 +67,9 @@ object ChatShortcuts {
         if (!ChattingConfig.chatShortcuts || !message.startsWith("/")) return message
         val command = message.substring(1)
         shortcuts.forEach {
-            if (command == it.first || (command.startsWith(it.first) && command.substringAfter(it.first).startsWith(" "))) {
-                return "/" + command.replaceFirst(it.first, it.second)
+            val alias = it.first
+            if (command.startsWith(alias, ignoreCase = true) && (command.length == alias.length || command[alias.length] == ' ')) {
+                return "/" + it.second + command.substring(alias.length)
             }
         }
         return message
