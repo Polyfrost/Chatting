@@ -48,6 +48,5 @@ accessible	field	net/minecraft/client/renderer/GameRenderer	guiRenderer	Lnet/min
 
 #? if = 1.8.9 {
 #inject-interface	net/minecraft/client/Options	org/polyfrost/chatting/compat/OptionsCompat
-#inject-interface	net/minecraft/client/multiplayer/PlayerInfo	org/polyfrost/chatting/compat/PlayerInfoCompat
 #accessible	field	net/minecraft/client/render/texture/TextureManager	textures	Ljava/util/Map;
 #?}

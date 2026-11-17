@@ -54,8 +54,8 @@ import net.minecraft.client.gui.GuiGraphics;
 //import com.mojang.blaze3d.systems.RenderSystem;
 //? if = 1.8.9 {
 /*import com.mojang.blaze3d.vertex.PoseStack;
-import org.lwjgl.input.Keyboard;
-import org.polyfrost.oneconfig.internal.legacy.KeyCodes;
+import org.polyfrost.oneconfig.api.platform.v1.Keys;
+import org.polyfrost.oneconfig.api.platform.v1.Platform;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 *///?}
 //? if >=1.21.10 {
@@ -741,7 +741,7 @@ public abstract class ChatScreenMixin extends Screen {
         chatting$shiftHeld = Screen.isShiftDown();
         chatting$altHeld = Screen.isAltDown();
         if (chatting$searchBox != null && chatting$searchBox.isVisible()) chatting$searchBox.mouseClicked(mouseX, mouseY, button);
-        button = KeyCodes.mouseFromLegacy(button);
+        button = Platform.compatibility().keys().mouseFromNative(button);
     *///?}
         chatting$shortcutHeld = ChatHover.ctrlHeld();
         if (button == InputConstants.MOUSE_BUTTON_LEFT) chatting$leftClicked = true;
@@ -778,7 +778,7 @@ public abstract class ChatScreenMixin extends Screen {
     *///?} else {
     /*@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void chatting$clickTabs(int mouseX, int mouseY, int button, CallbackInfo ci) {
-        if (KeyCodes.mouseFromLegacy(button) == InputConstants.MOUSE_BUTTON_LEFT && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.isShiftDown())) {
+        if (Platform.compatibility().keys().mouseFromNative(button) == InputConstants.MOUSE_BUTTON_LEFT && ChatTabsRenderer.INSTANCE.click(mouseX, mouseY, Screen.isShiftDown())) {
             ci.cancel();
         }
     }
@@ -803,7 +803,8 @@ public abstract class ChatScreenMixin extends Screen {
     /*// the focused search box takes every key but escape
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void chatting$suppressSearchKeys(char chr, int keyCode, CallbackInfo ci) {
-        if (chatting$searchBox != null && chatting$searchBox.isFocused() && keyCode != Keyboard.KEY_ESCAPE) {
+        Keys keys = Platform.compatibility().keys();
+        if (chatting$searchBox != null && chatting$searchBox.isFocused() && keys.keyFromNative(keyCode) != keys.getKeyEscape()) {
             chatting$searchBox.keyPressed(chr, keyCode);
             ChatSearch.INSTANCE.setQuery(chatting$searchBox.getValue());
             ci.cancel();
