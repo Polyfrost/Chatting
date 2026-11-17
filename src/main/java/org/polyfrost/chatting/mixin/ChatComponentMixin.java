@@ -620,7 +620,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         //?}
         boolean bottom = y2 == chatBottom;
         chatting$sawLineFill = true;
-        RoundedChat.fill(original::call, RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
+        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
     }
 
     // identity rather than indexOf because indexOf collapses duplicate messages
@@ -678,7 +678,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
         switch (ChattingConfig.INSTANCE.getTextRenderType()) {
             case 0:
-                return original.call(graphics, font, text, dx, y, color, false);
+                return graphics.drawString(font, text, dx, y, color, false);
             default:
                 return original.call(graphics, font, text, dx, y, color);
         }
@@ -697,7 +697,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
         switch (ChattingConfig.INSTANCE.getTextRenderType()) {
             case 0:
-                original.call(graphics, font, text, dx, y, color, false);
+                graphics.drawString(font, text, dx, y, color, false);
                 break;
             default:
                 original.call(graphics, font, text, dx, y, color);
@@ -732,7 +732,9 @@ public class ChatComponentMixin implements ChatComponentHook {
         boolean rounded = ChattingConfig.INSTANCE.getRoundedChatCorners();
         int lineIndex = -bottom / 9;
         int[] bounds = rounded ? chatting$roundedBounds(ticks) : null;
-        RoundedChat.fill(GuiElement::fill, RoundedChat.scaler(new PoseStack()), left, top, right, bottom, color, rounded && lineIndex == bounds[1], rounded && lineIndex == bounds[0]);
+        // vanilla has applied the chat scale and the chat window pose adds its own on top
+        float poseScale = (float) ((ChatComponentAccessor) (Object) this).chatting$getScale() * (chatting$posed ? ChatWindowHud.chatScale() : 1f);
+        RoundedChat.fill(GuiElement::fill, RoundedChat.scaler(new PoseStack(), poseScale), left, top, right, bottom, color, rounded && lineIndex == bounds[1], rounded && lineIndex == bounds[0]);
         args.set(2, right);
         args.set(4, vanillaColor & 0x00FFFFFF);
     }
@@ -784,7 +786,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         color = SmoothChat.INSTANCE.fadeColor(line, color);
         float dx = chatting$drawHead(line, x, y, color >>> 24);
         if (ChattingConfig.INSTANCE.getTextRenderType() == 0) return font.draw(text, dx, y, color, false);
-        return original.call(text, dx, y, color);
+        return original.call(font, text, dx, y, color);
     }
     *///?}
 
@@ -802,7 +804,7 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;isChatFocused()Z"))
     private boolean chatting$fadeFocused(ChatComponent chat, Operation<Boolean> original) {
-        return !ChattingConfig.INSTANCE.getFade() || original.call() || ChatWindowHud.isEditing();
+        return !ChattingConfig.INSTANCE.getFade() || original.call(chat) || ChatWindowHud.isEditing();
     }
     *///?} elif <=1.21.5 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage$Line;addedTime()I"))

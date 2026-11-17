@@ -136,6 +136,26 @@ object ChattingConfig : Config(
     var unfocusedChatHeight = 90
         get() = field.coerceIn(20, 2160)
 
+    @Color(
+        title = "Input Box Background Color", category = "Input Box",
+        description = "The color of the chat input box background. Opacity stacks with Minecraft's own text background opacity."
+    )
+    var inputBackgroundColor = PolyColor.rgba(0, 0, 0, 255)
+
+    @Switch(
+        title = "Rounded Input Box Corners", category = "Input Box",
+        description = "Round the corners of the chat input box."
+    )
+    var roundedInputCorners = false
+        get() = modEnabled && field
+
+    @Slider(
+        title = "Corner Radius", category = "Input Box",
+        description = "Radius of the rounded input box corners, in GUI pixels.",
+        min = 1f, max = 6f, step = 1f
+    )
+    var inputCornerRadius = 4f
+
     @Switch(
         title = "Chat Peek", category = "Chat Peek",
         description = "Allows you to view / scroll chat while moving around."
@@ -412,6 +432,7 @@ object ChattingConfig : Config(
         addDependency("rightClickCopyCtrl", "rightClickCopy")
         addDependency("chatCornerRadius", "roundedChatCorners")
         addDependency("unfocusedChatBackgroundColor", "separateUnfocusedBackground")
+        addDependency("inputCornerRadius", "roundedInputCorners")
         addDependency("fadeTime", "fade")
         addDependency("offsetNonPlayerMessages", "showChatHeads")
         addDependency("hideChatHeadOnConsecutiveMessages", "showChatHeads")
