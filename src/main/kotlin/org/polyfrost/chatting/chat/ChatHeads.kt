@@ -9,7 +9,9 @@ import net.minecraft.util.FormattedCharSequence
 *///?}
 import org.polyfrost.chatting.config.ChattingConfig
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import java.lang.ref.WeakReference
 import java.util.Collections
+import java.util.IdentityHashMap
 import java.util.WeakHashMap
 //? if >=26.1 {
 import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
@@ -162,9 +164,27 @@ object ChatHeads {
     fun hasServerHeadFor(component: Component, info: PlayerInfo): Boolean = false
     *///?}
 
+    private const val DETECTED_LIMIT = 256
+    private val NO_HEAD = Any()
+
+    private val detected = IdentityHashMap<Component, Any>()
+    private var detectedConnection = WeakReference<Any>(null)
+    private var detectedPlayerCount = -1
+
     fun detect(message: Component): PlayerInfo? {
-        val info = detect(message.string) ?: return null
-        return if (hasServerHeadFor(message, info)) null else info
+        val connection = mc.connection
+        val playerCount = connection?.onlinePlayers?.size ?: 0
+        if (connection !== detectedConnection.get() || playerCount != detectedPlayerCount) {
+            detected.clear()
+            detectedConnection = WeakReference(connection)
+            detectedPlayerCount = playerCount
+        }
+        val cached = detected[message]
+        if (cached != null) return cached as? PlayerInfo
+        val info = detect(message.string)?.takeUnless { hasServerHeadFor(message, it) }
+        if (detected.size >= DETECTED_LIMIT) detected.clear()
+        detected[message] = info ?: NO_HEAD
+        return info
     }
 
     private fun detect(message: String): PlayerInfo? {
