@@ -51,7 +51,7 @@ public class FocusedAccessMixin {
         boolean chatting$top = chatting$lineFill && !chatting$sawLineFill;
         boolean chatting$bottom = chatting$lineFill && y2 == chatting$chatBottom;
         if (chatting$lineFill) chatting$sawLineFill = true;
-        RoundedChat.fill(original::call, RoundedChat.scaler(graphics.pose()),
+        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), RoundedChat.scaler(graphics.pose()),
             x1, y1, chatting$ex2, y2, chatting$c, chatting$top, chatting$bottom);
     }
 

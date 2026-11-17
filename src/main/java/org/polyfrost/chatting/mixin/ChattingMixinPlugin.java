@@ -23,6 +23,8 @@ public class ChattingMixinPlugin implements IMixinConfigPlugin {
         //? if >=1.21.6 {
         mixins.add("GuiRendererMixin");
         //?}
+        //? if <1.21.11
+        //mixins.add("TextShadowMixin");
         //? if = 1.8.9
         //mixins.add("MinecraftMixin");
         //? if > 1.8.9

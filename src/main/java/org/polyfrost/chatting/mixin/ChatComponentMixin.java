@@ -620,7 +620,7 @@ public class ChatComponentMixin implements ChatComponentHook {
         //?}
         boolean bottom = y2 == chatBottom;
         chatting$sawLineFill = true;
-        RoundedChat.fill(original::call, RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
+        RoundedChat.fill((a, b, c, d, e) -> original.call(graphics, a, b, c, d, e), RoundedChat.scaler(graphics.pose()), x1, y1, x2, y2, color, top, bottom);
     }
 
     // identity rather than indexOf because indexOf collapses duplicate messages
@@ -676,11 +676,11 @@ public class ChatComponentMixin implements ChatComponentHook {
     private int chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, Operation<Integer> original, @Local GuiMessage.Line line) {
         color = SmoothChat.INSTANCE.fadeColor(line.content(), color);
         int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
-        switch (ChattingConfig.INSTANCE.getTextRenderType()) {
-            case 0:
-                return original.call(graphics, font, text, dx, y, color, false);
-            default:
-                return original.call(graphics, font, text, dx, y, color);
+        Chatting.noShadowPass = ChattingConfig.INSTANCE.getTextRenderType() == 0;
+        try {
+            return original.call(graphics, font, text, dx, y, color);
+        } finally {
+            Chatting.noShadowPass = false;
         }
     }
     ^///?} else {
@@ -695,12 +695,11 @@ public class ChatComponentMixin implements ChatComponentHook {
     private void chatting$renderLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, Operation<Void> original, @Local(argsOnly = true) GuiMessage.Line line) {
         color = SmoothChat.INSTANCE.fadeColor(line.content(), color);
         int dx = chatting$drawHead(graphics, line, x, y, color >>> 24);
-        switch (ChattingConfig.INSTANCE.getTextRenderType()) {
-            case 0:
-                original.call(graphics, font, text, dx, y, color, false);
-                break;
-            default:
-                original.call(graphics, font, text, dx, y, color);
+        Chatting.noShadowPass = ChattingConfig.INSTANCE.getTextRenderType() == 0;
+        try {
+            original.call(graphics, font, text, dx, y, color);
+        } finally {
+            Chatting.noShadowPass = false;
         }
     }
     //?}
@@ -783,8 +782,12 @@ public class ChatComponentMixin implements ChatComponentHook {
     private int chatting$renderLine(Font font, String text, float x, float y, int color, Operation<Integer> original, @Local ChatMessage line) {
         color = SmoothChat.INSTANCE.fadeColor(line, color);
         float dx = chatting$drawHead(line, x, y, color >>> 24);
-        if (ChattingConfig.INSTANCE.getTextRenderType() == 0) return font.draw(text, dx, y, color, false);
-        return original.call(text, dx, y, color);
+        Chatting.noShadowPass = ChattingConfig.INSTANCE.getTextRenderType() == 0;
+        try {
+            return original.call(font, text, dx, y, color);
+        } finally {
+            Chatting.noShadowPass = false;
+        }
     }
     *///?}
 
@@ -802,7 +805,7 @@ public class ChatComponentMixin implements ChatComponentHook {
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;isChatFocused()Z"))
     private boolean chatting$fadeFocused(ChatComponent chat, Operation<Boolean> original) {
-        return !ChattingConfig.INSTANCE.getFade() || original.call() || ChatWindowHud.isEditing();
+        return !ChattingConfig.INSTANCE.getFade() || original.call(chat) || ChatWindowHud.isEditing();
     }
     *///?} elif <=1.21.5 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage$Line;addedTime()I"))

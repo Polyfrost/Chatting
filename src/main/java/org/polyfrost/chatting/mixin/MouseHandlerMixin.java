@@ -57,7 +57,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(Minecraft.class)
 public class MouseHandlerMixin {
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lorg/lwjgl/input/Mouse;getEventDWheel()I"))
-    private static int chatting$peekScroll(Operation<Integer> original) {
+    private int chatting$peekScroll(Operation<Integer> original) {
         int wheel = original.call();
         if (!Chatting.INSTANCE.getPeeking() || !ChattingConfig.INSTANCE.getPeekScrolling()) return wheel;
         Minecraft mc = Minecraft.getInstance();
