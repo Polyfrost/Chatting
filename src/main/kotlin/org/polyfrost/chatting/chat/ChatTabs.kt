@@ -85,6 +85,7 @@ object ChatTabs {
                     if (chatTabJson.version < 4) applyVersion4Changes(obj)
                     if (chatTabJson.version < 5) applyVersion5Changes(obj)
                     if (chatTabJson.version < 6) applyVersion6Changes(obj)
+                    if (chatTabJson.version < 7) applyVersion7Changes(obj)
                 }
                 chatTabJson.version = ChatTabsJson.VERSION
                 tabFile.writeText(GSON.toJson(chatTabJson))
@@ -165,6 +166,16 @@ object ChatTabs {
         }
     }
 
+    private fun applyVersion7Changes(json: JsonObject) {
+        if (!json.has("starts")) return
+        val starts = json["starts"].asJsonArray
+        val existing = starts.map { it.asString }
+        if ("Guild >" !in existing) return
+        listOf("Officer >", "O >").forEach {
+            if (it !in existing) starts.add(JsonPrimitive(it))
+        }
+    }
+
     private fun generateNewFile() {
         tabs.clear()
         val jsonObject = JsonObject()
@@ -240,7 +251,7 @@ object ChatTabs {
         )
         val guild = ChatTab(
             true, "GUILD", unformatted = true, lowercase = false,
-            startsWith = listOf("Guild >", "G >"),
+            startsWith = listOf("Guild >", "G >", "Officer >", "O >"),
             contains = null, endsWith = null, equals = null, uncompiledRegex = null,
             ignoreStartsWith = null, ignoreContains = null, ignoreEndsWith = null, ignoreEquals = null, uncompiledIgnoreRegex = null,
             color = ChatTab.COLOR, hoveredColor = ChatTab.HOVERED_COLOR, selectedColor = ChatTab.SELECTED_COLOR, prefix = "/gc "

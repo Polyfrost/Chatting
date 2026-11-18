@@ -96,7 +96,9 @@ something like this:
       "lowercase": false,
       "starts": [
         "Guild >",
-        "G >"
+        "G >",
+        "Officer >",
+        "O >"
       ],
       "color": 14737632,
       "hovered_color": 16777120,
@@ -117,12 +119,12 @@ something like this:
       "prefix": "/r "
     }
   ],
-  "version": 6
+  "version": 7
 }
 ```
 
 The `version` property stores the version number of the Chat Tabs JSON file. This should not be touched unless you have
-an older Chat Tab JSON and would like Chatting to automatically migrate to the newer version. The current version is `4`
+an older Chat Tab JSON and would like Chatting to automatically migrate to the newer version. The current version is `7`
 .
 
 The `tabs` property stores all the chat tabs, in the order they should be displayed in. By default, there are 4 chat
@@ -236,6 +238,9 @@ This can be used to automatically send messages in a specific channel in servers
 The `lowercase` property makes the message trigger lowercase.
 
 ## Chat Tabs JSON Changelogs
+
+### Version 7
+- Added officer chat (`Officer >` and `O >`) to the GUILD tab
 
 ### Version 6 (Chatting 1.4.2 beta5)
 - Changed PM tab to use regex instead of starts and sets `unformatted` to false
