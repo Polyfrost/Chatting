@@ -100,9 +100,6 @@ dependencies {
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
     modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion")
-    for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "notifications", "ui", "utils", "hud")) {
-        implementation("org.polyfrost.oneconfig:$module:$oneconfigversion")
-    }
     implementation("org.polyfrost:polyui:${sc.properties.get<String>("deps.polyui")}")
 
     modCompileOnly("com.terraformersmc:modmenu:$modmenuversion") { isTransitive = false }
