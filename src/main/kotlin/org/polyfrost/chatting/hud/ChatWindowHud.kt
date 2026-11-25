@@ -36,6 +36,8 @@ class ChatWindowHud : LegacyHud(
 
     override fun hasBackground() = false
 
+    override val previewsBehindMenu: Boolean get() = false
+
     override fun multipleInstancesAllowed() = false
 
     override fun deletable() = false
@@ -68,7 +70,7 @@ class ChatWindowHud : LegacyHud(
     /*override fun render() {
         val mcCtx = GuiGraphics()
     *///?}
-        if (!HudManager.isEditing) return
+        if (!HudManager.isPreviewing(this)) return
         tickPosition(this)
         val w = width.toInt()
         val h = height.toInt()
@@ -195,21 +197,21 @@ class ChatWindowHud : LegacyHud(
         private fun placed(): ChatWindowHud? = instance?.takeIf { it.isReal }
 
         @JvmStatic
-        fun isEditing(): Boolean = ChattingConfig.modEnabled && HudManager.isEditing
+        fun isEditing(): Boolean = ChattingConfig.modEnabled && instance?.let(HudManager::isPreviewing) == true
 
         @JvmStatic
         fun isActive(): Boolean {
             if (!ChattingConfig.modEnabled) return false
             val hud = placed() ?: return false
             if (hud.hidden) return false
-            return HudManager.isEditing || ChattingConfig.chatWindowMoved || hud.effectiveScale != 1f
+            return HudManager.isPreviewing(hud) || ChattingConfig.chatWindowMoved || hud.effectiveScale != 1f
         }
 
         @JvmStatic
         fun shouldHideForVisibility(chatFocused: Boolean): Boolean {
             if (!ChattingConfig.modEnabled) return false
             val hud = placed() ?: return false
-            if (HudManager.isEditing) return false
+            if (HudManager.isPreviewing(hud)) return false
             if (HudManager.isDebugScreenVisible && !hud.showInF3) return true
             if (HudManager.isTabListVisible && !hud.showInTab) return true
             if (HudManager.isGuiScreenOpen && !chatFocused && !hud.showInScreens) return true
