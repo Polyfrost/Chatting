@@ -250,7 +250,7 @@ public abstract class ChatScreenMixin extends Screen {
     //? if = 1.8.9 {
     /*@ModifyVariable(method = "setMessageHistory", at = @At("HEAD"), argsOnly = true)
     private String[] chatting$completePlayerNames(String[] completions) {
-        if (completions.length > 0) return completions;
+        if (completions.length > 0 || !ChattingConfig.INSTANCE.getModEnabled()) return completions;
         String text = input.getValue().substring(0, input.getCursor());
         int space = text.lastIndexOf(' ');
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
