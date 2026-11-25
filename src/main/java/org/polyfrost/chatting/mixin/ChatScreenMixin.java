@@ -49,9 +49,12 @@ import net.minecraft.client.gui.GuiGraphics;
 //? if <1.21.4
 //import com.mojang.blaze3d.systems.RenderSystem;
 //? if = 1.8.9 {
-/*import org.polyfrost.oneconfig.api.platform.v1.Keys;
+/*import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import org.polyfrost.oneconfig.api.platform.v1.Keys;
 import org.polyfrost.oneconfig.api.platform.v1.Platform;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import java.util.Locale;
 *///?}
 //? if >=1.21.10 {
 import net.minecraft.client.input.KeyEvent;
@@ -243,6 +246,23 @@ public abstract class ChatScreenMixin extends Screen {
     private String chatting$applyShortcuts(String message) {
         return ChatTabs.INSTANCE.applyPrefix(ChatShortcuts.INSTANCE.handleSentCommand(message));
     }
+
+    //? if = 1.8.9 {
+    /*@ModifyVariable(method = "setMessageHistory", at = @At("HEAD"), argsOnly = true)
+    private String[] chatting$completePlayerNames(String[] completions) {
+        if (completions.length > 0) return completions;
+        String text = input.getValue().substring(0, input.getCursor());
+        int space = text.lastIndexOf(' ');
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        if (!text.startsWith("/") || space < 0 || connection == null) return completions;
+        String word = text.substring(space + 1).toLowerCase(Locale.ROOT);
+        return connection.getOnlinePlayers().stream()
+                .map(info -> info.getProfile().getName())
+                .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(word))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toArray(String[]::new);
+    }
+    *///?}
 
     // draw tabs before the vanilla suggestion popup so suggestions paint on top Polyfrost/Chatting#101 Polyfrost/Chatting#135
     //? if >=26 {
